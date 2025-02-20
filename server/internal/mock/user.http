@@ -1,0 +1,46 @@
+# Copyright 2025 The mytodo Authors. All rights reserved.
+# Use of this source code is governed by a MIT-style
+# license that can be found in the LICENSE file.
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+
+
+###
+# @name signUser
+POST http://{{host}}/user/sign HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "a@gmail.com",
+    "pwd": "123456"
+}
+
+###
+# @name getUser
+# @token = {{signUser.response.body.$.data.jwt}}
+GET http://{{host}}/user/get/1 HTTP/1.1
+# Authorization: {{token}}
+
+###
+# @name getUserProfile
+# @token = {{signUser.response.body.$.data.jwt}}
+GET http://{{host}}/user/profile/1 HTTP/1.1
+Content-Type: image/png
+Content-Disposition: inline; filename=profile.png
+
+###
+# @name getUserOnline
+GET http://{{host}}/user/online HTTP/1.1
+
+###
+# @name newFriend
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/user/friend/new HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+    "friendId": 2
+}
