@@ -1,0 +1,49 @@
+# Copyright 2025 The mytodo Authors. All rights reserved.
+# Use of this source code is governed by a MIT-style
+# license that can be found in the LICENSE file.
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+
+###
+# @name signUser
+POST http://{{host}}/user/sign HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "a@gmail.com",
+    "pwd": "123456"
+}
+
+###
+# @name taskNew
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/task/new HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "topic_id": 1,
+    "name": "task 1",
+    "description": "this is a task",
+    "start_at": "2025-02-21T15:00:00Z",
+    "end_at": "2025-02-21T17:00:00Z",
+    "conditions": [
+        {
+            "type": "locate",
+            "param": {
+                "longitude": 121.4737,
+                "latitude": 121.4737,
+                "radius": 1000.0
+            }
+        }
+    ]
+}
+
+###
+# @name taskGet
+@token = {{signUser.response.body.$.jwt}}
+GET http://{{host}}/task/get HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}

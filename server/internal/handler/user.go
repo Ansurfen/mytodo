@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
-	"image/color"
 	"image/png"
 	"io"
 	"mytodo/internal/api"
@@ -16,14 +15,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
-	"github.com/issue9/identicon/v2"
 	"github.com/minio/minio-go/v7"
+	"github.com/o1egl/govatar"
 	"gorm.io/gorm"
 )
-
-var profiler = identicon.New(identicon.Style2, 128, color.RGBA{R: 255, G: 0, B: 0, A: 100}, color.RGBA{R: 0, G: 255, B: 255, A: 100})
 
 func UserSign(ctx *gin.Context) {
 	var req api.UserSignRequest
@@ -48,6 +46,7 @@ func UserSign(ctx *gin.Context) {
 
 	if user.ID == 0 {
 		log.Debugf("creating new user")
+		user.Name = gofakeit.Username()
 		user.Email = req.Email
 		user.Password = MD5(req.Password)
 		err = db.SQL().Table("user").Create(&user).Error
@@ -57,7 +56,13 @@ func UserSign(ctx *gin.Context) {
 			return
 		}
 
-		img := profiler.Make([]byte(fmt.Sprintf("user_%d", user.ID)))
+		img, err := govatar.Generate(govatar.Gender(user.ID % 2))
+		if err != nil {
+			log.WithError(err).Fatal("generating image")
+			ctx.Abort()
+			return
+		}
+
 		var buf bytes.Buffer
 		err = png.Encode(&buf, img)
 		if err != nil {
@@ -172,13 +177,10 @@ func FriendNew(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	val, ok := ctx.Get("user")
+	user, ok := getUser(ctx)
 	if !ok {
-		log.Error("invalid user")
-		ctx.Abort()
 		return
 	}
-	user := val.(model.User)
 	rel := model.UserRelation{
 		UserId:   user.ID,
 		FriendId: req.FriendId,
@@ -198,4 +200,15 @@ func FriendDel(ctx *gin.Context) {}
 
 func MD5(str string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(str)))
+}
+
+func getUser(ctx *gin.Context) (model.User, bool) {
+	val, ok := ctx.Get("user")
+	if !ok {
+		log.Error("invalid user")
+		ctx.Abort()
+		return model.User{}, false
+	}
+	user := val.(model.User)
+	return user, true
 }

@@ -1,0 +1,85 @@
+# Copyright 2025 The mytodo Authors. All rights reserved.
+# Use of this source code is governed by a MIT-style
+# license that can be found in the LICENSE file.
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+
+
+###
+# @name signUser
+POST http://{{host}}/user/sign HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "a@gmail.com",
+    "pwd": "123456"
+}
+
+###
+# @name chatTopicNew
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/chat/topic/new HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "topic_id": 1,
+    "message": "Hello World",
+    "message_type": "text"
+}
+
+###
+# @name chatTopicNewReply
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/chat/topic/new HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "topic_id": 1,
+    "message": "Hello World",
+    "message_type": "text",
+    "reply_id": 8,
+    "reply_by": 1,
+    "reply_to": 2
+}
+
+###
+# @name chatTopicGet
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/chat/topic/get HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "topic_id": 1,
+    "page": 1,
+    "page_size": 20
+}
+
+###
+# @name chatTopicUpload
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/chat/topic/upload HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: image/png
+
+< ./assets/Icon-192.png
+----WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+# @name chatTopicReaction
+POST http://{{host}}/chat/topic/reaction HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "message_id": 1,
+    "emoji": "🤬"
+}

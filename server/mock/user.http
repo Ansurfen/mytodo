@@ -39,7 +39,7 @@ GET http://{{host}}/user/online HTTP/1.1
 @token = {{signUser.response.body.$.jwt}}
 POST http://{{host}}/user/friend/new HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: Bearer {{token}}
 
 {
     "friendId": 2

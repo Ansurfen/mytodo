@@ -25,3 +25,5 @@ go.work.sum
 .env
 
 run-scripts/
+
+mock/assets/

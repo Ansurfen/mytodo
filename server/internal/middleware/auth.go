@@ -19,14 +19,14 @@ func Auth(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	fmt.Println(jwt)
+
 	_, claims, err := ParseToken(jwt)
 	if err != nil {
 		log.WithError(err).Error("fail to parse jwt")
 		ctx.Abort()
 		return
 	}
-	
+
 	var user model.User
 	err = db.SQL().Table("user").Where("id = ?", claims.Id).First(&user).Error
 	if err != nil {
@@ -59,6 +59,7 @@ func ReleaseToken(id uint) (string, error) {
 }
 
 func ParseToken(tokenString string) (*jwt.Token, jwt.StandardClaims, error) {
+	tokenString = tokenString[7:]
 	claims := jwt.StandardClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (i interface{}, err error) {
 		return jwtKey, nil

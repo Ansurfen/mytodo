@@ -8,9 +8,10 @@ import (
 )
 
 type TodoConf struct {
-	SQL   SQL   `yaml:"sql"`
-	Minio Minio `yaml:"minio"`
-	Redis Redis `yaml:"redis"`
+	SQL    SQL    `yaml:"sql"`
+	Minio  Minio  `yaml:"minio"`
+	Redis  Redis  `yaml:"redis"`
+	Server Server `yaml:"server"`
 }
 
 func New() (ret TodoConf) {
@@ -37,6 +38,11 @@ type Minio struct {
 type Redis struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
+}
+
+type Server struct {
+	Host string `yaml:"host"`
+	Port string `yaml:"port"`
 }
 
 func ReadYAML(filename string, v any) error {

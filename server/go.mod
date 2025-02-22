@@ -3,16 +3,20 @@ module mytodo
 go 1.23.5
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/caarlos0/log v0.4.8
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/google/uuid v1.6.0
 	github.com/issue9/identicon/v2 v2.1.2
 	github.com/minio/minio-go/v7 v7.0.87
 	github.com/o1egl/govatar v0.4.1
+	github.com/relvacode/iso8601 v1.6.0
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/datatypes v1.2.5
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12
 )
@@ -39,7 +43,6 @@ require (
 	github.com/go-playground/validator/v10 v10.23.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

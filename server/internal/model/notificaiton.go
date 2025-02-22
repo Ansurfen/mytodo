@@ -9,13 +9,13 @@ type Notification struct {
 	Type uint8 `gorm:"column:type"`
 
 	// User ID of the creator of the notification
-	Creator uint `json:"creator" gorm:"column:uid"`
+	Creator uint `json:"creator" gorm:"column:creator"`
 
-	// Title of the notification
-	Title string `json:"title" gorm:"column:title"`
+	// Name of the notification
+	Name string `json:"name" gorm:"column:name"`
 
-	// Content of the notification
-	Content string `json:"content" gorm:"column:content"`
+	// Description of the notification
+	Description string `json:"description" gorm:"column:description"`
 }
 
 // TableName overrides the default table name to "notify_text"
@@ -27,10 +27,10 @@ func (Notification) TableName() string {
 const (
 	// NotifyAction.Type - Types of notification actions
 
-	NotificationTypeUnknown      = iota // Unknown type
-	NotificationTypeAddFriend           // Type for adding a friend
-	NotificationTypeInviteFriend        // Type for inviting a friend
-	NotificationTypeSendText            // Type for sending a text message
+	NotificationTypeUnknown     = iota // Unknown type
+	NotificationTypeAddFriend          // Type for adding a friend
+	NotificationTypeTopicInvite        // Type for inviting a friend
+	NotificationTypeSendText           // Type for sending a text message
 )
 
 // NotificationPublish represents the relationship between notifications and users who receive them.
@@ -39,10 +39,10 @@ type NotificationPublish struct {
 	Model
 
 	// Notification ID
-	NotifyID uint `json:"nid" gorm:"column:nid;uniqueIndex:nid_uid_idx"`
+	NotificationId uint `json:"notification_id" gorm:"column:notification_id;uniqueIndex:nid_uid_idx"`
 
 	// User ID who receives the notification
-	UserID uint `json:"uid" gorm:"column:uid;uniqueIndex:nid_uid_idx"`
+	UserID uint `json:"user_id" gorm:"column:user_id;uniqueIndex:nid_uid_idx"`
 }
 
 // TableName overrides the default table name to "notify_pub"
@@ -67,9 +67,6 @@ type NotificationAction struct {
 
 	// Notification ID
 	NotificationId uint `gorm:"column:nid"`
-
-	// ID of the sender of the notification
-	Sender uint `gorm:"column:sender"`
 
 	// ID of the receiver of the notification
 	Receiver uint `gorm:"column:receiver"`

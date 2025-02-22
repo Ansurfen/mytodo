@@ -1,0 +1,56 @@
+# Copyright 2025 The mytodo Authors. All rights reserved.
+# Use of this source code is governed by a MIT-style
+# license that can be found in the LICENSE file.
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+
+###
+# @name signUser
+POST http://{{host}}/user/sign HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "a@gmail.com",
+    "pwd": "123456"
+}
+
+###
+# @name notificationNew
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/notification/new HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "type": 2,
+    "name": "invite someone to join topic",
+    "description": "this is a notification"
+}
+
+###
+# @name notificationGet
+@token = {{signUser.response.body.$.jwt}}
+GET http://{{host}}/notification/get HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+# @name notificationPublishNew
+@token = {{signUser.response.body.$.jwt}}
+POST http://{{host}}/notification/publish/new HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "notification_id": 1,
+    "users_id": [2]
+}
+
+###
+# @name notificationPublishGet
+@token = {{signUser.response.body.$.jwt}}
+GET http://{{host}}/notification/publish/get HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
