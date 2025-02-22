@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:get/get.dart';
 import 'package:my_todo/dashboard_screen.dart';
 import 'package:my_todo/login_screen.dart';
+import 'package:my_todo/main5.dart';
 import 'package:my_todo/transition_route_observer.dart';
+
+import 'i18n/i18n.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
     SystemUiOverlayStyle(
       systemNavigationBarColor:
-      SystemUiOverlayStyle.dark.systemNavigationBarColor,
+          SystemUiOverlayStyle.dark.systemNavigationBarColor,
     ),
   );
   runApp(const MyApp());
@@ -19,11 +24,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Login Demo',
+    Locale systemLocale = Get.deviceLocale ?? const Locale('en', 'US');
+    return GetMaterialApp(
+      title: 'my todo',
+      debugShowCheckedModeBanner: false,
+      builder: EasyLoading.init(),
+      translations: I18N(),
+      locale: systemLocale,
+      fallbackLocale: const Locale('en', 'US'),
       theme: ThemeData(
-        textSelectionTheme:
-        const TextSelectionThemeData(cursorColor: Colors.orange),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Colors.orange,
+        ),
         // fontFamily: 'SourceSansPro',
         textTheme: TextTheme(
           displaySmall: const TextStyle(
@@ -53,14 +65,15 @@ class MyApp extends StatelessWidget {
           titleSmall: const TextStyle(fontFamily: 'NotoSans'),
           labelSmall: const TextStyle(fontFamily: 'NotoSans'),
         ),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple)
-            .copyWith(secondary: Colors.orange),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.deepPurple,
+        ).copyWith(secondary: Colors.orange),
       ),
       navigatorObservers: [TransitionRouteObserver()],
       initialRoute: LoginScreen.routeName,
       routes: {
         LoginScreen.routeName: (context) => const LoginScreen(),
-        DashboardScreen.routeName: (context) => const DashboardScreen(),
+        DashboardScreen.routeName: (context) => const HomePage(),
       },
     );
   }

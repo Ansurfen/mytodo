@@ -1,0 +1,25 @@
+Map<String, String> get zhCN => {
+  "loading": '加载中',
+
+  // login
+  "email": '邮箱',
+  "password": '密码',
+  "confirm_password": '确认密码',
+  "login": '登录',
+  "signup": '注册',
+  "forgot_password": '忘记密码',
+  "recover": '恢复',
+  "back": '返回',
+  "recovery_code": '验证码',
+  "set_password": '重置密码',
+  "recovery_code_sent_success": '成功',
+  "recovery_code_sent_success_detail": '验证码已发送至邮箱',
+  "recovery_password_intro": '在此重置您的密码',
+  "recovery_code_password_description": '我们将发送验证码至您的邮箱。',
+  "confirm_recover_intro": '重置新密码的验证码已经发送至您的邮箱。',
+  "confirm_password_error": '密码不匹配！',
+  "recovery_code_validator": '验证码是空',
+  "confirm_recover_success": '密码已重置。',
+  "email_validator": "邮箱格式无效",
+  "password_is_empty": "密码为空",
+};

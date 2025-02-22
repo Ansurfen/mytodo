@@ -16,7 +16,7 @@ class _DetailState extends State<Detail> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-          (_) => Future.delayed(const Duration(milliseconds: 200), () {
+      (_) => Future.delayed(const Duration(milliseconds: 200), () {
         ShowCaseWidget.of(myContext!).startShowCase([_one]);
       }),
     );
@@ -65,7 +65,7 @@ class _DetailState extends State<Detail> {
                 ),
                 const Text(
                   'Hi, you have new Notification from flutter group, open '
-                      'slack and check it out',
+                  'slack and check it out',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(
