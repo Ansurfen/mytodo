@@ -30,6 +30,10 @@ Contributions, issues and feature requests are welcome.<br />
 Feel free to check [issues page](https://github.com/Ansurfen/mytodo/issues) if you want to contribute.<br />
 [Check the contributing guide](./CONTRIBUTING.md).<br />
 
+## ❤️ Thanks
+
+- <a href="https://storyset.com/technology">Technology illustrations by Storyset</a>
+
 ## 📝 License
 
 This software is licensed under the <!-- license --> license, see [LICENSE](./LICENSE) for more information.

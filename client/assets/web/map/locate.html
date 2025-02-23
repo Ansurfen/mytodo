@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>获取定位</title>
+</head>
+<script charset="utf-8" src="https://map.qq.com/api/gljs?v=1.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
+<script src="https://mapapi.qq.com/web/jsapi/jsapi-gl/js/dom-to-image.min.js"></script>
+<!-- dom-to-image 官方地址：https://github.com/tsayen/dom-to-image -->
+<script src="https://map.qq.com/api/gljs?v=1.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
+<script type="text/javascript" src="../lib/web_sandbox.js"></script>
+
+<body>
+<div id="container"></div>
+<div class="info">
+    <button class="backBtn" onclick="back()">返回</button>
+    <button class="commitBtn" onclick="commit()">确认</button>
+    <button class="reloadBtn" onclick="reload()">重新定位</button>
+</div>
+<script>
+        const back = () => {
+            alert("返回")
+        }
+
+        const commit = () => {
+            screenshot()
+        }
+
+        const reload = () => {
+            map.distory()
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    initMap(position.coords.latitude, position.coords.longitude);
+                }, (err) => {
+                    alert("未能定位当前位置。");
+                });
+            }
+            else {
+                alert("该浏览器不支持获取地理位置。");
+            }
+        }
+
+        var map, center;
+        function initMap(lat, lng) {
+            center = new TMap.LatLng(lat, lng);
+            map = new TMap.Map("container", {
+                center: center,
+                rotation: 20,
+                pitch: 30,
+                zoom: 17,
+                baseMap: [
+                    { type: 'vector' },
+                ],
+                renderOptions: {
+                    preserveDrawingBuffer: true,
+                },
+            });
+            var marker = new TMap.MultiMarker({
+                map: map,
+                styles: {
+                    // 点标记样式
+                    marker: new TMap.MarkerStyle({
+                        width: 20, // 样式宽
+                        height: 30, // 样式高
+                        anchor: { x: 10, y: 30 }, // 描点位置
+                    }),
+                },
+                geometries: [
+                    // 点标记数据数组
+                    {
+                        // 标记位置(纬度，经度，高度)
+                        position: center,
+                        id: 'marker',
+                    },
+                ],
+            });
+        }
+
+        var position = document.getElementById("position");
+        function screenshot() {
+            var node = document.getElementById('container');
+            domtoimage
+                .toPng(node)
+                .then(function (dataUrl) {
+                    WebBridge.notify("screenshot", "".concat(center.getLat().toString(), ",").concat(center.getLng().toString(), "---").concat(dataUrl));
+                })
+                .catch(function (error) {
+                    console.error('domtoimage 出现问题! ', error);
+                });
+        }
+        (() => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    initMap(position.coords.latitude, position.coords.longitude);
+                }, (err) => {
+                    alert("未能定位当前位置。");
+                });
+            }
+            else {
+                alert("该浏览器不支持获取地理位置。");
+            }
+        })();
+    </script>
+</body>
+
+<style type="text/css">
+    html,
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #container {
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    .info {
+        position: absolute;
+        left: 40%;
+        bottom: 10%;
+        font-size: 14px;
+        width: 270px;
+        padding: 10px;
+        border-radius: 3px;
+        display: flex;
+        flex-direction: row;
+        z-index: 1;
+    }
+
+    .backBtn {
+        background-color: #f66f6a;
+        color: white;
+        border-radius: 5px 0 0 5px;
+        font-size: 16px;
+    }
+
+    .commitBtn {
+        background-color: #f66f6a;
+        color: white;
+        font-size: 16px;
+    }
+
+    .reloadBtn {
+        background-color: #f66f6a;
+        color: white;
+        border-radius: 0 5px 5px 0;
+    }
+
+    button {
+        width: 400px;
+        height: 45px;
+        border: 0;
+        box-sizing: content-box;
+    }
+
+    button:hover {
+        background-color: #a54b4a;
+    }
+</style>
+
+</html>

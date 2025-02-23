@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+<script>
+        var nextID = (function () {
+            var id = 0;
+            return function () {
+                id++;
+                return id;
+            };
+        })();
+        var WebViewEventChannel = /** @class */ (function () {
+            function WebViewEventChannel() {
+            }
+            WebViewEventChannel.get = function (id) {
+                return WebViewEventChannel.__webview_event_bridge_data__.get(id);
+            };
+            WebViewEventChannel.put = function (id, v) {
+                WebViewEventChannel.__webview_event_bridge_data__.set(id, v);
+            };
+            WebViewEventChannel.post = function (evt) {
+                __webview_event_bridge__.postMessage(JSON.stringify(evt));
+            };
+            WebViewEventChannel.handler = function (name) {
+                return function (v) {
+                    var id = nextID();
+                    WebViewEventChannel.post({
+                        id: id,
+                        method: name,
+                        args: v
+                    });
+                    return [id, new Promise(function (resolve) {
+                        var timer = setInterval(function () {
+                            if (WebViewEventChannel.__webview_event_bridge_data__.get(id) != null) {
+                                clearInterval(timer);
+                                resolve(WebViewEventChannel.__webview_event_bridge_data__.get(id));
+                            }
+                        }, 100);
+                    })];
+                };
+            };
+            WebViewEventChannel.__webview_event_bridge_data__ = new Map();
+            return WebViewEventChannel;
+        }());
+        function hello() {
+            var testMethod = WebViewEventChannel.handler("testMethod");
+            testMethod("666")[1].then(function (res) { return console.log(res); });
+        }
+
+    </script>
+</body>
+
+</html>

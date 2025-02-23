@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>点击地图拾取坐标</title>
+</head>
+<script charset="utf-8" src="https://map.qq.com/api/gljs?v=1.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
+<script type="text/javascript" src="https://mapapi.qq.com/web/mapComponents/geoLocation/v/geolocation.min.js"></script>
+<script src="https://mapapi.qq.com/web/jsapi/jsapi-gl/js/dom-to-image.min.js"></script>
+<script src="https://map.qq.com/api/gljs?v=1.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
+
+<style type="text/css">
+    html,
+    body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #container {
+        height: 100vh;
+        width: 100%;
+    }
+
+    #info {
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        font-size: 14px;
+        background: #FFF;
+        width: 270px;
+        padding: 10px;
+        border-radius: 3px;
+    }
+
+  iframe {
+    border: none;
+    outline: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -ms-box-shadow: none;
+    background-color: transparent;
+  }
+</style>
+
+<body>
+<div id="container"></div>
+<div id="info">当前点击坐标为：<span id="position"></span></div>
+<script type="text/javascript" src="../lib/web_sandbox.js"></script>
+<script type="text/javascript" src="./binding.js"></script>
+<script>
+const defaultLat = 39.984104;
+const defaultLng = 116.307503;
+
+var map;
+var marker;
+var editor;
+var openMarker = false;
+
+WebBridge.listen("panTo", (v) => {
+    map.panTo(new TMap.LatLng(v.lat, v.lng));
+});
+function screenshot() {
+    var node = document.getElementById('container');
+    domtoimage
+        .toPng(node)
+        .then(function (dataUrl) {
+        var link = document.createElement('a');
+        link.download = 'image.png';
+        link.href = dataUrl;
+        link.click();
+    })
+        .catch(function (error) {
+        console.error('domtoimage 出现问题! ', error);
+    });
+}
+function initMap(centerLat, centerLng) {
+    var position = document.getElementById("position");
+    var center = new TMap.LatLng(centerLat, centerLng);
+    map = new TMap.Map("container", {
+        center: center,
+        rotation: 20,
+        pitch: 30,
+        zoom: 17,
+        baseMap: [
+            { type: 'vector' }, // 设置矢量底图
+        ],
+        renderOptions: {
+            // renderOptions文档地址：https://lbs.qq.com/webApi/javascriptGL/glDoc/docIndexMap#10
+            preserveDrawingBuffer: true, // 保留地图的渲染缓冲 默认false
+        },
+    });
+    marker = new TMap.MultiMarker({
+        id: 'marker',
+        map: map,
+             styles: {
+            "highlight": new TMap.MarkerStyle({
+                "src": "https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/marker-pink.png"
+            })
+        },
+    });
+
+    map.on("click", function (evt) {
+        var lat = evt.latLng.getLat().toFixed(6);
+        var lng = evt.latLng.getLng().toFixed(6);
+        position.innerHTML = lat + "," + lng;
+        if (openMarker) {
+            marker === null || marker === void 0 ? void 0 : marker.add({
+                position: evt.latLng
+            });
+            WebBridge.notify("add_marker", { lat: lat, lng: lng });
+        }
+    });
+    //editor = new TMap.tools.GeometryEditor({
+    //    map,
+    //    overlayList: [{
+    //            overlay: marker,
+    //            id: "marker",
+    //            selectedStyleId: "highlight" // 被选中的marker会变为高亮样式
+    //        }],
+    //    actionMode: TMap.tools.constants.EDITOR_ACTION.INTERACT,
+    //    activeOverlayId: "marker",
+    //    selectable: true
+    //});
+}
+function switchOpenMarker() {
+    openMarker = !openMarker;
+    if (openMarker) {
+        console.log("开启标记");
+    }
+    else {
+        console.log("关闭标记");
+    }
+}
+(() => {
+    var handle = WebBridge.F.geolocation().handle;
+    handle.then((v) => {
+        if (typeof v == "string") {
+            if (v.length > 0) {
+                let pos = JSON.parse(v);
+                initMap(pos["latitude"], pos["longitude"]);
+            } else {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        initMap(position.coords.latitude, position.coords.longitude);
+                    }, (err) => {
+                        alert("未能定位当前位置。");
+                        initMap(defaultLat, defaultLng);
+                    });
+                }
+                else {
+                    alert("该浏览器不支持获取地理位置。");
+                    initMap(defaultLat, defaultLng);
+                }
+            }
+        } else {
+            initMap(defaultLat, defaultLng);
+        }
+    }).catch((err) => {
+        console.log(err)
+    })
+})();
+    </script>
+</body>
+
+</html>

@@ -1,4 +1,25 @@
 Map<String, String> get enUS => {
+  // splash
+  "lets_begin": "Let's begin",
+  "description":
+      'A task punch-in system for creating and managing tasks with conditions like check-ins, QR codes, and image uploads.',
+  "skip": 'Skip',
+  "multifuncational": 'Multifunctional',
+  "multifuncational_desc":
+      "Includes features like instant messaging, dynamic sharing, etc.",
+  "high_efficiency": 'High Efficiency',
+  "high_efficiency_desc":
+      "Provides efficient task management and fast response, helping users save time.",
+  "internationalization": 'Internationalization',
+  "internationalization_desc":
+      "Supports multiple languages, such as English, Simplified Chinese, and more.",
+  "welcome": 'Welcome 🚀',
+  "welcome_desc":
+      "Thank you for using MyTodo, start managing your tasks efficiently!",
+  "sign_up": 'Sign Up',
+  "have_account": 'Already have an account? ',
+  "splash_login": "Login",
+
   "loading": 'loading',
 
   // login

@@ -6,6 +6,7 @@ import 'package:my_todo/dashboard_screen.dart';
 import 'package:my_todo/login_screen.dart';
 import 'package:my_todo/main5.dart';
 import 'package:my_todo/transition_route_observer.dart';
+import 'package:my_todo/view/splash/splash_page.dart';
 
 import 'i18n/i18n.dart';
 
@@ -70,8 +71,9 @@ class MyApp extends StatelessWidget {
         ).copyWith(secondary: Colors.orange),
       ),
       navigatorObservers: [TransitionRouteObserver()],
-      initialRoute: LoginScreen.routeName,
+      initialRoute: "splash",
       routes: {
+        "splash": (context) => const SplashPage(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         DashboardScreen.routeName: (context) => const HomePage(),
       },

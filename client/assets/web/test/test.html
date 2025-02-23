@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<script>
+        const nextID = (() => {
+            var id = 0;
+            return () => {
+                id++;
+                return id;
+            }
+        })()
+
+        var __webview_event_bridge_data__ = {}
+        function hello(msg) {
+            let id = nextID();
+            toDart(id, msg);
+            return id;
+        }
+
+        function getData(id) {
+            return __webview_event_bridge_data__[id];
+        }
+
+        function toDart(id, v) {
+             __webview_event_bridge__.postMessage(JSON.stringify({
+                id: id,
+                args: v,
+                method: "test"
+            }));
+            return new Promise((resolve) => {
+                let timer = setInterval(() => {
+                    if (__webview_event_bridge_data__[id] != null) {
+                        clearInterval(timer)
+                        resolve(__webview_event_bridge_data__[id])
+                    }
+                }, 100)
+            })
+        }
+
+        function __webview_event_bridge_commit__(id, v) {
+            __webview_event_bridge_data__[id] = v
+        }
+
+    </script>
+</body>
+</html>

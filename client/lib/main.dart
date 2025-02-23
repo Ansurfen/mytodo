@@ -12,7 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:universal_html/html.dart' as html;
 import 'data.dart';
-import 'models/theme.dart';
+import 'model/theme.dart';
 
 void main() {
   runApp(const Example());
@@ -502,7 +502,7 @@ Future<List<int>> _getBlobData(String blobUrl) async {
 
 Future<void> sendJsonData(Map<String, dynamic> jsonData) async {
   Dio dio = Dio(); // 创建 Dio 实例
-  print(jsonData);
+
   if (kIsWeb) {
     switch (jsonData["message_type"]) {
       case "text":

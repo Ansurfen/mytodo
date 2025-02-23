@@ -1,4 +1,20 @@
 Map<String, String> get zhCN => {
+  // splash
+  "lets_begin": "让我们开始吧",
+  "description": '一个任务打卡系统，支持创建和管理带有签到、二维码扫描、图片上传等条件的任务。',
+  "skip": '跳过',
+  "multifuncational": '多功能',
+  "multifuncational_desc": "涵盖即时通信、动态分享等功能",
+  "high_efficiency": '高效',
+  "high_efficiency_desc": "提供高效的任务管理和快速响应，帮助用户节省时间",
+  "internationalization": '国际化',
+  "internationalization_desc": "支持多种语言，如English、简体中文等语言",
+  "welcome": '欢迎 🚀',
+  "welcome_desc": "感谢您使用MyTodo，开始高效管理您的任务吧",
+  "sign_up": '注册',
+  "have_account": '已有账号？ ',
+  "splash_login": "登录",
+
   "loading": '加载中',
 
   // login

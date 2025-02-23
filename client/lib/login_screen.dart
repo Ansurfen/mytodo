@@ -5,6 +5,7 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/constants.dart';
 import 'package:my_todo/dashboard_screen.dart';
+import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/user.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -128,13 +129,15 @@ class LoginScreen extends StatelessWidget {
         ),
       ],
       theme: LoginTheme(
+        switchAuthTextColor: Color(0xff132137),
         // primaryColor: Colors.purple,
         titleStyle: TextStyle(
           fontFamily: 'Pacifico',
-          color: Colors.white,
+          color: Color(0xff132137),
           fontWeight: FontWeight.w300,
         ),
-        primaryColor: Colors.redAccent,
+        primaryColor: darken(HexColor.fromInt(0xF5EBE2)),
+        buttonTheme: LoginButtonTheme(backgroundColor: Color(0xff132137)),
         cardTheme: CardTheme(elevation: 5),
       ),
       messages: LoginMessages(
