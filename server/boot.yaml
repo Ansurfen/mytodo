@@ -42,6 +42,10 @@ log:
   compress:
   format: json
 email:
+  host: stmp.qq.com
+  port: 587
+  senderEmail: "${ABC}"
+  senderPassword:
 captcha:
 etcd:
   dialTimeout: 5

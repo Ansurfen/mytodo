@@ -17,10 +17,7 @@ class UserSignRequest {
 
   FormData toFormData() {
     FormData formData = FormData();
-    formData.fields.addAll({
-      'email': email,
-      'password': password,
-    }.entries);
+    formData.fields.addAll({'email': email, 'password': password}.entries);
     return formData;
   }
 }
@@ -37,9 +34,13 @@ class UserSignResponse extends BaseResponse {
   }
 }
 
-Future<UserSignResponse> userSign(UserSignRequest req) async {
+Future<UserSignResponse> userSign({
+  required String email,
+  required String password,
+}) async {
   return UserSignResponse.fromResponse(
-      await HTTP.post("/user/sign", data: req.toFormData()));
+    await HTTP.post("/user/sign", data: {"email": email, "pwd": password}),
+  );
 }
 
 class UserGetRequest {}
@@ -50,15 +51,17 @@ class UserGetResponse extends BaseResponse {
   UserGetResponse(super.json);
 
   UserGetResponse.fromResponse(Response res)
-      : user = User.fromJson(res.data["data"]),
-        super(res.data);
+    : user = User.fromJson(res.data["data"]),
+      super(res.data);
 }
 
 Future<UserGetResponse> userGet(UserGetRequest req) async {
-  return UserGetResponse.fromResponse(await HTTP.post("/user/get",
-      options: Options(headers: {
-        "x-token": Guard.jwt,
-      })));
+  return UserGetResponse.fromResponse(
+    await HTTP.post(
+      "/user/get",
+      options: Options(headers: {"Authorization": Guard.jwt}),
+    ),
+  );
 }
 
 class UserEditRequest {
@@ -71,11 +74,9 @@ class UserEditRequest {
 
   Future<FormData> toFormData() async {
     FormData formData = FormData();
-    formData.fields.addAll({
-      'name': name,
-      'email': email,
-      'telephone': telephone ?? "",
-    }.entries);
+    formData.fields.addAll(
+      {'name': name, 'email': email, 'telephone': telephone ?? ""}.entries,
+    );
     if (profile != null) {
       formData.files.add(MapEntry("profile", await profile!.m));
     }
@@ -90,11 +91,13 @@ class UserEditResponse extends BaseResponse {
 }
 
 Future<UserEditResponse> userEdit(UserEditRequest req) async {
-  return UserEditResponse.fromResponse(await HTTP.post("/user/edit",
+  return UserEditResponse.fromResponse(
+    await HTTP.post(
+      "/user/edit",
       data: await req.toFormData(),
-      options: Options(headers: {
-        "x-token": Guard.jwt,
-      })));
+      options: Options(headers: {"x-token": Guard.jwt}),
+    ),
+  );
 }
 
 Image userProfile(int id) {

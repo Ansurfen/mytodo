@@ -25,21 +25,23 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return todoCupertinoScaffold(
-        context: context,
-        appBar: todoCupertinoNavBarWithBack(
-          context,
-          middle: Text(
-            "setting".tr,
-            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-          ),
+      context: context,
+      appBar: todoCupertinoNavBarWithBack(
+        context,
+        middle: Text(
+          "setting".tr,
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
-        body: SingleChildScrollView(
-            child: SettingsList(
+      ),
+      body: SingleChildScrollView(
+        child: SettingsList(
           shrinkWrap: true,
           applicationType: ApplicationType.cupertino,
           platform: DevicePlatform.iOS,
           sections: [_commonSection(), _networkSection(), _internalSection()],
-        )));
+        ),
+      ),
+    );
   }
 
   SettingsSection _commonSection() {
@@ -77,55 +79,61 @@ class _SettingPageState extends State<SettingPage> {
   void _switchLanguage(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoActionSheet(
-        title: Text(
-          'language'.tr,
-          style: const TextStyle(fontSize: 20),
-        ),
-        message: Column(
-            children: controller.languages
-                .map(
-                  (e) => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(e.tr, style: const TextStyle(fontSize: 18)),
-                      ColorfulRadio(
-                        value: e,
-                        groupValue: controller.currentLanguage,
-                        onChanged: (v) {
-                          controller.currentLanguage = v!;
-                          Guard.setLanguage(v);
-                          Get.back();
-                        },
-                        backgroundColor: Theme.of(context).primaryColor,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            title: Text('language'.tr, style: const TextStyle(fontSize: 20)),
+            message: Column(
+              children:
+                  controller.languages
+                      .map(
+                        (e) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(e.tr, style: const TextStyle(fontSize: 18)),
+                            ColorfulRadio(
+                              value: e,
+                              groupValue: controller.currentLanguage,
+                              onChanged: (v) {
+                                controller.currentLanguage = v!;
+                                Guard.setLanguage(v);
+                                Get.back();
+                              },
+                              backgroundColor: Theme.of(context).primaryColor,
+                            ),
+                          ],
+                        ),
                       )
-                    ],
-                  ),
-                )
-                .toList()),
-      ),
+                      .toList(),
+            ),
+          ),
     );
   }
 
   void _switchStyle(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoActionSheet(
-        title: Text(
-          'language'.tr,
-          style: const TextStyle(fontSize: 20),
-        ),
-        message: Column(
-            children: ThemeStyleName.values
-                .map((e) => styleRow(e.value.tr, e.value, controller.style,
-                        ThemeProvider.themeData(e.value)!.normal(),
-                        onChanged: (value) {
-                      controller.style = value!;
-                      controller.setTheme();
-                      Get.back();
-                    }))
-                .toList()),
-      ),
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            title: Text('language'.tr, style: const TextStyle(fontSize: 20)),
+            message: Column(
+              children:
+                  ThemeStyleName.values
+                      .map(
+                        (e) => styleRow(
+                          e.value.tr,
+                          e.value,
+                          controller.style,
+                          ThemeProvider.themeData(e.value)!.normal(),
+                          onChanged: (value) {
+                            controller.style = value!;
+                            controller.setTheme();
+                            Get.back();
+                          },
+                        ),
+                      )
+                      .toList(),
+            ),
+          ),
     );
   }
 
@@ -135,25 +143,30 @@ class _SettingPageState extends State<SettingPage> {
       tiles: [
         SettingsTile.navigation(
           onPressed: (_) {
-            showSingleTextField(context,
-                title: 'server_address'.tr,
-                controller: controller.serverAddressController, onCancel: () {
-              controller.unsetServer();
-              Navigator.pop(context);
-            }, onConfirm: () {
-              controller.setServer();
-              Get.back();
-              setState(() {});
-            });
+            showSingleTextField(
+              context,
+              title: 'server_address'.tr,
+              controller: controller.serverAddressController,
+              onCancel: () {
+                controller.unsetServer();
+                Navigator.pop(context);
+              },
+              onConfirm: () {
+                controller.setServer();
+                Get.back();
+                setState(() {});
+              },
+            );
           },
           title: Text('server'.tr),
           value: Container(
-              alignment: Alignment.centerRight,
-              width: MediaQuery.sizeOf(context).width / 2,
-              child: Text(
-                controller.serverAddressController.text,
-                overflow: TextOverflow.ellipsis,
-              )),
+            alignment: Alignment.centerRight,
+            width: MediaQuery.sizeOf(context).width / 2,
+            child: Text(
+              controller.serverAddressController.text,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           description: Text('server_set_tip'.tr),
         ),
       ],
@@ -161,20 +174,28 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   SettingsSection _internalSection() {
-    return SettingsSection(title: Text("internal".tr), tiles: [
-      SettingsTile.switchTile(
-        title: Text("logger".tr),
-        description: Text("logger_set_tip".tr),
-        initialValue: true,
-        activeSwitchColor: Theme.of(context).primaryColor,
-        onToggle: (bool value) {},
-      ),
-      // TODO: reset, import configuration
-    ]);
+    return SettingsSection(
+      title: Text("internal".tr),
+      tiles: [
+        SettingsTile.switchTile(
+          title: Text("logger".tr),
+          description: Text("logger_set_tip".tr),
+          initialValue: true,
+          activeSwitchColor: Theme.of(context).primaryColor,
+          onToggle: (bool value) {},
+        ),
+        // TODO: reset, import configuration
+      ],
+    );
   }
 
-  Widget styleRow(String name, String value, String group, Color bgColor,
-      {required void Function(String?)? onChanged}) {
+  Widget styleRow(
+    String name,
+    String value,
+    String group,
+    Color bgColor, {
+    required void Function(String?)? onChanged,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

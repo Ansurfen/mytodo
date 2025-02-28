@@ -4,20 +4,23 @@
 import 'package:flutter/material.dart';
 
 class CheckBoxStyle {
-  static MaterialStateProperty<Color?> fillColor(BuildContext context,
-      {Color? color}) {
+  static WidgetStateProperty<Color?> fillColor(
+    BuildContext context, {
+    Color? color,
+  }) {
     ThemeData themeData = Theme.of(context);
-    return MaterialStateProperty.resolveWith((Set<MaterialState> states) {
-      const Set<MaterialState> interactiveStates = <MaterialState>{
-        MaterialState.pressed,
-        MaterialState.hovered,
-        MaterialState.focused,
+    return WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      const Set<WidgetState> interactiveStates = <WidgetState>{
+        WidgetState.pressed,
+        WidgetState.hovered,
+        WidgetState.focused,
       };
-      if (states.contains(MaterialState.disabled)) {
-        return ThemeData.from(colorScheme: const ColorScheme.light())
-            .disabledColor;
+      if (states.contains(WidgetState.disabled)) {
+        return ThemeData.from(
+          colorScheme: const ColorScheme.light(),
+        ).disabledColor;
       }
-      if (states.contains(MaterialState.selected)) {
+      if (states.contains(WidgetState.selected)) {
         return color ?? themeData.primaryColor;
       }
       if (states.any(interactiveStates.contains)) {

@@ -14,7 +14,7 @@ import 'package:my_todo/view/setting/setting_binding.dart';
 import 'package:my_todo/view/setting/setting_page.dart';
 import 'package:my_todo/view/splash/splash_binding.dart';
 import 'package:my_todo/view/splash/splash_page.dart';
-import 'package:my_todo/view/statistic/statistic_page.dart';
+// import 'package:my_todo/view/statistic/statistic_page.dart';
 import 'package:my_todo/view/notification/notification_binding.dart';
 import 'package:my_todo/view/notification/notification_page.dart';
 import 'package:my_todo/view/photo/photo_page.dart';
@@ -23,7 +23,7 @@ class OtherRouter {
   static List<GetPage> pages = [
     splash,
     setting,
-    statistic,
+    // statistic,
     add,
     photo,
     notification,
@@ -45,8 +45,8 @@ class OtherRouter {
       page: () => const SettingPage(),
       binding: SettingBinding());
 
-  static final statistic =
-      GetPage(name: '/statistic', page: () => const StatisticPage());
+  // static final statistic =
+  //     GetPage(name: '/statistic', page: () => const StatisticPage());
 
   static final add =
       GetPage(name: '/add', page: () => const AddPage(), binding: AddBinding());

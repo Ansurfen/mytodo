@@ -15,26 +15,25 @@ class NavigatorPage extends GetView<NavigatorController> {
     return Container(
       color: Theme.of(context).colorScheme.tertiary,
       child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              PageView(
-                physics: const NeverScrollableScrollPhysics(),
-                controller: controller.pageController,
-                children: NavigatorController.pages,
-              ),
-              bottomBar(),
-            ],
-          )),
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            PageView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: controller.pageController,
+              children: NavigatorController.pages,
+            ),
+            bottomBar(),
+          ],
+        ),
+      ),
     );
   }
 
   Widget bottomBar() {
     return Column(
       children: [
-        const Expanded(
-          child: SizedBox(),
-        ),
+        const Expanded(child: SizedBox()),
         BottomBarView(
           tabIconsList: controller.tabIconsList,
           changeIndex: controller.switchPage,

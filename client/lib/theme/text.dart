@@ -3,5 +3,5 @@
 // license that can be found in the LICENSE file.
 class TodoTextStyle {
   static const String fontName1 = "WorkSans";
-
+  static const String logo = "Pacifico";
 }

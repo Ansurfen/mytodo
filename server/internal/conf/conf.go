@@ -1,21 +1,27 @@
 package conf
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/caarlos0/log"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
 type TodoConf struct {
-	SQL    SQL    `yaml:"sql"`
-	Minio  Minio  `yaml:"minio"`
-	Redis  Redis  `yaml:"redis"`
-	Server Server `yaml:"server"`
+	SQL    SQL           `yaml:"sql"`
+	Minio  Minio         `yaml:"minio"`
+	Redis  Redis         `yaml:"redis"`
+	ES     ElasticSearch `yaml:"es"`
+	Server Server        `yaml:"server"`
+	Email  Email         `yaml:"email"`
 }
 
 func New() (ret TodoConf) {
 	ReadYAML("boot.yaml", &ret)
+	viper.BindEnv("email.senderEmail", "ABC")
+	fmt.Println(viper.GetString("email.senderEmail"))
 	return
 }
 
@@ -40,12 +46,33 @@ type Redis struct {
 	Port int    `yaml:"port"`
 }
 
+type ElasticSearch struct {
+	Addresses []string `yaml:"addresses"`
+	Username  string   `yaml:"username"`
+	Password  string   `yaml:"password"`
+}
+
 type Server struct {
 	Host string `yaml:"host"`
 	Port string `yaml:"port"`
 }
 
+type Email struct {
+	Host           string `yaml:"host"`
+	Port           string `yaml:"port"`
+	SenderEmail    string `yaml:"senderEmail"`
+	SenderPassword string `yaml:"senderPassword"`
+}
+
 func ReadYAML(filename string, v any) error {
+	viper.SetConfigType("yaml")
+	viper.AutomaticEnv()
+	viper.AddConfigPath(".")
+	viper.SetConfigName("boot")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
 	data, err := ReadFile(filename)
 	if err != nil {
 		return err

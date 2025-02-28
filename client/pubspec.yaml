@@ -58,7 +58,7 @@ dependencies:
   path: ^1.9.1
   image_picker: ^1.1.2
   file_picker: ^9.0.0
-  flutter_picker: ^2.1.0
+  flutter_picker_plus: ^1.4.1
   easy_refresh: ^3.4.0
   event_bus: ^2.0.1
   share_plus: ^10.1.4
@@ -85,6 +85,9 @@ dependencies:
   badges: ^3.1.2
   photo_view: ^0.15.0
   path_provider: ^2.1.5
+  flutter_quill: ^11.0.0
+  flutter_quill_extensions: ^11.0.0
+  filesystem_picker: ^3.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -100,6 +103,8 @@ dev_dependencies:
   source_gen: ^2.0.0
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+dependency_overrides:
+  intl: ^0.20.0
 
 # The following section is specific to Flutter packages.
 flutter:

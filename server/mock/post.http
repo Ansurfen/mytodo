@@ -1,0 +1,18 @@
+# Copyright 2025 The mytodo Authors. All rights reserved.
+# Use of this source code is governed by a MIT-style
+# license that can be found in the LICENSE file.
+
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+
+###
+# @name signUser
+POST http://{{host}}/user/sign HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "a@gmail.com",
+    "pwd": "123456"
+}
+

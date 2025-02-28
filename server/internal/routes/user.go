@@ -18,8 +18,11 @@ func InstallUserRoute(e *gin.Engine) {
 		friendRouter := userRouter.Group("/friend")
 		{
 			friendRouter.POST("/new", middleware.Auth, handler.FriendNew)
-			friendRouter.GET("/get", middleware.Auth, handler.FriendGet)
+			friendRouter.POST("/commit", middleware.Auth, handler.FriendCommit)
+			friendRouter.GET("/get/:friend_id", middleware.Auth, handler.FriendGet)
+			friendRouter.GET("/snapshot", middleware.Auth, handler.FriendSnapshot)
 			friendRouter.POST("/del", middleware.Auth, handler.FriendDel)
+			friendRouter.POST("/post/get", middleware.Auth, handler.FriendPostGet)
 		}
 	}
 }

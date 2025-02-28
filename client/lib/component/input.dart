@@ -37,11 +37,15 @@ class TodoInputController {
 
   void defaultConfig(BuildContext context) {
     config = Config(
-      buttonMode: ButtonMode.MATERIAL,
-      bgColor: Theme.of(context).colorScheme.primary,
-      indicatorColor: Theme.of(context).primaryColor,
-      iconColorSelected: Theme.of(context).primaryColor,
-      backspaceColor: Theme.of(context).primaryColor,
+      emojiViewConfig: EmojiViewConfig(
+        buttonMode: ButtonMode.MATERIAL,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      categoryViewConfig: CategoryViewConfig(
+        indicatorColor: Theme.of(context).primaryColor,
+        iconColorSelected: Theme.of(context).primaryColor,
+        backspaceColor: Theme.of(context).primaryColor,
+      ),
     );
   }
 }
@@ -52,12 +56,13 @@ class TodoInput extends StatefulWidget {
   final Widget? child;
   final bool showChild;
 
-  const TodoInput(
-      {super.key,
-      required this.controller,
-      required this.onTap,
-      this.child,
-      required this.showChild});
+  const TodoInput({
+    super.key,
+    required this.controller,
+    required this.onTap,
+    this.child,
+    required this.showChild,
+  });
 
   @override
   State<TodoInput> createState() => _TodoInputState();
@@ -90,25 +95,27 @@ class _TodoInputState extends State<TodoInput> {
         Material(
           color: Colors.transparent,
           child: IconButton(
-              onPressed: () {},
-              icon: Icon(
-                Icons.add,
-                color: Theme.of(context).colorScheme.onPrimary,
-              )),
+            onPressed: () {},
+            icon: Icon(
+              Icons.add,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
         ),
         Material(
           color: Colors.transparent,
           child: IconButton(
-              onPressed: () {
-                widget.onTap(widget.controller.msgController.text);
-                widget.controller.msgController.text = "";
-                setState(() {});
-              },
-              icon: Icon(
-                Icons.send,
-                color: Theme.of(context).colorScheme.onPrimary,
-              )),
-        )
+            onPressed: () {
+              widget.onTap(widget.controller.msgController.text);
+              widget.controller.msgController.text = "";
+              setState(() {});
+            },
+            icon: Icon(
+              Icons.send,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -118,11 +125,12 @@ class TodoInputView extends StatefulWidget {
   final TodoInputController controller;
   final GlobalKey<EmojiPickerState> state;
   final double maxWidth;
-  const TodoInputView(
-      {super.key,
-      required this.controller,
-      required this.state,
-      required this.maxWidth});
+  const TodoInputView({
+    super.key,
+    required this.controller,
+    required this.state,
+    required this.maxWidth,
+  });
 
   @override
   State<TodoInputView> createState() => _TodoInputViewState();
@@ -131,46 +139,50 @@ class TodoInputView extends StatefulWidget {
 class _TodoInputViewState extends State<TodoInputView> {
   @override
   Widget build(BuildContext context) {
-    final emojiSize = widget.controller.config.getEmojiSize(widget.maxWidth);
+    final emojiSize = widget.controller.config.emojiViewConfig.getEmojiSize(
+      widget.maxWidth,
+    );
     // emojiSize is the size of the font, need some paddings around
     final cellSize = emojiSize + 20.0;
     return ValueListenableBuilder<bool>(
-        valueListenable: widget.controller.emojiShowing,
-        builder: (context, value, _) {
-          return Offstage(
-            offstage: !value,
-            child: ValueListenableBuilder<TextEditingValue>(
-                valueListenable: widget.controller.searchController,
-                builder: (context, value, _) {
-                  return Column(
-                    children: [
-                      if (value.text.isEmpty &&
-                          !widget.controller.isSearchFocused)
-                        SizedBox(
-                            height: 250,
-                            child: EmojiPicker(
-                              key: widget.state,
-                              textEditingController:
-                                  widget.controller.msgController,
-                              config: widget.controller.config,
-                              onBackspacePressed: () {
-                                EmojiPickerUtils()
-                                    .clearRecentEmojis(key: widget.state);
-                              },
-                            ))
-                      else
-                        _buildSearchResults(context, emojiSize, cellSize),
-                      _buildSearchBar(context, value.text.isEmpty),
-                    ],
-                  );
-                }),
-          );
-        });
+      valueListenable: widget.controller.emojiShowing,
+      builder: (context, value, _) {
+        return Offstage(
+          offstage: !value,
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: widget.controller.searchController,
+            builder: (context, value, _) {
+              return Column(
+                children: [
+                  if (value.text.isEmpty && !widget.controller.isSearchFocused)
+                    SizedBox(
+                      height: 250,
+                      child: EmojiPicker(
+                        key: widget.state,
+                        textEditingController: widget.controller.msgController,
+                        config: widget.controller.config,
+                        onBackspacePressed: () {
+                          EmojiPickerUtils().clearRecentEmojis(
+                            key: widget.state,
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    _buildSearchResults(context, emojiSize, cellSize),
+                  _buildSearchBar(context, value.text.isEmpty),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildSearchBar(BuildContext context, bool isEmpty) {
     return ColoredBox(
-      color: widget.controller.config.bgColor,
+      color: widget.controller.config.emojiViewConfig.backgroundColor,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -208,36 +220,46 @@ class _TodoInputViewState extends State<TodoInputView> {
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 4.0, vertical: 10.0),
+                    horizontal: 4.0,
+                    vertical: 10.0,
+                  ),
                   isDense: true,
                   suffixIconConstraints: const BoxConstraints(),
-                  suffixIcon: isEmpty
-                      ? null
-                      : IconButton(
-                          onPressed: () {
-                            widget.controller.searchController.text = '';
-                          },
-                          icon: const Icon(Icons.clear),
-                          visualDensity: VisualDensity.compact,
-                        ),
+                  suffixIcon:
+                      isEmpty
+                          ? null
+                          : IconButton(
+                            onPressed: () {
+                              widget.controller.searchController.text = '';
+                            },
+                            icon: const Icon(Icons.clear),
+                            visualDensity: VisualDensity.compact,
+                          ),
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSearchResults(
-      BuildContext context, double emojiSize, double cellSize) {
+    BuildContext context,
+    double emojiSize,
+    double cellSize,
+  ) {
     if (widget.controller.searchResults.isEmpty) {
       return SizedBox(
-          height: cellSize,
-          child: Center(
-              child: Text(widget.controller.searchController.text.isEmpty
-                  ? 'Type your search phrase'
-                  : 'No matches')));
+        height: cellSize,
+        child: Center(
+          child: Text(
+            widget.controller.searchController.text.isEmpty
+                ? 'Type your search phrase'
+                : 'No matches',
+          ),
+        ),
+      );
     }
     return SizedBox(
       height: cellSize,
@@ -251,23 +273,24 @@ class _TodoInputViewState extends State<TodoInputView> {
               child: EmojiCell.fromConfig(
                 emoji: widget.controller.searchResults[i],
                 emojiSize: emojiSize,
-                index: i,
                 onEmojiSelected: (category, emoji) {
                   widget.controller.closeSkinToneDialog();
                   _onEmojiSelected(category, emoji);
                 },
                 onSkinToneDialogRequested:
-                    (emoji, emojiSize, categoryEmoji, index) =>
+                    (offest, emoji, emojiSize, categoryEmoji) =>
                         _openSkinToneDialog(
-                  context,
-                  emoji,
-                  emojiSize,
-                  categoryEmoji,
-                  index,
-                ),
+                          context,
+                          emoji,
+                          emojiSize,
+                          categoryEmoji,
+                          i,
+                        ),
                 config: widget.controller.config,
+                emojiBoxSize: widget.controller.config.emojiViewConfig
+                    .getEmojiBoxSize(widget.maxWidth),
               ),
-            )
+            ),
         ],
       ),
     );
@@ -283,8 +306,11 @@ class _TodoInputViewState extends State<TodoInputView> {
       widget.controller.msgController.text += emoji.emoji;
       return;
     }
-    final newText =
-        text.replaceRange(selection.start, selection.end, emoji.emoji);
+    final newText = text.replaceRange(
+      selection.start,
+      selection.end,
+      emoji.emoji,
+    );
     final emojiLength = emoji.emoji.length;
     widget.controller.msgController
       ..text = newText
@@ -302,7 +328,8 @@ class _TodoInputViewState extends State<TodoInputView> {
     int index,
   ) {
     widget.controller.closeSkinToneDialog();
-    if (!emoji.hasSkinTone || !widget.controller.config.enableSkinTones) {
+    if (!emoji.hasSkinTone ||
+        !widget.controller.config.skinToneConfig.enabled) {
       return;
     }
     widget.controller.overlay = _buildSkinToneOverlay(
@@ -324,60 +351,90 @@ class _TodoInputViewState extends State<TodoInputView> {
     // Calculate position for skin tone dialog
     final renderBox = context.findRenderObject() as RenderBox;
     final offset = renderBox.localToGlobal(Offset.zero);
-    final emojiSpace = renderBox.size.width / widget.controller.config.columns;
+    final emojiSpace =
+        renderBox.size.width / widget.controller.config.emojiViewConfig.columns;
     final leftOffset = _getLeftOffset(emojiSpace, index);
     final left = offset.dx + index * emojiSpace + leftOffset;
     final top = offset.dy;
 
     // Generate other skintone options
-    final skinTonesEmoji = SkinTone.values
-        .map((skinTone) => EmojiPickerUtils().applySkinTone(emoji, skinTone))
-        .toList();
+    final skinTonesEmoji =
+        SkinTone.values
+            .map(
+              (skinTone) => EmojiPickerUtils().applySkinTone(emoji, skinTone),
+            )
+            .toList();
 
     return OverlayEntry(
-      builder: (context) => Positioned(
-        left: left,
-        top: top,
-        child: Material(
-          elevation: 4.0,
-          child: EmojiContainer(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            color: widget.controller.config.skinToneDialogBgColor,
-            buttonMode: widget.controller.config.buttonMode,
-            child: Row(
-              children: [
-                _buildSkinToneEmoji(emoji, emojiSpace, emojiSize),
-                _buildSkinToneEmoji(skinTonesEmoji[0], emojiSpace, emojiSize),
-                _buildSkinToneEmoji(skinTonesEmoji[1], emojiSpace, emojiSize),
-                _buildSkinToneEmoji(skinTonesEmoji[2], emojiSpace, emojiSize),
-                _buildSkinToneEmoji(skinTonesEmoji[3], emojiSpace, emojiSize),
-                _buildSkinToneEmoji(skinTonesEmoji[4], emojiSpace, emojiSize),
-              ],
+      builder:
+          (context) => Positioned(
+            left: left,
+            top: top,
+            child: Material(
+              elevation: 4.0,
+              child: EmojiContainer(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                color:
+                    widget
+                        .controller
+                        .config
+                        .skinToneConfig
+                        .dialogBackgroundColor,
+                buttonMode: widget.controller.config.emojiViewConfig.buttonMode,
+                child: Row(
+                  children: [
+                    _buildSkinToneEmoji(emoji, emojiSpace, emojiSize),
+                    _buildSkinToneEmoji(
+                      skinTonesEmoji[0],
+                      emojiSpace,
+                      emojiSize,
+                    ),
+                    _buildSkinToneEmoji(
+                      skinTonesEmoji[1],
+                      emojiSpace,
+                      emojiSize,
+                    ),
+                    _buildSkinToneEmoji(
+                      skinTonesEmoji[2],
+                      emojiSpace,
+                      emojiSize,
+                    ),
+                    _buildSkinToneEmoji(
+                      skinTonesEmoji[3],
+                      emojiSpace,
+                      emojiSize,
+                    ),
+                    _buildSkinToneEmoji(
+                      skinTonesEmoji[4],
+                      emojiSpace,
+                      emojiSize,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
   // Build Emoji inside skin tone dialog
-  Widget _buildSkinToneEmoji(
-    Emoji emoji,
-    double width,
-    double emojiSize,
-  ) {
+  Widget _buildSkinToneEmoji(Emoji emoji, double width, double emojiSize) {
     return SizedBox(
-        width: width,
-        height: width,
-        child: EmojiCell.fromConfig(
-          emoji: emoji,
-          emojiSize: emojiSize,
-          onEmojiSelected: (category, emoji) {
-            _onEmojiSelected(category, emoji);
-            widget.controller.closeSkinToneDialog();
-          },
-          config: widget.controller.config,
-        ));
+      width: width,
+      height: width,
+      child: EmojiCell.fromConfig(
+        emoji: emoji,
+        emojiSize: emojiSize,
+        onEmojiSelected: (category, emoji) {
+          _onEmojiSelected(category, emoji);
+          widget.controller.closeSkinToneDialog();
+        },
+        config: widget.controller.config,
+        emojiBoxSize: widget.controller.config.emojiViewConfig.getEmojiBoxSize(
+          widget.maxWidth,
+        ),
+      ),
+    );
   }
 
   // Calucates the offset from the middle of selected emoji to the left side
@@ -390,7 +447,8 @@ class _TodoInputViewState extends State<TodoInputView> {
   // of whole width
   double _getLeftOffset(double emojiWidth, int column) {
     var remainingColumns =
-        widget.controller.config.columns - (column + 1 + (kSkinToneCount ~/ 2));
+        widget.controller.config.emojiViewConfig.columns -
+        (column + 1 + (kSkinToneCount ~/ 2));
     if (column >= 0 && column < 3) {
       return -1 * column * emojiWidth;
     } else if (remainingColumns < 0) {

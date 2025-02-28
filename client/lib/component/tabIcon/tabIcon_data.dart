@@ -4,11 +4,12 @@
 import 'package:flutter/material.dart';
 
 class TabIconData {
-  TabIconData(
-      {this.index = 0,
-      this.isSelected = false,
-      this.animationController,
-      required this.icon});
+  TabIconData({
+    this.index = 0,
+    this.isSelected = false,
+    this.animationController,
+    required this.icon,
+  });
 
   bool isSelected;
   int index;
@@ -18,24 +19,28 @@ class TabIconData {
 
   static List<TabIconData> tabIconsList = [
     TabIconData(
-        index: 0,
-        isSelected: true,
-        animationController: null,
-        icon: Icons.assignment),
+      index: 0,
+      isSelected: true,
+      animationController: null,
+      icon: Icons.task_alt,
+    ),
     TabIconData(
-        index: 1,
-        isSelected: false,
-        animationController: null,
-        icon: Icons.topic),
+      index: 1,
+      isSelected: false,
+      animationController: null,
+      icon: Icons.assignment,
+    ),
     TabIconData(
-        index: 2,
-        isSelected: false,
-        animationController: null,
-        icon: Icons.wechat),
+      index: 2,
+      isSelected: false,
+      animationController: null,
+      icon: Icons.wechat,
+    ),
     TabIconData(
-        index: 3,
-        isSelected: false,
-        animationController: null,
-        icon: Icons.podcasts),
+      index: 3,
+      isSelected: false,
+      animationController: null,
+      icon: Icons.podcasts,
+    ),
   ];
 }

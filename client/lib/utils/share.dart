@@ -10,7 +10,7 @@ import 'package:my_todo/utils/dialog.dart' as dialog;
 import 'package:share_plus/share_plus.dart';
 
 class TodoShare {
-  static Future<void> shareUri(BuildContext context, Uri uri) async {
+  static Future<dynamic> shareUri(BuildContext context, Uri uri) async {
     if (kIsWeb) {
       return webShareUri(context, uri);
     } else {
@@ -24,14 +24,24 @@ class TodoShare {
     String? text,
     Rect? sharePositionOrigin,
   }) {
-    return Share.shareXFiles(files,
-        subject: subject, text: text, sharePositionOrigin: sharePositionOrigin);
+    return Share.shareXFiles(
+      files,
+      subject: subject,
+      text: text,
+      sharePositionOrigin: sharePositionOrigin,
+    );
   }
 
-  static Future<void> share(String text,
-      {String? subject, Rect? sharePositionOrigin}) async {
-    return Share.share(text,
-        subject: subject, sharePositionOrigin: sharePositionOrigin);
+  static Future<ShareResult> share(
+    String text, {
+    String? subject,
+    Rect? sharePositionOrigin,
+  }) async {
+    return Share.share(
+      text,
+      subject: subject,
+      sharePositionOrigin: sharePositionOrigin,
+    );
   }
 }
 
@@ -44,17 +54,17 @@ Future webShareUri(BuildContext context, Uri uri) {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: ThemeProvider.contrastColor(context,
-                  dark: Colors.black.withOpacity(0.5)),
+              color: ThemeProvider.contrastColor(
+                context,
+                dark: Colors.black.withOpacity(0.5),
+              ),
               borderRadius: const BorderRadius.all(Radius.circular(8)),
             ),
             width: 45,
             height: 45,
             child: const Icon(Icons.text_fields_sharp),
           ),
-          const SizedBox(
-            width: 15,
-          ),
+          const SizedBox(width: 15),
           SizedBox(
             width: size.width * 0.65,
             child: Text(
@@ -63,19 +73,13 @@ Future webShareUri(BuildContext context, Uri uri) {
               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
             ),
           ),
-          const SizedBox(
-            width: 15,
-          ),
+          const SizedBox(width: 15),
           const SizedBox(
             width: 1,
             height: 14,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Colors.grey),
-            ),
+            child: DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
           ),
-          const SizedBox(
-            width: 15,
-          ),
+          const SizedBox(width: 15),
           IconButton(
             onPressed: () {
               TodoClipboard.set(uri.toString());
@@ -87,15 +91,14 @@ Future webShareUri(BuildContext context, Uri uri) {
         ],
       ),
     ),
-    const SizedBox(
-      height: 30,
-    ),
+    const SizedBox(height: 30),
     Text(
       "",
       style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 30,
-          color: Colors.grey.withOpacity(0.9)),
-    )
+        fontWeight: FontWeight.w600,
+        fontSize: 30,
+        color: Colors.grey.withOpacity(0.9),
+      ),
+    ),
   ]);
 }

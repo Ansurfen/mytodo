@@ -1,169 +1,245 @@
-// Copyright 2025 The MyTodo Authors. All rights reserved.
-// Use of this source code is governed by a MIT-style
-// license that can be found in the LICENSE file.
+import 'dart:convert';
+
+import 'package:dio/dio.dart' as dio;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/api/post.dart';
-import 'package:my_todo/component/image.dart';
-import 'package:my_todo/component/button/shadow_button.dart';
-import 'package:my_todo/theme/color.dart';
-import 'package:my_todo/utils/guard.dart';
-import 'package:my_todo/utils/picker.dart';
-import 'package:my_todo/view/add/file_area.dart';
+import 'package:my_todo/view/add/add_controller.dart';
 
 class AddPostPage extends StatefulWidget {
   const AddPostPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _AddPostPageState();
+  State<AddPostPage> createState() => _AddPostPageState();
 }
 
 class _AddPostPageState extends State<AddPostPage> {
-  String content = "";
-  late List<Widget> images;
-  List<String> files = [];
-  List<TFile> pickedFiles = [];
-  List<TFile> pickedImages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    images = [
-      GestureDetector(
-          onTap: () async {
-            imagePicker().then((file) {
-              if (file != null) {
-                var idx = images.length;
-                pickedImages.add(file);
-                images.add(Stack(
-                  children: [
-                    file2Image(file, fit: BoxFit.fill, width: 200, height: 200),
-                    GestureDetector(
-                      onTap: () {
-                        images.removeAt(idx);
-                        setState(() {});
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 10, top: 10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              color: const Color(0x66000000)),
-                          child: const Icon(Icons.close),
-                        ),
-                      ),
-                    )
-                  ],
-                ));
-                setState(() {});
-              }
-            });
-          },
-          child: selectImagePicker(size: 60)),
-    ];
-  }
+  AddController addController = Get.find<AddController>();
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-        child: Column(children: [
-      const SizedBox(height: 15),
-      Container(
-        color: Theme.of(context).brightness == Brightness.light
-            ? Colors.grey.withOpacity(0.05)
-            : HexColor.fromInt(0x1c1c1e),
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  minLines: 6,
-                  maxLines: null,
-                  decoration: InputDecoration(
-                      hintText: "post_share_thing".tr,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      hoverColor: Colors.transparent),
-                  onChanged: (v) {
-                    content = v;
-                  },
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 3,
-                  children: [...images],
-                ),
-                const SizedBox(height: 15),
-                _selectFile()
-              ],
-            )),
-      ),
-      const SizedBox(height: 10),
-      _commitButton()
-    ]));
-  }
-
-  Widget _selectFile() {
-    ThemeData themeData = Theme.of(context);
-    return Wrap(
-      children: [
-        GestureDetector(
-          onTap: () async {
-            List<TFile> tmpFiles = await filePicker(allowMultiple: true);
-            for (var file in tmpFiles) {
-              pickedFiles.add(file);
-              files.add(file.name);
-            }
-            setState(() {});
-          },
-          child: RawChip(
-              backgroundColor: themeData.primaryColorLight,
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              avatar: Icon(
-                Icons.discount,
-                size: 20,
-                color: themeData.colorScheme.primary,
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(50.0),
+        child: AppBar(
+          automaticallyImplyLeading: false,
+          elevation: 0,
+          title: TextField(
+            controller: addController.post.textEditingController,
+            decoration: InputDecoration(
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
-              label: Text(
-                "选择文件",
-                style: TextStyle(
-                  color: themeData.colorScheme.primary,
-                ),
-              )),
+              hintText: 'Enter your title here...',
+              filled: false,
+              contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+            ),
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.output),
+              tooltip: 'Print Delta JSON to log',
+              onPressed: () async {
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(
+                //     content: Text(
+                //       'The JSON Delta has been printed to the console.',
+                //     ),
+                //   ),
+                // );
+                // HTTP.post("/post/new", data: {
+                //   "text": jsonEncode(_controller.document.toDelta().toJson())
+                // });
+                debugPrint(addController.post.textEditingController.text);
+                debugPrint(
+                  jsonEncode(
+                    addController.post.controller.document.toDelta().toJson(),
+                  ),
+                );
+                var delta = addController.post.controller.document.toDelta();
+                List<dio.MultipartFile> files = [];
+                for (var op in delta.toList()) {
+                  if (op.isInsert) {
+                    if (op.data is String) {
+                      print("文本: ${op.data}");
+                    } else if (op.data is Map) {
+                      Map<String, dynamic> data =
+                          op.data as Map<String, dynamic>;
+                      if (data.containsKey("image")) {
+                        String path = data["image"];
+                        // final filename = uuid.v1();
+                        dio.MultipartFile? file = await pathToMultipartFile(
+                          path,
+                          "image",
+                        );
+                        if (file != null) {
+                          files.add(file);
+                        }
+                        // data["image"] = filename;
+                      } else if (data.containsKey("video")) {
+                        String path = data["video"];
+                        dio.MultipartFile? file = await pathToMultipartFile(
+                          path,
+                          "video",
+                        );
+                        if (file != null) {
+                          files.add(file);
+                        }
+                      }
+                    }
+                  }
+                }
+                print(files);
+              },
+            ),
+          ],
         ),
-        const SizedBox(width: 5),
-        FileArea(files: files),
-      ],
+      ),
+      // appBar: AppBar(
+      //   title: Text('Flutter Quill Example'),
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.output),
+      //       tooltip: 'Print Delta JSON to log',
+      //       onPressed: () {
+      //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      //             content:
+      //                 Text('The JSON Delta has been printed to the console.')));
+      //         HTTP.post("/post/new", data: {
+      //           "text": jsonEncode(_controller.document.toDelta().toJson())
+      //         });
+      //       },
+      //     ),
+      //   ],
+      // ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            QuillSimpleToolbar(
+              controller: addController.post.controller,
+              config: QuillSimpleToolbarConfig(
+                embedButtons: FlutterQuillEmbeds.toolbarButtons(),
+                showClipboardPaste: true,
+                customButtons: [
+                  QuillToolbarCustomButtonOptions(
+                    icon: const Icon(Icons.add_alarm_rounded),
+                    onPressed: () {
+                      addController.post.controller.document.insert(
+                        addController.post.controller.selection.extentOffset,
+                        TimeStampEmbed(DateTime.now().toString()),
+                      );
+
+                      addController.post.controller.updateSelection(
+                        TextSelection.collapsed(
+                          offset:
+                              addController
+                                  .post
+                                  .controller
+                                  .selection
+                                  .extentOffset +
+                              1,
+                        ),
+                        ChangeSource.local,
+                      );
+                    },
+                  ),
+                ],
+                buttonOptions: QuillSimpleToolbarButtonOptions(
+                  base: QuillToolbarBaseButtonOptions(
+                    afterButtonPressed: () {
+                      final isDesktop = {
+                        TargetPlatform.linux,
+                        TargetPlatform.windows,
+                        TargetPlatform.macOS,
+                      }.contains(defaultTargetPlatform);
+                      if (isDesktop) {
+                        addController.post.editorFocusNode.requestFocus();
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: QuillEditor(
+                focusNode: addController.post.editorFocusNode,
+                scrollController: addController.post.editorScrollController,
+                controller: addController.post.controller,
+                config: QuillEditorConfig(
+                  placeholder: 'Start writing your notes...',
+                  padding: const EdgeInsets.all(16),
+                  embedBuilders: [
+                    ...FlutterQuillEmbeds.editorBuilders(
+                      imageEmbedConfig: QuillEditorImageEmbedConfig(
+                        imageProviderBuilder: (context, imageUrl) {
+                          // https://pub.dev/packages/flutter_quill_extensions#-image-assets
+                          if (imageUrl.startsWith('assets/')) {
+                            return AssetImage(imageUrl);
+                          }
+                          return null;
+                        },
+                      ),
+                      videoEmbedConfig: QuillEditorVideoEmbedConfig(
+                        customVideoBuilder: (videoUrl, readOnly) {
+                          // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
+                          return null;
+                        },
+                      ),
+                    ),
+                    TimeStampEmbedBuilder(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+}
+
+class TimeStampEmbed extends Embeddable {
+  const TimeStampEmbed(String value) : super(timeStampType, value);
+
+  static const String timeStampType = 'timeStamp';
+
+  static TimeStampEmbed fromDocument(Document document) =>
+      TimeStampEmbed(jsonEncode(document.toDelta().toJson()));
+
+  Document get document => Document.fromJson(jsonDecode(data));
+}
+
+class TimeStampEmbedBuilder extends EmbedBuilder {
+  @override
+  String get key => 'timeStamp';
+
+  @override
+  String toPlainText(Embed node) {
+    return node.value.data;
   }
 
-  Widget _commitButton() {
+  @override
+  Widget build(BuildContext context, EmbedContext embedContext) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        ShadowButton(
-            text: 'save_draft'.tr,
-            onTap: () async {
-              if (content.isNotEmpty) {
-                await createPost(
-                    CreatePostRequest(Guard.user, content, pickedImages));
-                Get.back();
-              }
-            }),
-        ShadowButton(
-            text: 'post'.tr,
-            onTap: () async {
-              if (content.isNotEmpty) {
-                await createPost(
-                    CreatePostRequest(Guard.user, content, pickedImages));
-                Get.back();
-              }
-            })
+        const Icon(Icons.access_time_rounded),
+        Text(embedContext.node.value.data as String),
       ],
     );
   }
+}
+
+Future<dio.MultipartFile?> pathToMultipartFile(String path, String type) async {
+  if (path.startsWith("/data")) {
+    // 直接读取本地文件
+    String filePath = Uri.parse(path).toFilePath();
+    return await dio.MultipartFile.fromFile(
+      filePath,
+      filename: filePath.split('/').last,
+    );
+  }
+  return null;
 }

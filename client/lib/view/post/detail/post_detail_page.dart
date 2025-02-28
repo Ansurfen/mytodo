@@ -646,7 +646,7 @@ class ImageSliderDisplay extends StatefulWidget {
 
 class _CarouselWithIndicatorState extends State<ImageSliderDisplay> {
   int _current = 0;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
   late final List<Widget> imageSliders;
   @override
   void initState() {

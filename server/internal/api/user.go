@@ -22,3 +22,14 @@ type UserOnlineResponse struct {
 type FriendNewRequest struct {
 	FriendId uint `json:"friendId"`
 }
+
+type FriendCommitRequest struct {
+	NotificationId uint   `json:"notification_id"`
+	Status         string `json:"status"`
+}
+
+type FriendPostGetRequest struct {
+	FriendId uint `json:"friendId"`
+	Page     int  `json:"page"`
+	Limit    int  `json:"limit"`
+}

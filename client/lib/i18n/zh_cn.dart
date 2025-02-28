@@ -18,6 +18,8 @@ Map<String, String> get zhCN => {
   "loading": '加载中',
 
   // login
+  "authenticate": "身份验证",
+  "authenticate_desc": '你需要先登录或者注册才能获得更好的体验',
   "email": '邮箱',
   "password": '密码',
   "confirm_password": '确认密码',
@@ -38,4 +40,24 @@ Map<String, String> get zhCN => {
   "confirm_recover_success": '密码已重置。',
   "email_validator": "邮箱格式无效",
   "password_is_empty": "密码为空",
+  "term_of_service": "服务条款",
+  "required": "必选",
+  "additional_signup_form_desc": "请填写此表格以完成注册",
+  "additional_signup_submit": "提交",
+  "phone_validator": "手机号无效",
+  "username": "用户名",
+  "phone_number": "手机号",
+  "is_male": "你是否为男性？",
+  "signup_success": '激活链接已发送',
+  "confirm_signup_intro":
+      '确认码已经发到你的邮箱了。'
+      '请输入确认码以激活你的账户',
+  "confirm_code_hint": "确认码",
+  "resend_code": "重新发送",
+  "resend_code_success": "新邮件已发送",
+  "confirm_signup": "确认",
+  "confirm_code_validator": "确认码为空",
+
+  // post
+  "untitled": "无标题",
 };

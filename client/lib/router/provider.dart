@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/model/entity/user.dart';
@@ -13,6 +12,7 @@ import 'package:my_todo/router/task.dart';
 import 'package:my_todo/router/topic.dart';
 import 'package:my_todo/router/user.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/view/page_not_found/page_not_found.dart';
 
 typedef TodoPage = GetPage<dynamic>;
 
@@ -23,7 +23,7 @@ class RouterProvider {
     ...TopicRouter.pages,
     ...MapRouter.pages,
     ...HomeRouter.pages,
-    ...TaskRouter.pages
+    ...TaskRouter.pages,
   ];
 
   static void back({TodoPage? failPage}) {
@@ -34,17 +34,24 @@ class RouterProvider {
     Get.back();
   }
 
-  static Future<T?>? offNamed<T>(TodoPage page,
-      {String query = "", dynamic arguments}) {
+  static Future<T?>? offNamed<T>(
+    TodoPage page, {
+    String query = "",
+    dynamic arguments,
+  }) {
     return Get.offNamed("${page.name}$query", arguments: arguments);
   }
 
-  static Future<T?>? to<T>(TodoPage page,
-      {String query = "", dynamic arguments}) {
+  static Future<T?>? to<T>(
+    TodoPage page, {
+    String query = "",
+    dynamic arguments,
+  }) {
     return Get.toNamed("${page.name}$query", arguments: arguments);
   }
 
   static String initialRoute() {
+    return HomeRouter.nav.name;
     // return MapRouter.locate.name;
     if (Guard.isLogin() || Guard.isOffline()) {
       return HomeRouter.nav.name;
@@ -88,7 +95,7 @@ class RouterProvider {
   }
 
   static void viewStatistic() {
-    to(OtherRouter.statistic);
+    // to(OtherRouter.statistic);
   }
 
   static void viewPostDetail(int id) {
@@ -136,8 +143,10 @@ class RouterProvider {
     to(OtherRouter.log);
   }
 
-  static final TodoPage notFoundPage =
-      GetPage(name: '/404', page: () => const Text("404 NOT FOUND"));
+  static final TodoPage notFoundPage = GetPage(
+    name: '/404',
+    page: () => const PageNotFound(),
+  );
 }
 
 enum PhotoType { svg, img }

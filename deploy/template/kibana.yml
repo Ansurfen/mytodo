@@ -1,0 +1,4 @@
+xpack.security.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: qEMDwa28T5lEOW+XqkjMISimlKBT5OJ5OQsJ65uH5wA=
+server.host: "0.0.0.0"
+server.port: 5601

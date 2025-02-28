@@ -8,7 +8,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:my_todo/i18n/index.dart';
+import 'package:my_todo/i18n/i18n.dart';
 import 'package:my_todo/model/entity/user.dart';
 import 'package:my_todo/router/home.dart';
 import 'package:my_todo/router/provider.dart';

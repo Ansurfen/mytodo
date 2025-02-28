@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'indicator_position.dart';
@@ -41,46 +40,49 @@ class TimelineEventCard extends StatelessWidget {
   final Widget content;
   final EdgeInsetsGeometry padding;
 
-  TimelineEventCard({
+  const TimelineEventCard({
+    super.key,
     required this.title,
     required this.content,
-    this.padding = const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 20),
+    this.padding = const EdgeInsets.only(
+      left: 16,
+      top: 12,
+      right: 16,
+      bottom: 20,
+    ),
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-          borderRadius: new BorderRadius.all(new Radius.circular(2.0)),
-        ),
-        child: _buildBody(context));
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(2.0)),
+      ),
+      child: _buildBody(context),
+    );
   }
 
   Widget _buildBody(BuildContext context) {
     return Container(
-        padding: padding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _title(context),
-            SizedBox(
-              height: 8,
-            ),
-            _description(context),
-          ],
-        ));
+      padding: padding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [_title(context), SizedBox(height: 8), _description(context)],
+      ),
+    );
   }
 
   Widget _title(BuildContext context) {
     return DefaultTextStyle(
-      style: Theme.of(context).textTheme.subtitle1 ?? TextStyle(),
+      // BodyLarge
+      style: Theme.of(context).textTheme.bodyMedium ?? TextStyle(),
       child: title,
     );
   }
 
   Widget _description(BuildContext context) {
     return DefaultTextStyle(
-      style: Theme.of(context).textTheme.overline ?? TextStyle(),
+      style: Theme.of(context).textTheme.labelLarge ?? TextStyle(),
       child: content,
     );
   }
@@ -90,13 +92,10 @@ class TimelineSectionDivider extends StatelessWidget {
   final Widget content;
 
   factory TimelineSectionDivider.byDate(DateTime date) {
-    return TimelineSectionDivider(
-      content: Text("$date"),
-    );
+    return TimelineSectionDivider(content: Text("$date"));
   }
 
-  const TimelineSectionDivider({Key? key, required this.content})
-      : super(key: key);
+  const TimelineSectionDivider({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -105,8 +104,9 @@ class TimelineSectionDivider extends StatelessWidget {
 
   Widget _content(BuildContext context) {
     return AnimatedDefaultTextStyle(
-        child: content,
-        style: Theme.of(context).textTheme.headline5 ?? TextStyle(),
-        duration: kThemeChangeDuration);
+      style: Theme.of(context).textTheme.headlineMedium ?? TextStyle(),
+      duration: kThemeChangeDuration,
+      child: content,
+    );
   }
 }

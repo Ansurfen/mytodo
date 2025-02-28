@@ -14,7 +14,7 @@ class ThemeProvider {
     ThemeStyle.info: TodoThemeData(0x8866e9, 0xb1b2d6, 0x5e38cc),
     ThemeStyle.danger: TodoThemeData(0xd251a6, 0xdab7ce, 0xbb1b85),
     ThemeStyle.warning: TodoThemeData(0xff7b52, 0xe2c5bb, 0xe55426),
-    ThemeStyle.red: TodoThemeData(0xf94162, 0xF56C6C, 0xb25252)
+    ThemeStyle.red: TodoThemeData(0xf94162, 0xF56C6C, 0xb25252),
   };
 
   static late bool isDark;
@@ -52,18 +52,23 @@ class ThemeProvider {
     }
     TodoThemeData? todoThemeData = _data[style];
     if (todoThemeData != null) {
-      Get.changeTheme(themeData.copyWith(
+      Get.changeTheme(
+        themeData.copyWith(
           primaryColorLight: todoThemeData.light(),
           primaryColor: todoThemeData.normal(),
-          primaryColorDark: todoThemeData.dark()));
+          primaryColorDark: todoThemeData.dark(),
+        ),
+      );
       TodoThemeData._lightTheme = TodoThemeData._lightTheme.copyWith(
-          primaryColorLight: todoThemeData.light(),
-          primaryColor: todoThemeData.normal(),
-          primaryColorDark: todoThemeData.dark());
+        primaryColorLight: todoThemeData.light(),
+        primaryColor: todoThemeData.normal(),
+        primaryColorDark: todoThemeData.dark(),
+      );
       TodoThemeData._darkTheme = TodoThemeData._darkTheme.copyWith(
-          primaryColorLight: todoThemeData.light(),
-          primaryColor: todoThemeData.normal(),
-          primaryColorDark: todoThemeData.dark());
+        primaryColorLight: todoThemeData.light(),
+        primaryColor: todoThemeData.normal(),
+        primaryColorDark: todoThemeData.dark(),
+      );
     }
   }
 
@@ -84,15 +89,21 @@ class ThemeProvider {
     if (todoThemeData != null) {
       style = todoThemeData;
       if (isDark) {
-        Get.changeTheme(TodoThemeData._darkTheme.copyWith(
+        Get.changeTheme(
+          TodoThemeData._darkTheme.copyWith(
             primaryColorLight: todoThemeData.light(),
             primaryColor: todoThemeData.normal(),
-            primaryColorDark: todoThemeData.dark()));
+            primaryColorDark: todoThemeData.dark(),
+          ),
+        );
       } else {
-        Get.changeTheme(TodoThemeData._lightTheme.copyWith(
+        Get.changeTheme(
+          TodoThemeData._lightTheme.copyWith(
             primaryColorLight: todoThemeData.light(),
             primaryColor: todoThemeData.normal(),
-            primaryColorDark: todoThemeData.dark()));
+            primaryColorDark: todoThemeData.dark(),
+          ),
+        );
       }
     }
   }
@@ -113,7 +124,8 @@ class ThemeProvider {
   }
 
   static void forEachStyle(
-      void Function(String styleName, TodoThemeData data) fn) {
+    void Function(String styleName, TodoThemeData data) fn,
+  ) {
     _data.forEach((key, value) {
       fn(key, value);
     });
@@ -134,63 +146,66 @@ class ThemeProvider {
     return Theme.of(context).colorScheme.onPrimary;
   }
 
-  static Color contrastColor(BuildContext context,
-      {Color light = Colors.white, Color dark = Colors.black}) {
+  static Color contrastColor(
+    BuildContext context, {
+    Color light = Colors.white,
+    Color dark = Colors.black,
+  }) {
     return Theme.of(context).brightness == Brightness.light ? light : dark;
   }
 }
 
 class TodoThemeData {
   static ThemeData _lightTheme = ThemeData(
-      primaryColor: ThemeProvider.style.normal(),
-      primaryColorDark: ThemeProvider.style.dark(),
-      primaryColorLight: ThemeProvider.style.light(),
-      fontFamily: getFontFamilyByLanguage(),
-      iconTheme: IconThemeData(
-        color: ThemeProvider.style.normal(),
-      ),
-      textSelectionTheme: TextSelectionThemeData(
-          cursorColor: ThemeProvider.style.normal(),
-          selectionColor: Colors.grey.withOpacity(0.8)),
-      colorScheme: const ColorScheme(
-          brightness: Brightness.light,
-          primary: Colors.white,
-          onPrimary: Color(0xFF090912),
-          secondary: Colors.white70,
-          onSecondary: Color(0xFF1B2339),
-          error: Colors.white,
-          onError: Colors.white,
-          background: Colors.white,
-          onBackground: Colors.white,
-          surface: Colors.white,
-          onSurface: Colors.white,
-          tertiary: Colors.white38,
-          onTertiary: Color(0xFF282E45)));
+    useMaterial3: false,
+    primaryColor: ThemeProvider.style.normal(),
+    primaryColorDark: ThemeProvider.style.dark(),
+    primaryColorLight: ThemeProvider.style.light(),
+    fontFamily: getFontFamilyByLanguage(),
+    iconTheme: IconThemeData(color: ThemeProvider.style.normal()),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: ThemeProvider.style.normal(),
+      selectionColor: Colors.grey.withOpacity(0.8),
+    ),
+    colorScheme: const ColorScheme(
+      brightness: Brightness.light,
+      primary: Colors.white,
+      onPrimary: Color(0xFF090912),
+      secondary: Colors.white70,
+      onSecondary: Color(0xFF1B2339),
+      error: Colors.white,
+      onError: Colors.white,
+      surface: Colors.white,
+      onSurface: Colors.white,
+      tertiary: Colors.white38,
+      onTertiary: Color(0xFF282E45),
+    ),
+  );
   static ThemeData _darkTheme = ThemeData(
-      fontFamily: getFontFamilyByLanguage(),
-      textSelectionTheme: TextSelectionThemeData(
-          cursorColor: ThemeProvider.style.normal(),
-          selectionColor: Colors.grey.withOpacity(0.8)),
-      iconTheme: IconThemeData(
-        color: ThemeProvider.style.normal(),
-      ),
-      primaryColor: ThemeProvider.style.normal(),
-      primaryColorDark: ThemeProvider.style.dark(),
-      primaryColorLight: ThemeProvider.style.light(),
-      colorScheme: const ColorScheme(
-          brightness: Brightness.dark,
-          primary: Color(0xFF090912),
-          onPrimary: Colors.white,
-          secondary: Color(0xFF1B2339),
-          onSecondary: Colors.white70,
-          error: Colors.white,
-          onError: Colors.white,
-          background: Colors.white,
-          onBackground: Colors.white,
-          surface: Colors.white,
-          onSurface: Colors.white,
-          tertiary: Color(0xFF282E45),
-          onTertiary: Colors.white38));
+    useMaterial3: false,
+    fontFamily: getFontFamilyByLanguage(),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: ThemeProvider.style.normal(),
+      selectionColor: Colors.grey.withOpacity(0.8),
+    ),
+    iconTheme: IconThemeData(color: ThemeProvider.style.normal()),
+    primaryColor: ThemeProvider.style.normal(),
+    primaryColorDark: ThemeProvider.style.dark(),
+    primaryColorLight: ThemeProvider.style.light(),
+    colorScheme: const ColorScheme(
+      brightness: Brightness.dark,
+      primary: Color(0xFF090912),
+      onPrimary: Colors.white,
+      secondary: Color(0xFF1B2339),
+      onSecondary: Colors.white70,
+      error: Colors.white,
+      onError: Colors.white,
+      surface: Colors.white,
+      onSurface: Colors.white,
+      tertiary: Color(0xFF282E45),
+      onTertiary: Colors.white38,
+    ),
+  );
   late final Color _normal;
   late final Color _light;
   late final Color _dark;

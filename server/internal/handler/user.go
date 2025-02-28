@@ -117,6 +117,14 @@ func UserSign(ctx *gin.Context) {
 	ctx.JSON(200, res)
 }
 
+func UserLogin(ctx *gin.Context) {
+
+}
+
+func UserSignUp(ctx *gin.Context) {
+	
+}
+
 func UserGet(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -177,24 +185,331 @@ func FriendNew(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	user, ok := getUser(ctx)
+	u, ok := getUser(ctx)
 	if !ok {
 		return
 	}
-	rel := model.UserRelation{
-		UserId:   user.ID,
-		FriendId: req.FriendId,
+
+	var old model.Notification
+	err = db.SQL().Table("notification").Where("creator = ? AND description = ?", u.ID, req.FriendId).First(&old).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			tx := db.SQL().Begin()
+			notifiction := model.Notification{
+				Type:        model.NotificationTypeAddFriend,
+				Creator:     u.ID,
+				Description: fmt.Sprintf("%d", req.FriendId),
+			}
+			tx.Table("notification").Create(&notifiction)
+			notificationAction := model.NotificationAction{
+				NotificationId: notifiction.ID,
+				Receiver:       req.FriendId,
+				Status:         model.NotifyStatePending,
+			}
+			tx.Table("notification_action").Create(&notificationAction)
+			tx.Commit()
+		} else {
+
+		}
+	} else {
+		// exist
+		// check action is valid
+		var action model.NotificationAction
+		err = db.SQL().Table("notification_action").Where("notification_id = ?", old.ID).First(&action).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		if action.ID == 0 {
+			notificationAction := model.NotificationAction{
+				NotificationId: old.ID,
+				Receiver:       req.FriendId,
+				Status:         model.NotifyStatePending,
+			}
+			err = db.SQL().Table("notification_action").Create(&notificationAction).Error
+			if err != nil {
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+		} else {
+			ctx.JSON(200, gin.H{
+				"msg": "request already exist",
+			})
+		}
 	}
-	err = db.SQL().Table("user_relation").Create(&rel).Error
+
+	// rel := model.UserRelation{
+	// 	UserId:   u.ID,
+	// 	FriendId: req.FriendId,
+	// }
+	// err = db.SQL().Table("user_relation").Create(&rel).Error
+	// if err != nil {
+	// 	log.WithError(err).Error("running sql")
+	// 	ctx.Abort()
+	// 	return
+	// }
+	ctx.JSON(200, gin.H{
+		"msg": "duplicate request",
+	})
+}
+
+func FriendCommit(ctx *gin.Context) {
+	var req api.FriendCommitRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	var status uint8 = model.NotifyStateUnknown
+	switch req.Status {
+	case "confirm":
+		status = model.NotifyStateConfirmed
+	case "reject":
+		status = model.NotifyStateRejected
+	}
+	if status == model.NotifyStateUnknown {
+		log.WithError(err).Error("invalid status")
+		ctx.Abort()
+		return
+	}
+
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var action model.NotificationAction
+	err = db.SQL().Table("notification_action").Where("notification_id = ?", req.NotificationId).First(&action).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{})
+	if u.ID != action.Receiver {
+		log.WithError(err).Error("invalid request")
+		ctx.Abort()
+		return
+	}
+
+	action.Status = status
+	tx := db.SQL().Begin()
+
+	tx.Table("notification_action").Save(&action)
+
 }
 
-func FriendGet(ctx *gin.Context) {}
+func FriendGet(ctx *gin.Context) {
+	friendId, _ := strconv.Atoi(ctx.Param("friend_id"))
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var (
+		friend     model.User
+		follower   int64
+		topicCnt   int64
+		postCnt    int64
+		commentCnt int64
+	)
+
+	err := db.SQL().Table("user").Where("user_id", friendId).First(&friend).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	err = db.SQL().Table("user_relation").Where("user_id = ?", friendId).Count(&follower).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	err = db.SQL().Table("topic").Where("user_id = ?", friendId).Count(&topicCnt).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	err = db.SQL().Table("post").Where("user_id = ?", friendId).Count(&postCnt).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	err = db.SQL().Table("comment").Where("user_id = ?", friendId).Count(&commentCnt).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	data := map[string]any{
+		"user":          friend,
+		"page":          1,
+		"page_size":     10,
+		"follower":      follower,
+		"topic_count":   topicCnt,
+		"post_count":    postCnt,
+		"comment_count": commentCnt,
+	}
+	var relation model.UserRelation
+	err = db.SQL().Table("user_relation").Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)", u.ID, friendId, friendId, u.ID).First(&relation).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if relation.ID == 0 {
+		ctx.JSON(200, gin.H{
+			"data": data,
+		})
+		log.Error("permission denied")
+		ctx.Abort()
+		return
+	}
+
+	page := 1
+	limit := 10
+	offset := (page - 1) * limit
+
+	var posts []model.Post
+	err = db.SQL().Table("post").Where("user_id = ?", friendId).
+		Limit(limit).
+		Offset(offset).Find(&posts).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	data["post"] = posts
+	ctx.JSON(200, data)
+}
+
+func FriendPostGet(ctx *gin.Context) {
+	var req api.FriendPostGetRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	page := req.Page
+	limit := req.Limit
+	offset := (page - 1) * limit
+
+	_, ok = isFriend(ctx, u.ID, req.FriendId)
+	if !ok {
+		return
+	}
+
+	var posts []model.Post
+	err = db.SQL().Table("post").Where("user_id = ?", req.FriendId).
+		Limit(limit).
+		Offset(offset).Find(&posts).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(200, gin.H{
+		"data": posts,
+	})
+}
+
+func isFriend(ctx *gin.Context, uid, fid uint) (rel model.UserRelation, ok bool) {
+	ok = false
+	err := db.SQL().Table("user_relation").Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)", uid, fid, fid, uid).First(&rel).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if rel.ID == 0 {
+		log.Error("permission denied")
+		ctx.Abort()
+		return
+	}
+	ok = true
+	return
+}
+
+func FriendSnapshot(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var relations []model.UserRelation
+	err := db.SQL().Table("user_relation").Where("user_id = ? OR friend_id = ?", u.ID, u.ID).Find(&relations).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	friendsId := []uint{}
+	friends := []string{}
+	for _, r := range relations {
+		if r.UserId == u.ID {
+			friends = append(friends, fmt.Sprintf("user_%d", r.FriendId))
+			friendsId = append(friendsId, r.FriendId)
+		} else {
+			friends = append(friends, fmt.Sprintf("user_%d", r.UserId))
+			friendsId = append(friendsId, r.UserId)
+		}
+	}
+
+	var users []friend
+	err = db.SQL().Table("user").Where("user_id IN ?", users).Find(&users).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	values, err := db.Rdb().MGet(context.Background(), friends...).Result()
+	if err != nil {
+		log.WithError(err).Error("searching online")
+		ctx.Abort()
+		return
+	}
+
+	onlineStatusMap := make(map[uint]bool)
+	for i, v := range values {
+		friendId := friendsId[i]
+		if v == nil {
+			onlineStatusMap[friendId] = false // Offline
+		} else {
+			onlineStatusMap[friendId] = v.(string) == "true" // Online if "true"
+		}
+	}
+
+	// Now, update the users' online status by matching user IDs with the onlineStatusMap
+	for i := range users {
+		if status, exists := onlineStatusMap[users[i].ID]; exists {
+			users[i].Online = status // Set the user's online status
+		} else {
+			users[i].Online = false // Default to offline if status doesn't exist
+		}
+	}
+
+	// Return the updated list of users with their online status
+	ctx.JSON(200, gin.H{
+		"data": users,
+	})
+}
+
+type friend struct {
+	model.User
+	Online bool `json:"online"`
+}
 
 func FriendDel(ctx *gin.Context) {}
 

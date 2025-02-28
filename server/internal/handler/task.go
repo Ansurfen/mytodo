@@ -71,6 +71,80 @@ func TaskNew(ctx *gin.Context) {
 }
 
 func TaskDel(ctx *gin.Context) {
+	var req api.TaskDelRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var task model.Task
+	err = db.SQL().Table("task").Where("id = ?", req.TaskId).First(&task).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if task.Creator != u.ID {
+		log.WithError(err).Error("permission denied")
+		ctx.Abort()
+		return
+	}
+	err = db.SQL().Table("task").Delete(&task).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+}
+
+func TaskEdit(ctx *gin.Context) {
+	var req api.TaskEditRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var task model.Task
+	err = db.SQL().Table("task").Where("id = ?", req.TaskId).First(&task).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if task.Creator != u.ID {
+		log.WithError(err).Error("permission denied")
+		ctx.Abort()
+		return
+	}
+	if len(req.Name) > 0 {
+		task.Name = req.Name
+	}
+	if len(req.Description) > 0 {
+		task.Description = req.Description
+	}
+	if !req.StartAt.IsZero() {
+		task.StartAt = req.StartAt.Time
+	}
+	if !req.EndAt.IsZero() {
+		task.EndAt = req.EndAt.Time
+	}
+	// TODO
+	// var conds []model.TaskCondition
+	// for _, c := range req.Conditions {
+	// 	switch c.Type {
+
+	// 	}
+	// }
 
 }
 
