@@ -60,4 +60,24 @@ Map<String, String> get zhCN => {
 
   // post
   "untitled": "无标题",
+
+  // user profile
+  "follow": "追随",
+  "post_count": "帖子",
+  "follower_count": "好友",
+  "topic_count": "频道",
+
+  // general
+  "delete": "删除",
+  "share": "分享",
+  "readed": "标为已读",
+  "top": "置顶",
+
+  "chat_msg": "消息",
+  "chat_friend": "好友",
+  
+  "online": "在线",
+
+  "post_me": "我的",
+  "post_friend": "好友",
 };

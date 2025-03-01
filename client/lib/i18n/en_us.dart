@@ -68,5 +68,25 @@ Map<String, String> get enUS => {
   "confirm_code_validator": "Confirmation code is empty",
 
   // post
-  "untitled": "Untitled"
+  "untitled": "Untitled",
+
+  // user profile
+  "follow": "follow",
+  "post_count": "Posts",
+  "follower_count": "Friend",
+  "topic_count": "topic",
+
+  "delete": "Delete",
+  "share": "Share",
+  "readed": "Readed",
+  "top": "Top",
+
+  //
+  "chat_msg": "Message",
+  "chat_friend": "Friend",
+
+  "online": "online",
+
+  "post_me": "Me",
+  "post_friend": "Friend",
 };

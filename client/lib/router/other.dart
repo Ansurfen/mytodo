@@ -29,42 +29,53 @@ class OtherRouter {
     notification,
     post,
     conversation,
-    log
+    log,
   ];
 
-  static final log =
-      GetPage(name: '/log', page: () => const LogPage(), binding: LogBinding());
+  static final log = GetPage(
+    name: '/log',
+    page: () => const LogPage(),
+    binding: LogBinding(),
+  );
 
   static final splash = GetPage(
-      name: '/splash',
-      page: () => const SplashPage(),
-      binding: SplashBinding());
+    name: '/splash',
+    page: () => const SplashPage(),
+    binding: SplashBinding(),
+  );
 
   static final setting = GetPage(
-      name: '/setting',
-      page: () => const SettingPage(),
-      binding: SettingBinding());
+    name: '/setting',
+    page: () => const SettingPage(),
+    binding: SettingBinding(),
+  );
 
   // static final statistic =
   //     GetPage(name: '/statistic', page: () => const StatisticPage());
 
-  static final add =
-      GetPage(name: '/add', page: () => const AddPage(), binding: AddBinding());
+  static final add = GetPage(
+    name: '/add',
+    page: () => const AddPage(),
+    binding: AddBinding(),
+  );
 
   static final photo = GetPage(name: '/photo', page: () => const PhotoPage());
 
   static final notification = GetPage(
-      name: '/notification',
-      page: () => const NotificationPage(),
-      binding: NotificationBinding());
+    name: '/notification',
+    page: () => const NotificationPage(),
+    binding: NotificationBinding(),
+  );
 
   static final post = GetPage(
-      name: '/post',
-      page: () => const PostDetailPage(),
-      binding: PostDetailPageBinding());
+    name: '/post',
+    page: () => const PostDetailPage(),
+    binding: PostDetailPageBinding(),
+  );
 
   static final conversation = GetPage(
-      name: '/conversation',
-      page: () => const Conversation(),
-      binding: ConversionBinding());
+    name: '/conversation',
+    page: () => const ConversionPage(),
+    binding: ConversionBinding(),
+  );
 }

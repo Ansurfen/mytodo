@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/hook/post.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/post.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/model/vo/post.dart';
@@ -25,12 +26,55 @@ class PostSnapshotController extends GetxController
   @override
   void onInit() {
     super.onInit();
-    tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-    Future.delayed(Duration.zero, fetch);
-    _uploadPost = PostHook.subscribeSnapshot(onData: (post) {
-      data.value.add(PostDetailModel(0, 0, Guard.userName(), true,
-          DateTime.timestamp(), post.content, [], 0, 0, false));
-    });
+    tabController = TabController(length: 2, vsync: this, initialIndex: 1);
+    if (Guard.isDevMode()) {
+      data.value.addAll([
+        GetPostDto(
+          1,
+          1,
+          Mock.username(),
+          true,
+          DateTime.now(),
+          Mock.text(),
+          [],
+          53,
+          10,
+          true,
+        ),
+        GetPostDto(
+          1,
+          1,
+          Mock.username(),
+          true,
+          DateTime.now(),
+          Mock.text(),
+          [],
+          53,
+          10,
+          true,
+        ),
+      ]);
+    } else {
+      Future.delayed(Duration.zero, fetch);
+      _uploadPost = PostHook.subscribeSnapshot(
+        onData: (post) {
+          data.value.add(
+            PostDetailModel(
+              0,
+              0,
+              Guard.userName(),
+              true,
+              DateTime.timestamp(),
+              post.content,
+              [],
+              0,
+              0,
+              false,
+            ),
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -42,32 +86,35 @@ class PostSnapshotController extends GetxController
   Future fetch() async {
     return getPost(GetPostRequest(pagination.index(), pagination.getLimit()))
         .then((res) {
-      // data.value = res.data;
-      // data.refresh();
-      pagination.setData(res.data);
-      pagination.refresh();
-    }).catchError((err) {
-      showError(err);
-    });
+          // data.value = res.data;
+          // data.refresh();
+          pagination.setData(res.data);
+          pagination.refresh();
+        })
+        .catchError((err) {
+          showError(err);
+        });
   }
 
   void handlePost(BuildContext context) {
     showCupertinoModalPopup(
-        context: context,
-        builder: (BuildContext context) => CupertinoActionSheet(
-              message: Column(
-                children: [
-                  dialogAction(icon: Icons.open_in_new, text: "share".tr),
-                  const SizedBox(height: 15),
-                  dialogAction(icon: Icons.copy, text: "copy".tr),
-                  const SizedBox(height: 15),
-                  const Divider(),
-                  const SizedBox(height: 15),
-                  dialogAction(icon: Icons.warning_amber, text: "report".tr),
-                  const SizedBox(height: 15),
-                  dialogAction(icon: Icons.delete, text: "delete".tr),
-                ],
-              ),
-            ));
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            message: Column(
+              children: [
+                dialogAction(icon: Icons.open_in_new, text: "share".tr),
+                const SizedBox(height: 15),
+                dialogAction(icon: Icons.copy, text: "copy".tr),
+                const SizedBox(height: 15),
+                const Divider(),
+                const SizedBox(height: 15),
+                dialogAction(icon: Icons.warning_amber, text: "report".tr),
+                const SizedBox(height: 15),
+                dialogAction(icon: Icons.delete, text: "delete".tr),
+              ],
+            ),
+          ),
+    );
   }
 }

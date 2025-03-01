@@ -31,9 +31,9 @@ Image file2Image(TFile file, {BoxFit? fit, double? width, double? height}) {
 
 class TodoImage {
   static ImageProvider userProfile(int id) {
-    // if (Guard.isOffline()) {
-    //   return const Svg("assets/images/flutter.svg");
-    // }
+    if (Guard.isDevMode()) {
+      return const Svg("assets/images/flutter.svg");
+    }
     return NetworkImage("${TodoConfig.baseUri}/user/profile/$id");
   }
 }

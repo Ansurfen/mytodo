@@ -6,8 +6,6 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
-import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/user/profile/profile_controller.dart';
@@ -27,22 +25,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: todoAppBar(
         context,
-        leading: todoLeadingIconButton(context,
-            onPressed: Get.back, icon: Icons.arrow_back_ios),
+        leading: todoLeadingIconButton(
+          context,
+          onPressed: Get.back,
+          icon: Icons.arrow_back_ios,
+        ),
         elevation: 5,
         actions: [
           notificationWidget(context),
-          const SizedBox(
-            width: 30,
-          ),
+          const SizedBox(width: 30),
           settingWidget(),
-          const SizedBox(
-            width: 20,
-          ),
+          const SizedBox(width: 20),
           multiWidget(context),
-          const SizedBox(
-            width: 10,
-          )
+          const SizedBox(width: 10),
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -70,39 +65,35 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 3),
-              const Text(
-                "Hello, I'm fine. How are you?",
-                style: TextStyle(),
-              ),
+              Text(controller.user.value.description, style: TextStyle()),
               const SizedBox(height: 20),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).primaryColor,
                       ),
                     ),
                     onPressed: () {
-                      RouterProvider.viewChatConversation(
-                          controller.user.value);
+                      // RouterProvider.viewChatConversation(
+                      //     controller.user.value);
                     },
-                    child: const Icon(
-                      Icons.message,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.message, color: Colors.white),
                   ),
                   const SizedBox(width: 10),
                   TextButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Theme.of(context).primaryColor,
                       ),
                     ),
                     onPressed: () {},
-                    child: const Text("follow",
-                        style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      "follow",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -112,9 +103,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildCategory("Posts"),
-                    _buildCategory("Friends"),
-                    _buildCategory("Groups"),
+                    _buildCategory(
+                      "post_count".tr,
+                      controller.user.value.postCount,
+                    ),
+                    _buildCategory(
+                      "follower_count".tr,
+                      controller.user.value.followerCount,
+                    ),
+                    _buildCategory(
+                      "topic_count".tr,
+                      controller.user.value.topicCount,
+                    ),
                   ],
                 ),
               ),
@@ -143,21 +143,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildCategory(String title) {
+  Widget _buildCategory(String title, int count) {
     return Column(
       children: [
         Text(
-          Mock.number(max: 10000).toString(),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
+          count.toString(),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
         ),
         const SizedBox(height: 4),
-        Text(
-          title,
-          style: const TextStyle(),
-        ),
+        Text(title, style: const TextStyle()),
       ],
     );
   }

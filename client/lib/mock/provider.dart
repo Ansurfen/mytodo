@@ -31,7 +31,7 @@ List messages = [
   "Let's make a UI serie.",
   "Can i hear your voice?",
   "Will you be attending the meetup tomorrow?\nCan i hear your voice?\nCan i hear your voice?\n",
-  "Will you be attending the meetup tomorrow? Can i hear your voice? Can i hear your voice? "
+  "Will you be attending the meetup tomorrow? Can i hear your voice? Can i hear your voice? ",
 ];
 
 List imagesData = [
@@ -52,7 +52,7 @@ class Mock {
     const Color(0xffF468B7),
     const Color(0xffFEC85C),
     const Color(0xff5FD0D3),
-    const Color(0xffBFACAA)
+    const Color(0xffBFACAA),
   ];
 
   static Random random = Random();
@@ -65,7 +65,7 @@ class Mock {
     return names[random.nextInt(names.length)];
   }
 
-  static String content() {
+  static String text() {
     return messages[random.nextInt(messages.length)];
   }
 
@@ -98,8 +98,9 @@ class Mock {
 
   static Coordinates location() {
     return Coordinates(
-        latitude: float() * 90 * (boolean() ? 1 : -1),
-        longitude: float() * 180 * (boolean() ? 1 : -1));
+      latitude: float() * 90 * (boolean() ? 1 : -1),
+      longitude: float() * 180 * (boolean() ? 1 : -1),
+    );
   }
 
   static Color color() {

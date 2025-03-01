@@ -7,8 +7,10 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/model/dto/chat.dart';
 import 'package:my_todo/model/entity/user.dart';
+import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/animate.dart';
+import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/utils/time.dart';
 import 'package:my_todo/view/chat/snapshot/chat_controller.dart';
 import 'package:my_todo/view/chat/snapshot/chat_item.dart';
@@ -40,32 +42,24 @@ class _ChatPageState extends State<ChatPage>
             unselectedLabelColor: themeData.colorScheme.onTertiary,
             indicatorSize: TabBarIndicatorSize.label,
             indicator: UnderlineTabIndicator(
-                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                borderSide: BorderSide(
-                  width: 1,
-                  color: themeData.colorScheme.onPrimary,
-                )),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              borderSide: BorderSide(
+                width: 1,
+                color: themeData.colorScheme.onPrimary,
+              ),
+            ),
             isScrollable: true,
-            tabs: [
-              Tab(text: "chat.msg".tr),
-              Tab(text: "chat.friend".tr),
-            ],
+            tabs: [Tab(text: "chat_msg".tr), Tab(text: "chat_friend".tr)],
           ),
         ),
         elevation: 5,
         actions: [
           notificationWidget(context),
-          const SizedBox(
-            width: 30,
-          ),
+          const SizedBox(width: 30),
           settingWidget(),
-          const SizedBox(
-            width: 20,
-          ),
+          const SizedBox(width: 20),
           multiWidget(context),
-          const SizedBox(
-            width: 10,
-          )
+          const SizedBox(width: 10),
         ],
         backgroundColor: themeData.colorScheme.primary,
       ),
@@ -83,83 +77,90 @@ class _ChatPageState extends State<ChatPage>
       onRefresh: () {},
       onLoad: () {},
       child: FadeAnimatedBuilder(
-          opacity:
-              TodoAnimateStyle.fadeOutOpacity(controller.animationController),
-          animation: controller.animationController,
-          child: Obx(() => ListView.separated(
-                padding: const EdgeInsets.all(10),
-                separatorBuilder: (BuildContext context, int index) {
-                  return Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      height: 0.5,
-                      width: MediaQuery.of(context).size.width / 1.3,
-                      child: const Divider(),
+        opacity: TodoAnimateStyle.fadeOutOpacity(
+          controller.animationController,
+        ),
+        animation: controller.animationController,
+        child: Obx(
+          () => ListView.separated(
+            padding: const EdgeInsets.all(10),
+            separatorBuilder: (BuildContext context, int index) {
+              return Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  height: 0.5,
+                  width: MediaQuery.of(context).size.width / 1.3,
+                  child: const Divider(),
+                ),
+              );
+            },
+            itemCount: controller.data.value.length,
+            itemBuilder: (BuildContext context, int index) {
+              Chatsnapshot chat = controller.data.value[index];
+              return Slidable(
+                key: ValueKey(index),
+                startActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  dismissible: DismissiblePane(onDismissed: () {}),
+                  children: [
+                    SlidableAction(
+                      onPressed: (BuildContext context) {},
+                      backgroundColor: const Color(0xFFFE4A49),
+                      foregroundColor: Colors.white,
+                      icon: Icons.delete,
+                      label: 'delete'.tr,
                     ),
-                  );
-                },
-                itemCount: controller.data.value.length,
-                itemBuilder: (BuildContext context, int index) {
-                  ChatSnapshotDTO chat = controller.data.value[index];
-                  return Slidable(
-                      key: ValueKey(index),
-                      startActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        dismissible: DismissiblePane(onDismissed: () {}),
-                        children: [
-                          SlidableAction(
-                            onPressed: (BuildContext context) {},
-                            backgroundColor: const Color(0xFFFE4A49),
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: 'Delete',
-                          ),
-                          SlidableAction(
-                            onPressed: (BuildContext context) {},
-                            backgroundColor: const Color(0xFF21B7CA),
-                            foregroundColor: Colors.white,
-                            icon: Icons.share,
-                            label: '分享',
-                          ),
-                        ],
-                      ),
+                    SlidableAction(
+                      onPressed: (BuildContext context) {
+                        TodoShare.share(controller.data.value[index].name);
+                      },
+                      backgroundColor: const Color(0xFF21B7CA),
+                      foregroundColor: Colors.white,
+                      icon: Icons.share,
+                      label: 'share'.tr,
+                    ),
+                  ],
+                ),
 
-                      // The end action pane is the one at the right or the bottom side.
-                      endActionPane: ActionPane(
-                        motion: const ScrollMotion(),
-                        children: [
-                          SlidableAction(
-                            // An action can be bigger than the others.
-                            flex: 2,
-                            onPressed: (BuildContext context) {},
-                            backgroundColor: const Color(0xFF7BC043),
-                            foregroundColor: Colors.white,
-                            icon: Icons.archive,
-                            label: '标为已读',
-                          ),
-                          SlidableAction(
-                            backgroundColor: const Color(0xFF0392CF),
-                            foregroundColor: Colors.white,
-                            icon: Icons.toc,
-                            label: '置顶',
-                            onPressed: (BuildContext context) {},
-                          ),
-                        ],
-                      ),
-                      child: ChatItem(
-                        uid: chat.uid,
-                        name: chat.username,
-                        isOnline: false,
-                        counter: chat.count,
-                        msg: chat.lastMsg.isNotEmpty ? chat.lastMsg[0] : "",
-                        time: formatTimeDifference(chat.lastAt),
-                        onTap: () {
-                          RouterProvider.viewChatConversation(
-                              User(chat.uid, chat.username, ""));
-                        },
-                      ));
-                },
-              ))),
+                // The end action pane is the one at the right or the bottom side.
+                endActionPane: ActionPane(
+                  motion: const ScrollMotion(),
+                  children: [
+                    SlidableAction(
+                      // An action can be bigger than the others.
+                      flex: 2,
+                      onPressed: (BuildContext context) {},
+                      backgroundColor: const Color(0xFF7BC043),
+                      foregroundColor: Colors.white,
+                      icon: Icons.archive,
+                      label: 'readed'.tr,
+                    ),
+                    SlidableAction(
+                      backgroundColor: const Color(0xFF0392CF),
+                      foregroundColor: Colors.white,
+                      icon: Icons.toc,
+                      label: 'top'.tr,
+                      onPressed: (BuildContext context) {},
+                    ),
+                  ],
+                ),
+                child: ChatItem(
+                  uid: chat.id,
+                  name: chat.name,
+                  isOnline: chat.isOnline,
+                  counter: chat.unreaded,
+                  msg: chat.lastMsg,
+                  time: formatTimeDifference(chat.lastAt),
+                  isTopic: chat.isTopic,
+                  onTap: () {
+                    RouterProvider.viewChatConversation(chat);
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 

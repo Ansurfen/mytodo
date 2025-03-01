@@ -27,9 +27,11 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
   Widget _postCardSpace() {
     return Container(
       height: 10,
-      color: ThemeProvider.contrastColor(context,
-          light: Colors.grey.withOpacity(0.2),
-          dark: HexColor.fromInt(0x1c1c1e)),
+      color: ThemeProvider.contrastColor(
+        context,
+        light: Colors.grey.withOpacity(0.2),
+        dark: HexColor.fromInt(0x1c1c1e),
+      ),
     );
   }
 
@@ -37,141 +39,147 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        appBar: AppBar(
-            actions: [
-              settingWidget(),
-              const SizedBox(
-                width: 10,
-              ),
-              multiWidget(context)
-            ],
-            centerTitle: true,
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title: TabBar(
-              controller: controller.tabController,
-              isScrollable: true,
-              labelColor: Theme.of(context).colorScheme.onPrimary,
-              unselectedLabelColor: Theme.of(context).colorScheme.onTertiary,
-              indicatorSize: TabBarIndicatorSize.label,
-              indicator: UnderlineTabIndicator(
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  borderSide: BorderSide(
-                    width: 1,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  )),
-              tabs: [
-                Tab(
-                  text: "post.me".tr,
-                ),
-                Tab(
-                  text: "post.find".tr,
-                ),
-                Tab(
-                  text: "post.friend".tr,
-                )
-              ],
-            )),
+      appBar: AppBar(
+        actions: [
+          settingWidget(),
+          const SizedBox(width: 10),
+          multiWidget(context),
+        ],
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
-        body: TabBarView(
+        title: TabBar(
           controller: controller.tabController,
-          children: [_me(), _find(), _friend()],
-        ));
+          isScrollable: true,
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onTertiary,
+          indicatorSize: TabBarIndicatorSize.label,
+          indicator: UnderlineTabIndicator(
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            borderSide: BorderSide(
+              width: 1,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          tabs: [Tab(text: "post_me".tr), Tab(text: "post_friend".tr)],
+        ),
+      ),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      body: TabBarView(
+        controller: controller.tabController,
+        children: [_me(), _friend()],
+      ),
+    );
   }
 
   Widget _me() {
     return refreshContainer(
-        context: context,
-        onLoad: () {},
-        onRefresh: controller.fetch,
-        child: Obx(() => EmptyContainer(
-            icon: Icons.rss_feed,
-            desc: "not post, clicks + button to create on bottom bar",
-            what: "what is post?",
-            render: controller.data.value.isNotEmpty,
-            alignment: Alignment.center,
-            padding:
-                EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.35),
-            onTap: () {
-              showTipDialog(context, content: "what_is_post".tr);
+      context: context,
+      onLoad: () {},
+      onRefresh: controller.fetch,
+      child: Obx(
+        () => EmptyContainer(
+          icon: Icons.rss_feed,
+          desc: "not post, clicks + button to create on bottom bar",
+          what: "what is post?",
+          render: controller.data.value.isNotEmpty,
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(
+            top: MediaQuery.sizeOf(context).height * 0.35,
+          ),
+          onTap: () {
+            showTipDialog(context, content: "what_is_post".tr);
+          },
+          child: ListView.separated(
+            itemCount: controller.data.value.length,
+            itemBuilder: (BuildContext context, int index) {
+              return PostCard(
+                more: () {
+                  controller.handlePost(context);
+                },
+                model: PostDetailModel.fromDto(controller.data.value[index]),
+              );
             },
-            child: ListView.separated(
-              itemCount: controller.data.value.length,
-              itemBuilder: (BuildContext context, int index) {
-                return PostCard(
-                    more: () {
-                      controller.handlePost(context);
-                    },
-                    model:
-                        PostDetailModel.fromDto(controller.data.value[index]));
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return _postCardSpace();
-              },
-            ))));
+            separatorBuilder: (BuildContext context, int index) {
+              return _postCardSpace();
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _find() {
     return refreshContainer(
-        context: context,
-        onLoad: () {},
-        onRefresh: () {},
-        child: Obx(() => EmptyContainer(
-            icon: Icons.rss_feed,
-            desc: "not post, clicks + button to create on bottom bar",
-            what: "what is post?",
-            render: controller.data.value.isNotEmpty,
-            alignment: Alignment.center,
-            padding:
-                EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.35),
-            onTap: () {
-              showTipDialog(context, content: "what_is_post".tr);
+      context: context,
+      onLoad: () {},
+      onRefresh: () {},
+      child: Obx(
+        () => EmptyContainer(
+          icon: Icons.rss_feed,
+          desc: "not post, clicks + button to create on bottom bar",
+          what: "what is post?",
+          render: controller.data.value.isNotEmpty,
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(
+            top: MediaQuery.sizeOf(context).height * 0.35,
+          ),
+          onTap: () {
+            showTipDialog(context, content: "what_is_post".tr);
+          },
+          child: ListView.separated(
+            itemCount: controller.data.value.length,
+            itemBuilder: (BuildContext context, int index) {
+              return PostCard(
+                more: () {
+                  controller.handlePost(context);
+                },
+                model: PostDetailModel.fromDto(controller.data.value[index]),
+              );
             },
-            child: ListView.separated(
-              itemCount: controller.data.value.length,
-              itemBuilder: (BuildContext context, int index) {
-                return PostCard(
-                    more: () {
-                      controller.handlePost(context);
-                    },
-                    model:
-                        PostDetailModel.fromDto(controller.data.value[index]));
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return _postCardSpace();
-              },
-            ))));
+            separatorBuilder: (BuildContext context, int index) {
+              return _postCardSpace();
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _friend() {
     return refreshContainer(
-        context: context,
-        onLoad: () {},
-        onRefresh: () {},
-        child: Obx(() => EmptyContainer(
-            icon: Icons.rss_feed,
-            desc: "not post, clicks + button to create on bottom bar",
-            what: "what is post?",
-            render: controller.data.value.isNotEmpty,
-            alignment: Alignment.center,
-            padding:
-                EdgeInsets.only(top: MediaQuery.sizeOf(context).height * 0.35),
-            onTap: () {
-              showTipDialog(context, content: "what_is_post".tr);
+      context: context,
+      onLoad: () {},
+      onRefresh: () {},
+      child: Obx(
+        () => EmptyContainer(
+          icon: Icons.rss_feed,
+          desc: "not post, clicks + button to create on bottom bar",
+          what: "what is post?",
+          render: controller.data.value.isNotEmpty,
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(
+            top: MediaQuery.sizeOf(context).height * 0.35,
+          ),
+          onTap: () {
+            showTipDialog(context, content: "what_is_post".tr);
+          },
+          child: ListView.separated(
+            itemCount: controller.data.value.length,
+            itemBuilder: (BuildContext context, int index) {
+              return PostCard(
+                more: () {
+                  controller.handlePost(context);
+                },
+                model: PostDetailModel.fromDto(controller.data.value[index]),
+              );
             },
-            child: ListView.separated(
-              itemCount: controller.data.value.length,
-              itemBuilder: (BuildContext context, int index) {
-                return PostCard(
-                    more: () {
-                      controller.handlePost(context);
-                    },
-                    model:
-                        PostDetailModel.fromDto(controller.data.value[index]));
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return _postCardSpace();
-              },
-            ))));
+            separatorBuilder: (BuildContext context, int index) {
+              return _postCardSpace();
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   @override

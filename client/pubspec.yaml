@@ -88,6 +88,9 @@ dependencies:
   flutter_quill: ^11.0.0
   flutter_quill_extensions: ^11.0.0
   filesystem_picker: ^3.1.0
+  flutter_localizations:
+    sdk: flutter
+  uuid: ^4.5.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

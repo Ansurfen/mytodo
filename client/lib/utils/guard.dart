@@ -123,6 +123,10 @@ class Guard {
     RouterProvider.offNamed(HomeRouter.nav);
   }
 
+  static bool isDevMode() {
+    return true;
+  }
+
   static bool isOffline() {
     if (isLogin()) {
       Store.localStorage.setBool("offline", false);

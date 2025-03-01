@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/model/entity/user.dart';
+import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/home.dart';
 import 'package:my_todo/router/map.dart';
 import 'package:my_todo/router/other.dart';
@@ -82,8 +83,8 @@ class RouterProvider {
     to(UserRouter.license);
   }
 
-  static void viewChatConversation(User user) {
-    to(OtherRouter.conversation, query: "?id=${user.id}", arguments: user);
+  static void viewChatConversation(Chatsnapshot chatsnapshot) {
+    to(OtherRouter.conversation, query: "?id=${chatsnapshot.id}", arguments: chatsnapshot);
   }
 
   static void viewUserEdit() {
