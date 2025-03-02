@@ -42,6 +42,7 @@ class _SubscribeState extends State<TopicSnapshotPage>
     return Scaffold(
       backgroundColor: themeData.colorScheme.primary,
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: themeData.colorScheme.primary,
         title: Padding(
             padding: const EdgeInsets.only(left: 40),
@@ -59,10 +60,10 @@ class _SubscribeState extends State<TopicSnapshotPage>
               isScrollable: true,
               tabs: [
                 Tab(
-                  text: "topic.me".tr,
+                  text: "topic_me".tr,
                 ),
                 Tab(
-                  text: "topic.find".tr,
+                  text: "topic_find".tr,
                 ),
               ],
             )),

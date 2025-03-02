@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'dart:async';
+import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
@@ -9,7 +10,11 @@ import 'package:my_todo/component/container/empty_container.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/component/title/title_view.dart';
 import 'package:my_todo/mock/statistic.dart';
+import 'package:my_todo/model/dto/topic.dart';
+import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/animate.dart';
+import 'package:my_todo/theme/color.dart';
+import 'package:my_todo/utils/guide.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
 import 'package:my_todo/view/task/snapshot/task_controller.dart';
@@ -18,6 +23,7 @@ import 'package:my_todo/view/task/component/statistic_table.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class TaskPage extends StatefulWidget {
   const TaskPage({super.key});
@@ -32,6 +38,12 @@ class _TaskPageState extends State<TaskPage>
   EasyRefreshController easyRefreshController = EasyRefreshController();
 
   @override
+  void initState() {
+    super.initState();
+    Guide.start(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     return todoScaffold(
@@ -41,15 +53,82 @@ class _TaskPageState extends State<TaskPage>
           padding: const EdgeInsets.only(top: 5, left: 40),
           child: Text(
             "MyTodo".tr,
-            style: const TextStyle(
-              fontSize: 20,
-              fontFamily: 'Pacifico',
-            ),
+            style: const TextStyle(fontSize: 20, fontFamily: 'Pacifico'),
           ),
         ),
         actions: [
-          notificationWidget(context),
-          settingWidget(),
+          Showcase(
+            key: Guide.four,
+            description: 'Tap to notification',
+            tooltipActionConfig: const TooltipActionConfig(
+              alignment: MainAxisAlignment.spaceBetween,
+              actionGap: 16,
+              position: TooltipActionPosition.outside,
+              gapBetweenContentAndAction: 16,
+            ),
+            tooltipActions: [
+              TooltipActionButton(
+                type: TooltipDefaultActionType.previous,
+                name: 'showcase_back'.tr,
+                onTap: () {
+                  // Write your code on button tap
+                  ShowCaseWidget.of(context).previous();
+                },
+                backgroundColor: lighten(Theme.of(context).primaryColorLight),
+                textStyle: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+              TooltipActionButton(
+                type: TooltipDefaultActionType.skip,
+                name: 'showcase_close'.tr,
+                textStyle: TextStyle(color: Colors.white),
+                tailIcon: ActionButtonIcon(
+                  icon: Icon(Icons.close, color: Colors.white, size: 15),
+                ),
+              ),
+            ],
+            child: notificationWidget(context),
+          ),
+          Showcase(
+            key: Guide.two,
+            description: 'Tap to settings',
+            disposeOnTap: true,
+            onTargetClick: () {
+              RouterProvider.viewSetting()?.then(
+                (_) => {
+                  ShowCaseWidget.of(
+                    context,
+                  ).startShowCase([Guide.three, Guide.four]),
+                },
+              );
+            },
+            tooltipActionConfig: const TooltipActionConfig(
+              alignment: MainAxisAlignment.spaceBetween,
+              actionGap: 16,
+              position: TooltipActionPosition.outside,
+              gapBetweenContentAndAction: 16,
+            ),
+            tooltipActions: [
+              TooltipActionButton(
+                type: TooltipDefaultActionType.previous,
+                name: 'showcase_back'.tr,
+                onTap: () {
+                  // Write your code on button tap
+                  ShowCaseWidget.of(context).previous();
+                },
+                backgroundColor: lighten(Theme.of(context).primaryColorLight),
+                textStyle: TextStyle(color: Theme.of(context).primaryColor),
+              ),
+              TooltipActionButton(
+                type: TooltipDefaultActionType.skip,
+                name: 'showcase_close'.tr,
+                textStyle: TextStyle(color: Colors.white),
+                tailIcon: ActionButtonIcon(
+                  icon: Icon(Icons.close, color: Colors.white, size: 15),
+                ),
+              ),
+            ],
+            child: settingWidget(),
+          ),
           multiWidget(context),
         ],
       ),
@@ -104,10 +183,8 @@ class _TaskPageState extends State<TaskPage>
                       controller.showMask.value = true;
                     },
                     iconSize: 25,
-                    iconColor: Theme.of(context).primaryColor,
                     icon: Icons.filter_alt,
                     titleTxt: 'task'.tr,
-                    subTxt: 'filter'.tr,
                   ),
                 ),
                 FadeAnimatedBuilder(
@@ -127,7 +204,10 @@ class _TaskPageState extends State<TaskPage>
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: ListView.builder(
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) {
+                            return Container(height: 5);
+                          },
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           itemCount: controller.tasks.value.length,
@@ -139,7 +219,21 @@ class _TaskPageState extends State<TaskPage>
                                     .keys
                                     .elementAt(idx)];
                             if (task != null) {
-                              return TaskCard(model: task);
+                              final ValueKey<ExpansionTileCardState> k =
+                                  ValueKey(ExpansionTileCardState());
+                              return TaskCard(
+                                key: k,
+                                title: task.name,
+                                msg: task.desc,
+                                model: GetTopicDto(
+                                  1,
+                                  DateTime.now(),
+                                  DateTime.now(),
+                                  "",
+                                  "",
+                                  "6666",
+                                ),
+                              );
                             }
                             return null;
                           },

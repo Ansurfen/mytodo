@@ -263,7 +263,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 15),
                 todoDivider(context),
                 EmptyContainer(

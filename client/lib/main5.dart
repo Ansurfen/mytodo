@@ -1,10 +1,11 @@
 import 'dart:developer';
 
-import '../detailscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_todo/detailscreen.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:expansion_tile_card/expansion_tile_card.dart';
+
+void main() => runApp(const MyApp());
 
 /// Global key for the first showcase widget
 final GlobalKey _firstShowcaseWidget = GlobalKey();
@@ -12,8 +13,8 @@ final GlobalKey _firstShowcaseWidget = GlobalKey();
 /// Global key for the last showcase widget
 final GlobalKey _lastShowcaseWidget = GlobalKey();
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +88,7 @@ class HomePage extends StatelessWidget {
 }
 
 class MailPage extends StatefulWidget {
-  const MailPage({Key? key}) : super(key: key);
+  const MailPage({super.key});
 
   @override
   State<MailPage> createState() => _MailPageState();
@@ -179,7 +180,6 @@ class _MailPageState extends State<MailPage> {
         isUnread: false,
       ),
     ];
-    cards = List.filled(mails.length, GlobalKey());
   }
 
   @override
@@ -190,21 +190,16 @@ class _MailPageState extends State<MailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4.0)),
-      ),
-    );
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: Column(
-          children: <Widget>[
+          children: [
             const SizedBox(height: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
+              children: [
                 Row(
                   children: [
                     Expanded(
@@ -221,10 +216,10 @@ class _MailPageState extends State<MailPage> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
-                            children: <Widget>[
+                            children: [
                               Expanded(
                                 child: Row(
-                                  children: <Widget>[
+                                  children: [
                                     Showcase(
                                       key: _firstShowcaseWidget,
                                       description: 'Tap to see menu options',
@@ -365,89 +360,7 @@ class _MailPageState extends State<MailPage> {
                   if (index == 0) {
                     return showcaseMailTile(_three, true, context, mails.first);
                   }
-                  // return MailTile(
-                  //   mail: mails[index % mails.length],
-                  // );
-                  Mail mail = mails[index % mails.length];
-                  return ExpansionTileCard(
-                    title: MailTile(mail: mail),
-                    baseColor: mail.isUnread ? const Color(0xffFFF6F7) : Colors.white,
-                    expandedColor: mail.isUnread ? const Color(0xffFFF6F7) : Colors.white,
-                    children: <Widget>[
-                      const Divider(thickness: 1.0, height: 1.0),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
-                          child: Text(
-                            """Hi there, I'm a drop-in replacement for Flutter's ExpansionTile.
-
-Use me any time you think your app could benefit from being just a bit more Material.
-
-These buttons control the next card down!""",
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium!.copyWith(fontSize: 16),
-                          ),
-                        ),
-                      ),
-                      ButtonBar(
-                        alignment: MainAxisAlignment.spaceAround,
-                        buttonHeight: 52.0,
-                        buttonMinWidth: 90.0,
-                        children: <Widget>[
-                          TextButton(
-                            style: flatButtonStyle,
-                            onPressed: () {
-                              // cardB.currentState?.expand();
-                            },
-                            child: const Column(
-                              children: <Widget>[
-                                Icon(Icons.arrow_downward),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                ),
-                                Text('Open'),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                            style: flatButtonStyle,
-                            onPressed: () {
-                              // cardB.currentState?.collapse();
-                            },
-                            child: const Column(
-                              children: <Widget>[
-                                Icon(Icons.arrow_upward),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                ),
-                                Text('Close'),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                            style: flatButtonStyle,
-                            onPressed: () {
-                              // cardB.currentState?.toggleExpansion();
-                            },
-                            child: const Column(
-                              children: <Widget>[
-                                Icon(Icons.swap_vert),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                ),
-                                Text('Toggle'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
+                  return MailTile(mail: mails[index % mails.length]);
                 },
               ),
             ),
@@ -502,8 +415,6 @@ These buttons control the next card down!""",
       ),
     );
   }
-
-  List<GlobalKey<ExpansionTileCardState>> cards = [];
 
   GestureDetector showcaseMailTile(
     GlobalKey<State<StatefulWidget>> key,
@@ -574,7 +485,7 @@ These buttons control the next card down!""",
 }
 
 class SAvatarExampleChild extends StatelessWidget {
-  const SAvatarExampleChild({super.key});
+  const SAvatarExampleChild({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -763,206 +674,6 @@ class MailTile extends StatelessWidget {
                 Icon(
                   mail.isUnread ? Icons.star : Icons.star_border,
                   color: mail.isUnread ? const Color(0xffFBC800) : Colors.grey,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-void main2() => runApp(const MyApp2());
-
-class MyApp2 extends StatelessWidget {
-  const MyApp2({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ExpansionTileCard Demo',
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: const MyHomePage(title: 'ExpansionTileCard Demo'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, this.title}) : super(key: key);
-
-  final String? title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final GlobalKey<ExpansionTileCardState> cardA = GlobalKey();
-  final GlobalKey<ExpansionTileCardState> cardB = GlobalKey();
-
-  @override
-  Widget build(BuildContext context) {
-    final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4.0)),
-      ),
-    );
-
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title!)),
-      body: ListView(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: ExpansionTileCard(
-              key: cardA,
-              leading: const CircleAvatar(child: Text('A')),
-              title: const Text('Tap me!'),
-              subtitle: const Text('I expand!'),
-              children: <Widget>[
-                const Divider(thickness: 1.0, height: 1.0),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Text(
-                      """Hi there, I'm a drop-in replacement for Flutter's ExpansionTile.
-
-Use me any time you think your app could benefit from being just a bit more Material.
-
-These buttons control the next card down!""",
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium!.copyWith(fontSize: 16),
-                    ),
-                  ),
-                ),
-                ButtonBar(
-                  alignment: MainAxisAlignment.spaceAround,
-                  buttonHeight: 52.0,
-                  buttonMinWidth: 90.0,
-                  children: <Widget>[
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardB.currentState?.expand();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.arrow_downward),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Open'),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardB.currentState?.collapse();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.arrow_upward),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Close'),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardB.currentState?.toggleExpansion();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.swap_vert),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Toggle'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: ExpansionTileCard(
-              key: cardB,
-              expandedTextColor: Colors.red,
-              leading: const CircleAvatar(child: Text('B')),
-              title: const Text('Tap me!'),
-              subtitle: const Text('I expand, too!'),
-              children: <Widget>[
-                const Divider(thickness: 1.0, height: 1.0),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    child: Text(
-                      """Hi there, I'm a drop-in replacement for Flutter's ExpansionTile.
-
-Use me any time you think your app could benefit from being just a bit more Material.
-
-These buttons control the card above!""",
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium!.copyWith(fontSize: 16),
-                    ),
-                  ),
-                ),
-                ButtonBar(
-                  alignment: MainAxisAlignment.spaceAround,
-                  buttonHeight: 52.0,
-                  buttonMinWidth: 90.0,
-                  children: <Widget>[
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardA.currentState?.expand();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.arrow_downward),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Open'),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardA.currentState?.collapse();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.arrow_upward),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Close'),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      style: flatButtonStyle,
-                      onPressed: () {
-                        cardA.currentState?.toggleExpansion();
-                      },
-                      child: const Column(
-                        children: <Widget>[
-                          Icon(Icons.swap_vert),
-                          Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                          Text('Toggle'),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

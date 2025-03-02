@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/hook/topic.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/utils/dialog.dart';
+import 'package:my_todo/utils/guard.dart';
 
 class TopicSnapshotController extends GetxController
     with GetTickerProviderStateMixin {
@@ -21,12 +23,33 @@ class TopicSnapshotController extends GetxController
   void onInit() {
     super.onInit();
     tabController = TabController(vsync: this, initialIndex: 0, length: 2);
-    _uploadTopic = TopicHook.subscribeSnapshot(onData: (topic) {
-      topics.value.add(topic);
+    if (Guard.isDevMode()) {
+      topics.value.addAll(
+        List.generate(10, (idx) {
+          return GetTopicDto(
+            idx,
+            DateTime.now(),
+            DateTime.now(),
+            Mock.username(),
+            Mock.text(),
+            Mock.text(),
+          );
+        }),
+      );
       topics.refresh();
-    });
+    } else {
+      _uploadTopic = TopicHook.subscribeSnapshot(
+        onData: (topic) {
+          topics.value.add(topic);
+          topics.refresh();
+        },
+      );
+    }
+
     animationController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this);
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
   }
 
   @override
@@ -37,23 +60,32 @@ class TopicSnapshotController extends GetxController
 
   Future freshTopic() async {
     animationController.forward();
-    getTopic(GetTopicRequest()).then((res) {
-      topics.value = res.topics;
-    }).catchError((err) {});
+    if (Guard.isDevMode()) {
+    } else {
+      getTopic(GetTopicRequest())
+          .then((res) {
+            topics.value = res.topics;
+          })
+          .catchError((err) {});
+    }
   }
 
   void addTopic(BuildContext context, {required Function setState}) {
-    showSingleTextField(context,
-        title: 'invite_code'.tr,
-        hintText: "invite_code_tip".tr,
-        controller: inviteCode,
-        onCancel: Get.back, onConfirm: () {
-      subscribeTopic(SubscribeTopicRequest(code: inviteCode.text))
-          .then((value) {
-        setState(() {});
-      });
-      inviteCode.text = "";
-      Get.back();
-    });
+    showSingleTextField(
+      context,
+      title: 'invite_code'.tr,
+      hintText: "invite_code_tip".tr,
+      controller: inviteCode,
+      onCancel: Get.back,
+      onConfirm: () {
+        subscribeTopic(SubscribeTopicRequest(code: inviteCode.text)).then((
+          value,
+        ) {
+          setState(() {});
+        });
+        inviteCode.text = "";
+        Get.back();
+      },
+    );
   }
 }

@@ -4,8 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/task.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/utils/debounce.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
 
 class TaskController extends GetxController with GetTickerProviderStateMixin {
@@ -20,11 +22,26 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   void onInit() {
     getData = doOnce(_getData)();
     animationController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this);
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
     topBarAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-            parent: animationController,
-            curve: const Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
+      CurvedAnimation(
+        parent: animationController,
+        curve: const Interval(0, 0.5, curve: Curves.fastOutSlowIn),
+      ),
+    );
+    List.generate(10, (idx) {
+      tasks.value[idx] = GetTaskDto(
+        idx,
+        Mock.username(),
+        Mock.text(),
+        Mock.text(),
+        DateTime.now(),
+        DateTime.now(),
+        [],
+      );
+    });
     super.onInit();
   }
 
@@ -48,12 +65,16 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future _fetch() {
+    if (Guard.isDevMode()) {
+      return Future.delayed(const Duration(seconds: 0));
+    }
     return getTask(GetTaskRequest(pagination.index(), pagination.getLimit()))
         .then((res) {
-      for (var task in res.tasks) {
-        tasks.value[task.id] = task;
-      }
-    }).onError((error, stackTrace) {});
+          for (var task in res.tasks) {
+            tasks.value[task.id] = task;
+          }
+        })
+        .onError((error, stackTrace) {});
   }
 
   Future<bool> _getData() async {

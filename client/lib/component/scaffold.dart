@@ -49,9 +49,11 @@ CupertinoNavigationBar todoCupertinoNavBar(
       ),
     ),
     automaticBackgroundVisibility: false,
-    backgroundColor: Theme.of(
+    backgroundColor: ThemeProvider.contrastColor(
       context,
-    ).colorScheme.primary.withValues(alpha: 255),
+      light: Theme.of(context).colorScheme.primary.withValues(alpha: 255),
+      dark: Colors.black,
+    ),
   );
 }
 
@@ -154,7 +156,7 @@ Scaffold todoScaffold(
       leading: appBar?.leading,
       title: appBar?.title,
       titleSpacing: appBar?.titleSpacing,
-      elevation: appBar?.elevation,
+      elevation: appBar?.elevation ?? 0,
       actions:
           appBar?.actions != null
               ? todoIconButtonActions(

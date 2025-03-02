@@ -75,9 +75,34 @@ Map<String, String> get zhCN => {
 
   "chat_msg": "消息",
   "chat_friend": "好友",
-  
+
   "online": "在线",
 
   "post_me": "我的",
   "post_friend": "好友",
+
+  // showcase
+  "showcase_back": "返回",
+  "showcase_close": "关闭",
+  "showcase_previous": "上一步",
+  "showcase_next": "下一步",
+
+  "task_ongoing": "进行中",
+  "task_finished": "已完成",
+  "task_timeout": "已超时",
+  "task_left": "剩余",
+  "task_day": "日度",
+  "task_month": "月度",
+  "task_year": "年度",
+
+  "topic_me": "我的",
+  "topic_find": "发现",
+
+  "task": "任务",
+
+  // settings
+  "common": "通用",
+  "language": "语言",
+  "dark_mode": "黑暗模式",
+  "style": "主题",
 };

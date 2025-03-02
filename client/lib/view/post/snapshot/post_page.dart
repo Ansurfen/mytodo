@@ -45,6 +45,7 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
           const SizedBox(width: 10),
           multiWidget(context),
         ],
+        elevation: 0,
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: TabBar(

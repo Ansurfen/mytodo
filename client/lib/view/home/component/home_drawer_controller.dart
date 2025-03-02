@@ -2,10 +2,12 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:get/get.dart';
+import 'package:my_todo/utils/guide.dart';
 import 'package:my_todo/view/home/component/home_drawer.dart';
 import 'package:my_todo/utils/guard.dart';
 
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class HomeDrawerController extends GetxController
     with GetTickerProviderStateMixin {
@@ -22,11 +24,18 @@ class HomeDrawerController extends GetxController
   void onInit() {
     super.onInit();
     animationController = AnimationController(
-        duration: const Duration(milliseconds: 2000), vsync: this);
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
     iconAnimationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 0));
-    iconAnimationController.animateTo(1.0,
-        duration: const Duration(milliseconds: 0), curve: Curves.fastOutSlowIn);
+      vsync: this,
+      duration: const Duration(milliseconds: 0),
+    );
+    iconAnimationController.animateTo(
+      1.0,
+      duration: const Duration(milliseconds: 0),
+      curve: Curves.fastOutSlowIn,
+    );
     scrollController = ScrollController(initialScrollOffset: drawerWidth);
     scrollController.addListener(() {
       if (scrollController.offset <= 0) {
@@ -36,15 +45,18 @@ class HomeDrawerController extends GetxController
             drawerIsOpen!(true);
           }
         }
-        iconAnimationController.animateTo(0.0,
-            duration: const Duration(milliseconds: 0),
-            curve: Curves.fastOutSlowIn);
+        iconAnimationController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 0),
+          curve: Curves.fastOutSlowIn,
+        );
       } else if (scrollController.offset > 0 &&
           scrollController.offset < drawerWidth.floor()) {
         iconAnimationController.animateTo(
-            (scrollController.offset * 100 / (drawerWidth)) / 100,
-            duration: const Duration(milliseconds: 0),
-            curve: Curves.fastOutSlowIn);
+          (scrollController.offset * 100 / (drawerWidth)) / 100,
+          duration: const Duration(milliseconds: 0),
+          curve: Curves.fastOutSlowIn,
+        );
       } else {
         if (scrollOffset.value != 0.0) {
           scrollOffset.value = 0.0;
@@ -52,9 +64,11 @@ class HomeDrawerController extends GetxController
             drawerIsOpen!(false);
           }
         }
-        iconAnimationController.animateTo(1.0,
-            duration: const Duration(milliseconds: 0),
-            curve: Curves.fastOutSlowIn);
+        iconAnimationController.animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 0),
+          curve: Curves.fastOutSlowIn,
+        );
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => getInitState());
@@ -127,7 +141,10 @@ class _DrawerUserControllerState extends State<DrawerUserController>
                     return Transform(
                       //transform we use for the stable drawer  we, not need to move with scroll view
                       transform: Matrix4.translationValues(
-                          controller.scrollController.offset, 0.0, 0.0),
+                        controller.scrollController.offset,
+                        0.0,
+                        0.0,
+                      ),
                       child: HomeDrawer(
                         screenIndex: widget.screenIndex ?? DrawerIndex.nav,
                         iconAnimationController:
@@ -153,62 +170,96 @@ class _DrawerUserControllerState extends State<DrawerUserController>
                     color: Colors.white,
                     boxShadow: <BoxShadow>[
                       BoxShadow(
-                          color: Colors.grey.withOpacity(0.3), blurRadius: 24),
+                        color: Colors.grey.withOpacity(0.3),
+                        blurRadius: 24,
+                      ),
                     ],
                   ),
-                  child: Obx(() => Stack(
-                        children: [
-                          //this IgnorePointer we use as touch(user Interface) widget.screen View, for example scrolloffset == 1 means drawer is close we just allow touching all widget.screen View
-                          IgnorePointer(
-                            ignoring:
-                                controller.scrollOffset.value == 1 || false,
-                            child: widget.screenView,
+                  child: Obx(
+                    () => Stack(
+                      children: [
+                        //this IgnorePointer we use as touch(user Interface) widget.screen View, for example scrolloffset == 1 means drawer is close we just allow touching all widget.screen View
+                        IgnorePointer(
+                          ignoring: controller.scrollOffset.value == 1 || false,
+                          child: widget.screenView,
+                        ),
+                        //alternative touch(user Interface) for widget.screen, for example, drawer is close we need to tap on a few home screen area and close the drawer
+                        if (controller.scrollOffset.value == 1.0)
+                          InkWell(
+                            onTap: () {
+                              onDrawerClick();
+                            },
                           ),
-                          //alternative touch(user Interface) for widget.screen, for example, drawer is close we need to tap on a few home screen area and close the drawer
-                          if (controller.scrollOffset.value == 1.0)
-                            InkWell(
-                              onTap: () {
-                                onDrawerClick();
-                              },
-                            ),
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: MediaQuery.of(context).padding.top + 8,
-                                left: 8),
-                            child: SizedBox(
-                              width: AppBar().preferredSize.height - 8,
-                              height: AppBar().preferredSize.height - 8,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(
-                                      AppBar().preferredSize.height),
-                                  child: Center(
-                                    // if you use your own menu view UI you add form initialization
-                                    child: widget.menuView ??
-                                        AnimatedIcon(
-                                            color: themeData.brightness ==
-                                                    Brightness.light
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary
-                                                : themeData.primaryColor,
-                                            icon: widget.animatedIconData ??
-                                                AnimatedIcons.arrow_menu,
-                                            progress: controller
-                                                .iconAnimationController),
-                                  ),
-                                  onTap: () {
-                                    FocusScope.of(context)
-                                        .requestFocus(FocusNode());
-                                    onDrawerClick();
-                                  },
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).padding.top + 8,
+                            left: 8,
+                          ),
+                          child: SizedBox(
+                            width: AppBar().preferredSize.height - 8,
+                            height: AppBar().preferredSize.height - 8,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(
+                                  AppBar().preferredSize.height,
                                 ),
+                                child: Center(
+                                  // if you use your own menu view UI you add form initialization
+                                  child: Showcase(
+                                    key: Guide.one,
+                                    description: 'Tap to see menu options',
+                                    onBarrierClick: () {
+                                      debugPrint('Barrier clicked');
+                                      debugPrint(
+                                        'Floating Action widget for first '
+                                        'showcase is now hidden',
+                                      );
+                                      ShowCaseWidget.of(
+                                        context,
+                                      ).hideFloatingActionWidgetForKeys([
+                                        Guide.one,
+                                      ]);
+                                    },
+                                    tooltipActionConfig:
+                                        const TooltipActionConfig(
+                                          alignment: MainAxisAlignment.end,
+                                          position:
+                                              TooltipActionPosition.outside,
+                                          gapBetweenContentAndAction: 10,
+                                        ),
+                                    child:
+                                        widget.menuView ??
+                                        AnimatedIcon(
+                                          color:
+                                              themeData.brightness ==
+                                                      Brightness.light
+                                                  ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.onPrimary
+                                                  : themeData.primaryColor,
+                                          icon:
+                                              widget.animatedIconData ??
+                                              AnimatedIcons.arrow_menu,
+                                          progress:
+                                              controller
+                                                  .iconAnimationController,
+                                        ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  FocusScope.of(
+                                    context,
+                                  ).requestFocus(FocusNode());
+                                  onDrawerClick();
+                                },
                               ),
                             ),
                           ),
-                        ],
-                      )),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -67,8 +67,8 @@ class RouterProvider {
     to(OtherRouter.notification);
   }
 
-  static void viewSetting() {
-    to(OtherRouter.setting);
+  static Future? viewSetting() {
+    return to(OtherRouter.setting);
   }
 
   static void viewUserProfile(int id) {
@@ -84,7 +84,11 @@ class RouterProvider {
   }
 
   static void viewChatConversation(Chatsnapshot chatsnapshot) {
-    to(OtherRouter.conversation, query: "?id=${chatsnapshot.id}", arguments: chatsnapshot);
+    to(
+      OtherRouter.conversation,
+      query: "?id=${chatsnapshot.id}",
+      arguments: chatsnapshot,
+    );
   }
 
   static void viewUserEdit() {

@@ -34,6 +34,7 @@ class _ChatPageState extends State<ChatPage>
     ThemeData themeData = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         title: Padding(
           padding: const EdgeInsets.only(left: 40),
           child: TabBar(
@@ -52,7 +53,6 @@ class _ChatPageState extends State<ChatPage>
             tabs: [Tab(text: "chat_msg".tr), Tab(text: "chat_friend".tr)],
           ),
         ),
-        elevation: 5,
         actions: [
           notificationWidget(context),
           const SizedBox(width: 30),

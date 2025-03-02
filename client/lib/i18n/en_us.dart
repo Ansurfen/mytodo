@@ -89,4 +89,30 @@ Map<String, String> get enUS => {
 
   "post_me": "Me",
   "post_friend": "Friend",
+
+  // showcase
+  "showcase_back": "Back",
+  "showcase_close": "Close",
+  "showcase_previous": "Previous",
+  "showcase_next": "Next",
+
+  "task_ongoing": "Ongoing",
+  "task_finished": "Finish",
+  "task_timeout": "Timeout",
+  "task_left": "Left",
+  "task_day": "Daily",
+  "task_month": "Monthly",
+  "task_year": "Yearly",
+
+  //
+  "topic_me": "Me",
+  "topic_find": "Find",
+
+  "task": "Task",
+
+  // settings
+  "common": "Common",
+  "language": "Language",
+  "dark_mode": "Dark Mode",
+  "style": "Style",
 };

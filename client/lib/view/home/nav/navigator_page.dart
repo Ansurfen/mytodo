@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/view/home/nav/navigator_controller.dart';
-
 import 'component/bottom_bar.dart';
 
 class NavigatorPage extends GetView<NavigatorController> {

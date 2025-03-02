@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/tabIcon/tabIcon_data.dart';
 import 'package:my_todo/router/provider.dart';
+import 'package:my_todo/utils/guide.dart';
 import 'package:my_todo/view/home/nav/component/bottom_bar_controller.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class BottomBarView extends StatefulWidget {
   const BottomBarView({super.key, this.tabIconsList, this.changeIndex});
@@ -129,38 +131,93 @@ class _BottomBarViewState extends State<BottomBarView> {
                   curve: Curves.fastOutSlowIn,
                 ),
               ),
-              child: Container(
-                // alignment: Alignment.center,s
-                decoration: BoxDecoration(
-                  color: themeData.primaryColor,
-                  gradient: LinearGradient(
-                    colors: [
-                      themeData.primaryColor,
-                      themeData.primaryColorDark,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: themeData.primaryColorLight.withOpacity(0.4),
-                      offset: const Offset(8.0, 16.0),
-                      blurRadius: 16.0,
+              child: Showcase(
+                key: Guide.three,
+                title: "Add",
+                description: "Tap to add task, post",
+                tooltipBackgroundColor: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                floatingActionWidget: FloatingActionWidget(
+                  left: 16,
+                  bottom: 16,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: ShowCaseWidget.of(context).dismiss,
+                      child: Text(
+                        'showcase_close'.tr,
+                        style: TextStyle(color: Colors.white, fontSize: 15),
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    splashColor: Colors.white.withOpacity(0.1),
-                    highlightColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    onTap: RouterProvider.viewAdd,
-                    child: Icon(
-                      Icons.add,
-                      color: themeData.colorScheme.primary,
-                      size: 32,
+                targetShapeBorder: const CircleBorder(),
+                tooltipActionConfig: const TooltipActionConfig(
+                  alignment: MainAxisAlignment.spaceBetween,
+                  gapBetweenContentAndAction: 10,
+                  position: TooltipActionPosition.outside,
+                ),
+                tooltipActions: [
+                  TooltipActionButton(
+                    name: 'showcase_previous'.tr,
+                    backgroundColor: Colors.transparent,
+                    type: TooltipDefaultActionType.previous,
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    textStyle: TextStyle(color: Colors.white),
+                  ),
+                  TooltipActionButton(
+                    name: 'showcase_next'.tr,
+                    type: TooltipDefaultActionType.next,
+                    backgroundColor: Colors.white,
+                    textStyle: TextStyle(color: Theme.of(context).primaryColor),
+                  ),
+                ],
+                onBarrierClick: () {
+                  debugPrint('Barrier clicked');
+                  debugPrint(
+                    'Floating Action widget for first '
+                    'showcase is now hidden',
+                  );
+                  ShowCaseWidget.of(
+                    context,
+                  ).hideFloatingActionWidgetForKeys([Guide.one]);
+                },
+                child: Container(
+                  // alignment: Alignment.center,s
+                  decoration: BoxDecoration(
+                    color: themeData.primaryColor,
+                    gradient: LinearGradient(
+                      colors: [
+                        themeData.primaryColor,
+                        themeData.primaryColorDark,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: themeData.primaryColorLight.withOpacity(0.4),
+                        offset: const Offset(8.0, 16.0),
+                        blurRadius: 16.0,
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: Colors.white.withOpacity(0.1),
+                      highlightColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      onTap: RouterProvider.viewAdd,
+                      child: Icon(
+                        Icons.add,
+                        color: themeData.colorScheme.primary,
+                        size: 32,
+                      ),
                     ),
                   ),
                 ),
