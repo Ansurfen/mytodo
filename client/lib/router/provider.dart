@@ -4,7 +4,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/model/dto/topic.dart';
-import 'package:my_todo/model/entity/user.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/home.dart';
 import 'package:my_todo/router/map.dart';
@@ -52,7 +51,7 @@ class RouterProvider {
   }
 
   static String initialRoute() {
-    return HomeRouter.nav.name;
+    return TaskRouter.detail.name;
     // return MapRouter.locate.name;
     if (Guard.isLogin() || Guard.isOffline()) {
       return HomeRouter.nav.name;

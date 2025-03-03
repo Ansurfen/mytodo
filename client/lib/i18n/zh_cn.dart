@@ -105,4 +105,14 @@ Map<String, String> get zhCN => {
   "language": "语言",
   "dark_mode": "黑暗模式",
   "style": "主题",
+
+  "animal_amphibian": "两栖动物",
+  "animal_bird": "鸟类",
+  "animal_bug": "昆虫",
+  "animal_mammal": "哺乳动物",
+  "animal_marine": "海洋生物",
+  "animal_reptile": "爬行动物",
+  "plant_flower": "植物",
+  "plant_other": "其他",
+  "food": "食物",
 };

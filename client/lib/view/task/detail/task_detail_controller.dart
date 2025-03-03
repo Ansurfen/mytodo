@@ -27,6 +27,7 @@ class TaskInfoController extends GetxController {
   void onInit() {
     super.onInit();
     var data = Get.parameters;
+    return;
     id = int.parse(data['id']!);
     onTaps = [
       (v) {

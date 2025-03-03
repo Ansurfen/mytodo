@@ -8,9 +8,12 @@ import 'package:my_todo/api/task.dart';
 import 'package:my_todo/component/container/bubble_container.dart';
 import 'package:my_todo/component/button/light_button.dart';
 import 'package:my_todo/component/image.dart';
+import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/component/textarea.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/theme/color.dart';
+import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/picker.dart';
 import 'package:my_todo/theme/provider.dart';
@@ -76,6 +79,41 @@ class _TaskInfoPageState extends State<TaskInfoPage>
 
   @override
   Widget build(BuildContext context) {
+    return todoScaffold(
+      context,
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
+        title: Text(Mock.username()),
+        actions: [
+          IconButton(
+            onPressed: () {
+              // TODO toast
+              showTipDialog(context, content: "refresh success");
+              debugPrint("refresh submit");
+            },
+            icon: Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(10, (idx) {
+            return BubbleContainer(
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Icon(Icons.task, size: 50),
+            );
+          }),
+        ),
+      ),
+    );
+
     final double tempHeight =
         MediaQuery.of(context).size.height -
         (MediaQuery.of(context).size.width / 1.2) +

@@ -115,4 +115,14 @@ Map<String, String> get enUS => {
   "language": "Language",
   "dark_mode": "Dark Mode",
   "style": "Style",
+
+  "animal_amphibian": "amphibian",
+  "animal_bird": "bird",
+  "animal_bug": "bug",
+  "animal_mammal": "mammal",
+  "animal_marine": "marine",
+  "animal_reptile": "reptile",
+  "plant_flower": "flower",
+  "plant_other": "other",
+  "food": "food",
 };

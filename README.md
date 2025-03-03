@@ -33,6 +33,7 @@ Feel free to check [issues page](https://github.com/Ansurfen/mytodo/issues) if y
 ## ❤️ Thanks
 
 - <a href="https://storyset.com/technology">Technology illustrations by Storyset</a>
+- <a href="https://github.com/hfg-gmuend/openmoji">openmoji</a>
 
 ## 📝 License
 

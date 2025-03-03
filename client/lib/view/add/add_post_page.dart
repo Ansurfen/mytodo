@@ -21,9 +21,11 @@ class _AddPostPageState extends State<AddPostPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(50.0),
         child: AppBar(
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           elevation: 0,
           title: TextField(
@@ -31,6 +33,16 @@ class _AddPostPageState extends State<AddPostPage> {
             decoration: InputDecoration(
               border: UnderlineInputBorder(
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
               hintText: 'Enter your title here...',
               filled: false,
@@ -131,7 +143,6 @@ class _AddPostPageState extends State<AddPostPage> {
                         addController.post.controller.selection.extentOffset,
                         TimeStampEmbed(DateTime.now().toString()),
                       );
-
                       addController.post.controller.updateSelection(
                         TextSelection.collapsed(
                           offset:

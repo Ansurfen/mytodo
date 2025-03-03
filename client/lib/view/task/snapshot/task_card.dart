@@ -7,6 +7,7 @@ import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/model/entity/task.dart';
@@ -271,15 +272,23 @@ class _TaskCardState extends State<TaskCard>
               horizontal: 16.0,
               vertical: 8.0,
             ),
-            child: _buildItem(
-              context,
-              DataItem(
-                title: 'BTC',
-                subtitle: 'Bitcoin',
-                price: '\$64215.10',
-                changedPrice: 12.3,
-                imgUrl: 'assets/image/btc.png',
-              ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: Mock.number(min: 1, max: 5),
+              itemBuilder: (context, idx) {
+                return _buildItem(
+                  context,
+                  DataItem(
+                    finish: Mock.boolean(),
+                    title: 'BTC',
+                    subtitle: 'Bitcoin',
+                    price: '\$64215.10',
+                    changedPrice: 12.3,
+                    imgUrl: 'assets/image/btc.png',
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -362,15 +371,10 @@ class _TaskCardState extends State<TaskCard>
             //   ),
             // ),
             Expanded(
-              child: Text(
-                '✅ ',
-                textAlign: TextAlign.end,
-                style: TextStyle(
-                  color: item.profitColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child:
+                  item.finish
+                      ? Icon(Icons.check, color: Colors.greenAccent)
+                      : Icon(Icons.close, color: Colors.redAccent),
             ),
           ],
         ),
@@ -395,8 +399,10 @@ class DataItem {
   String price;
   double changedPrice;
   String imgUrl;
+  bool finish;
 
   DataItem({
+    required this.finish,
     required this.title,
     required this.subtitle,
     required this.price,

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/component/container/bubble_container.dart';
 import 'package:my_todo/component/button/shadow_button.dart';
+import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/model/dao/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/view/add/add_controller.dart';
 import 'package:my_todo/view/add/add_post_page.dart';
+import 'package:my_todo/view/add/add_task_page.dart';
 import 'package:my_todo/view/add/text_option.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -46,23 +49,15 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
   Rx<String> locales = Rx("e");
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        centerTitle: true,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: Icon(
-            Icons.close,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
+    return todoCupertinoScaffold(
+      context: context,
+      appBar: todoCupertinoNavBar(
+        context,
+        leading: Icon(
+          Icons.close,
+          color: Theme.of(context).colorScheme.onPrimary,
         ),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.drafts))],
-        // backgroundColor: Theme.of(context).primaryColor,
-        title: TabBar(
+        middle: TabBar(
           controller: controller.tabController,
           isScrollable: true,
           labelColor: Theme.of(context).colorScheme.onPrimary,
@@ -81,11 +76,21 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
             Tab(text: "post".tr),
           ],
         ),
+        trailing: IconButton(
+          onPressed: () {},
+          icon: Icon(
+            FontAwesomeIcons.paperPlane,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+        ),
       ),
-      backgroundColor: Theme.of(context).colorScheme.primary,
       body: TabBarView(
         controller: controller.tabController,
-        children: [newVersion(), const AddTopicPage(), const AddPostPage()],
+        children: [
+          const AddTaskPage(),
+          const AddTopicPage(),
+          const AddPostPage(),
+        ],
       ),
     );
   }
@@ -143,7 +148,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
                       _title(Icons.topic, "Topic"),
                       SizedBox(width: MediaQuery.sizeOf(context).width / 3),
                       const SizedBox(width: 20),
-                      _title(Icons.sync, "Synchronous"),
+                      _title(Icons.sync, "Sync"),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -251,7 +256,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
                   _title(Icons.description, "Description"),
                   const SizedBox(height: 5),
                   BubbleTextFormField(
-                    hintText: "description".tr,
+                    hintText: "task_description".tr,
                     minLines: 3,
                     maxLines: null,
                     controller: controller.descController,
