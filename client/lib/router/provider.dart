@@ -13,6 +13,7 @@ import 'package:my_todo/router/topic.dart';
 import 'package:my_todo/router/user.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/page_not_found/page_not_found.dart';
+import 'package:my_todo/view/task/snapshot/task_card.dart';
 
 typedef TodoPage = GetPage<dynamic>;
 
@@ -51,7 +52,8 @@ class RouterProvider {
   }
 
   static String initialRoute() {
-    return TaskRouter.detail.name;
+    // return UserRouter.edit.name;
+    return HomeRouter.nav.name;
     // return MapRouter.locate.name;
     if (Guard.isLogin() || Guard.isOffline()) {
       return HomeRouter.nav.name;
@@ -106,8 +108,8 @@ class RouterProvider {
     to(OtherRouter.post, query: "?id=$id");
   }
 
-  static void viewTaskDetail(int id) {
-    to(TaskRouter.detail, query: "?id=$id");
+  static void viewTaskDetail(int id, List<ConditionItem> conds) {
+    to(TaskRouter.detail, query: "?id=$id", arguments: conds);
   }
 
   static void viewUserSign() {

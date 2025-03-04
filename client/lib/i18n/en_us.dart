@@ -125,4 +125,10 @@ Map<String, String> get enUS => {
   "plant_flower": "flower",
   "plant_other": "other",
   "food": "food",
+
+  "condition_click": "Click",
+  "condition_qr": "Scan QR",
+  "condition_locale": "Locale",
+  "condition_file": "File Upload",
+  "condition_text": "Text Submit",
 };

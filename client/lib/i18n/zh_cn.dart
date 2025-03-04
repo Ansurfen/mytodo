@@ -115,4 +115,10 @@ Map<String, String> get zhCN => {
   "plant_flower": "植物",
   "plant_other": "其他",
   "food": "食物",
+
+  "condition_click": "点击事件",
+  "condition_qr": "扫描二维码",
+  "condition_locale": "定位",
+  "condition_file": "文件上传",
+  "condition_text": "文本提交",
 };

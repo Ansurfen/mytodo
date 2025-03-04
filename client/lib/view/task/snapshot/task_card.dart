@@ -1,6 +1,7 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'dart:io';
 import 'dart:math';
 
 import 'package:expansion_tile_card/expansion_tile_card.dart';
@@ -67,7 +68,7 @@ class TaskCardOld extends StatelessWidget {
     }
     return GestureDetector(
       onTap: () {
-        RouterProvider.viewTaskDetail(model.id);
+        RouterProvider.viewTaskDetail(model.id, []);
       },
       child: Card(
         color: ThemeProvider.contrastColor(
@@ -231,6 +232,10 @@ class _TaskCardState extends State<TaskCard>
     );
     bool isLight = Theme.of(context).brightness == Brightness.light;
     var key = widget.key as ValueKey<ExpansionTileCardState>;
+
+    var conds = ConditionItem.randomList(
+      Mock.number(min: 1, max: ConditionType.values.length),
+    );
     return ExpansionTileCard(
       key: key,
       elevation: 0,
@@ -275,19 +280,9 @@ class _TaskCardState extends State<TaskCard>
             child: ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: Mock.number(min: 1, max: 5),
+              itemCount: conds.length,
               itemBuilder: (context, idx) {
-                return _buildItem(
-                  context,
-                  DataItem(
-                    finish: Mock.boolean(),
-                    title: 'BTC',
-                    subtitle: 'Bitcoin',
-                    price: '\$64215.10',
-                    changedPrice: 12.3,
-                    imgUrl: 'assets/image/btc.png',
-                  ),
-                );
+                return _buildCondition(context, conds[idx]);
               },
             ),
           ),
@@ -300,9 +295,9 @@ class _TaskCardState extends State<TaskCard>
             // TODO
             IconButton(
               onPressed: () {
-                RouterProvider.viewTopicDetail(widget.model.id, widget.model);
+                RouterProvider.viewTaskDetail(1, conds);
               },
-              icon: Icon(Icons.details, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.article, color: Theme.of(context).primaryColor),
             ),
             IconButton(
               onPressed: () {
@@ -332,59 +327,33 @@ class _TaskCardState extends State<TaskCard>
     );
   }
 
-  Widget _buildItem(BuildContext context, DataItem item) {
+  Widget _buildCondition(BuildContext context, ConditionItem item) {
     return InkWell(
       onTap: () {},
       child: ListTile(
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        contentPadding: EdgeInsets.all(0),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              flex: 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    item.subtitle,
-                    style: const TextStyle(color: Colors.black54, fontSize: 16),
-                  ),
-                ],
+            Text(
+              item.type.toString(),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            // Expanded(
-            //   flex: 1,
-            //   child: Text(
-            //     item.price,
-            //     style: const TextStyle(
-            //       color: Colors.black87,
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.w400,
-            //     ),
-            //   ),
-            // ),
-            Expanded(
-              child:
-                  item.finish
-                      ? Icon(Icons.check, color: Colors.greenAccent)
-                      : Icon(Icons.close, color: Colors.redAccent),
+            Text(
+              item.subtitle,
+              style: const TextStyle(color: Colors.black54, fontSize: 16),
             ),
           ],
         ),
-        // trailing: Text('${item.profit}%',
-        //     style: TextStyle(
-        //         color: item.profitColor,
-        //         fontSize: 16,
-        //         fontWeight: FontWeight.w600)),
-        // leading: Image.asset(item.imgUrl, width: 32, height: 32),
-        leading: Icon(Icons.location_on),
+        trailing:
+            item.finish
+                ? Icon(Icons.check, color: Colors.greenAccent)
+                : Icon(Icons.close, color: Colors.redAccent),
+        leading: Icon(item.icon()),
       ),
     );
   }
@@ -393,48 +362,99 @@ class _TaskCardState extends State<TaskCard>
   bool get wantKeepAlive => true;
 }
 
-class DataItem {
-  String title;
+class ConditionItem {
   String subtitle;
-  String price;
-  double changedPrice;
-  String imgUrl;
   bool finish;
+  ConditionType type;
 
-  DataItem({
+  ConditionItem({
     required this.finish,
-    required this.title,
     required this.subtitle,
-    required this.price,
-    required this.changedPrice,
-    required this.imgUrl,
+    required this.type,
   });
 
-  bool isIncrease() {
-    return changedPrice > 0;
-  }
-
-  bool isDecrease() {
-    return changedPrice < 0;
-  }
-
-  String get profit {
-    if (isIncrease()) {
-      return '+${changedPrice.toString()}';
-    } else if (isDecrease()) {
-      return changedPrice.toString();
-    } else {
-      return changedPrice.toString();
+  IconData icon() {
+    switch (type) {
+      case ConditionType.click:
+        return Icons.ads_click;
+      case ConditionType.file:
+        return Icons.drive_folder_upload;
+      case ConditionType.qr:
+        return Icons.qr_code;
+      case ConditionType.locale:
+        return Icons.location_on;
+      case ConditionType.text:
+        return Icons.abc;
     }
   }
 
-  Color get profitColor {
-    if (isIncrease()) {
-      return Colors.green;
-    } else if (isDecrease()) {
-      return Colors.red;
-    } else {
-      return Colors.grey[800]!;
+  static ConditionItem random() {
+    return ConditionItem(
+      finish: true,
+      type:
+          ConditionType.values[Mock.number(
+            max: ConditionType.values.length - 1,
+          )],
+      subtitle: "",
+    );
+  }
+
+  static List<ConditionItem> randomList(int count) {
+    // 1. 打乱 ConditionType.values
+    List<ConditionType> shuffledTypes = List.of(ConditionType.values)
+      ..shuffle();
+
+    // 2. 选取 count 个唯一的 ConditionType
+    List<ConditionType> selectedTypes = shuffledTypes.take(count).toList();
+
+    // 3. 生成 ConditionItem 列表
+    return selectedTypes.map((type) {
+      return ConditionItem(
+        finish: Mock.boolean(),
+        type: type,
+        subtitle: "Random subtitle",
+      );
+    }).toList();
+  }
+}
+
+enum ConditionType {
+  click,
+  qr,
+  locale,
+  text,
+  file;
+
+  @override
+  String toString() {
+    switch (this) {
+      case ConditionType.click:
+        return "condition_click".tr;
+      case ConditionType.qr:
+        return "condition_qr".tr;
+      case ConditionType.locale:
+        return "condition_locale".tr;
+      case ConditionType.file:
+        return "condition_file".tr;
+      case ConditionType.text:
+        return "condition_text".tr;
+    }
+  }
+
+  static ConditionType fromString(String value) {
+    switch (value) {
+      case 'locale':
+        return ConditionType.locale;
+      case 'click':
+        return ConditionType.click;
+      case 'qr':
+        return ConditionType.qr;
+      case 'text':
+        return ConditionType.text;
+      case 'file':
+        return ConditionType.file;
+      default:
+        throw ArgumentError('Invalid enum value: $value');
     }
   }
 }

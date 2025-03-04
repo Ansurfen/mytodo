@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:universal_html/html.dart' as html;
 import 'ui_app.dart' if (dart.library.html) 'ui_web.dart' as ui;
 import 'package:flutter/foundation.dart';
@@ -171,7 +172,9 @@ class _WebSandBoxController4Web implements WebSandBoxController {
   @override
   void sendEvent(String type, Object detail, {String targetOrigin = "*"}) {
     html.window.postMessage(
-        jsonEncode({'type': type, 'detail': detail}), targetOrigin);
+      jsonEncode({'type': type, 'detail': detail}),
+      targetOrigin,
+    );
   }
 
   @override
@@ -217,14 +220,15 @@ class _WebSandBoxController4App implements WebSandBoxController {
   final Map<String, DartFunction> _dartFunction = <String, DartFunction>{};
 
   _WebSandBoxController4App() {
-    controller = WebViewController()
-      ..addJavaScriptChannel("__webview_event_bridge__",
+    controller =
+        WebViewController()..addJavaScriptChannel(
+          "__webview_event_bridge__",
           onMessageReceived: (msg) {
-        Map<String, dynamic> callstack = jsonDecode(msg.message);
-        var res = callDart(callstack["method"], callstack["args"]);
-        print(callstack);
-        callMethod("WebViewEventChannel.put", [callstack["id"], res]);
-      });
+            Map<String, dynamic> callstack = jsonDecode(msg.message);
+            var res = callDart(callstack["method"], callstack["args"]);
+            callMethod("WebViewEventChannel.put", [callstack["id"], res]);
+          },
+        );
   }
 
   @override
@@ -272,9 +276,13 @@ class _WebSandBoxController4App implements WebSandBoxController {
     if (type == "__webview_event_bridge__") {
       throw "event bridge was occupied, and try to change event's type literal.";
     }
-    controller.addJavaScriptChannel(type, onMessageReceived: (msg) {
-      callback(html.MessageEvent(type, data: msg.message));
-    });
+    controller.addJavaScriptChannel(
+      type,
+      onMessageReceived: (msg) {
+        Guard.log.i(msg.message);
+        callback(html.MessageEvent(type, data: msg.message));
+      },
+    );
   }
 
   @override
@@ -289,16 +297,16 @@ class _WebSandBoxController4App implements WebSandBoxController {
         }
       }
     }
-    return controller
-        .runJavaScriptReturningResult("$method(${argStr.join(",")})");
+    return controller.runJavaScriptReturningResult(
+      "$method(${argStr.join(",")})",
+    );
   }
 
   @override
   void sendEvent(String type, Object detail, {String targetOrigin = "*"}) {
-    controller.runJavaScript("__webview_event_listener_entry(`${jsonEncode({
-          'type': type,
-          'detail': detail
-        })}`)");
+    controller.runJavaScript(
+      "__webview_event_listener_entry(`${jsonEncode({'type': type, 'detail': detail})}`)",
+    );
   }
 
   dynamic callDart(String method, String? args) {

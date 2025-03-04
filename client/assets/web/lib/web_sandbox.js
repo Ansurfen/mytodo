@@ -66,7 +66,7 @@ class WebBridge {
     static notify(type, detail, origin = "*") {
         let evt = JSON.stringify({ type: type, detail: detail });
         if (kIsPhone) {
-            eval(`${type}.postMessage(${evt})`);
+            eval(`${type}.postMessage(${evt});`);
         }
         window.parent.postMessage(evt, origin);
     }

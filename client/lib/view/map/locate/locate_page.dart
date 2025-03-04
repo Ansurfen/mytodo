@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:my_todo/utils/web_sandbox.dart';
+import 'package:my_todo/view/map/locate/locate_controller.dart';
 
 class MapLocatePage extends StatefulWidget {
   const MapLocatePage({super.key});
@@ -13,28 +13,21 @@ class MapLocatePage extends StatefulWidget {
 }
 
 class _MapLocatePageState extends State<MapLocatePage> {
-  WebSandBoxController webSandBoxController = WebSandBoxController()
-    ..id = "flutter-widget"
-    ..width = '640'
-    ..height = '360'
-    ..style?.border = 'none'
-    ..jsEnable = true
-    ..loadFlutterAsset("assets/web/map/locate.html")
-    ..addEventChannel("screenshot", (evt) {
-      Get.back(result: evt.data);
-    });
+  LocateController locateController = LocateController();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          leading: GestureDetector(
-            onTap: () {
-              Get.back();
-            },
-            child: const Icon(Icons.arrow_back_ios),
-          ),
-        ),
-        body: webSandBox(webSandBoxController));
+    return FutureBuilder(
+      future: locateController.getLocation(context),
+      builder: (ctx, snap) {
+        if (snap.hasData) {
+          return webSandBox(locateController.webSandBoxController);
+        }
+        return Container(
+          padding: const EdgeInsets.only(top: 80),
+          child: Image.asset("assets/images/page_not_found.png"),
+        );
+      },
+    );
   }
 }

@@ -9,7 +9,7 @@ import 'package:my_todo/utils/store.dart';
 
 class ThemeProvider {
   static final Map<String, TodoThemeData> _data = {
-    ThemeStyle.primary: TodoThemeData(0x00a1e5, 0xb6d7e4, 0x006bbb),
+    ThemeStyle.primary: TodoThemeData(0x00a1e5, 0xDBEBF1, 0x006bbb),
     ThemeStyle.success: TodoThemeData(0x04b9ae, 0xa3cac7, 0x027b77),
     ThemeStyle.info: TodoThemeData(0x8866e9, 0xb1b2d6, 0x5e38cc),
     ThemeStyle.danger: TodoThemeData(0xd251a6, 0xdab7ce, 0xbb1b85),

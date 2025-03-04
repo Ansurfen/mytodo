@@ -53,9 +53,14 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
       context: context,
       appBar: todoCupertinoNavBar(
         context,
-        leading: Icon(
-          Icons.close,
-          color: Theme.of(context).colorScheme.onPrimary,
+        leading: IconButton(
+          icon: Icon(
+            Icons.close,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+          onPressed: () {
+            Get.back();
+          },
         ),
         middle: TabBar(
           controller: controller.tabController,

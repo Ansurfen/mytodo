@@ -10,7 +10,7 @@ class SearchModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  Rx<List<Place>> _suggestions = Rx(history);
+  final Rx<List<Place>> _suggestions = Rx(history);
   Rx<List<Place>> get suggestions => (_suggestions);
 
   String _query = '';

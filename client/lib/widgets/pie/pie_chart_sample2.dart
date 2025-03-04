@@ -1,23 +1,18 @@
-// Copyright 2025 The MyTodo Authors. All rights reserved.
-// Use of this source code is governed by a MIT-style
-// license that can be found in the LICENSE file.
+
 import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/material.dart';
-import 'package:my_todo/theme/color.dart';
-import 'package:my_todo/view/statistic/statistic_page.dart';
+import 'package:my_todo/widgets/indicator.dart' show Indicator;
+import 'package:my_todo/widgets/resources/app_colors.dart';
 
-import 'model/pie_chart.dart';
-
-class TodoPieChart extends StatefulWidget {
-  final List<PieChartModel> data;
-
-  const TodoPieChart({super.key, required this.data});
+class PieChartSample2 extends StatefulWidget {
+  const PieChartSample2({super.key});
 
   @override
   State<StatefulWidget> createState() => PieChart2State();
 }
 
-class PieChart2State extends State<TodoPieChart> {
+class PieChart2State extends State {
   int touchedIndex = -1;
 
   @override
@@ -25,7 +20,7 @@ class PieChart2State extends State<TodoPieChart> {
     return AspectRatio(
       aspectRatio: 1.3,
       child: Row(
-        children: [
+        children: <Widget>[
           const SizedBox(
             height: 18,
           ),
@@ -61,9 +56,9 @@ class PieChart2State extends State<TodoPieChart> {
           const Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: <Widget>[
               Indicator(
-                color: ChartColor.contentColorBlue,
+                color: AppColors.contentColorBlue,
                 text: 'First',
                 isSquare: true,
               ),
@@ -71,7 +66,7 @@ class PieChart2State extends State<TodoPieChart> {
                 height: 4,
               ),
               Indicator(
-                color: ChartColor.contentColorYellow,
+                color: AppColors.contentColorYellow,
                 text: 'Second',
                 isSquare: true,
               ),
@@ -79,7 +74,7 @@ class PieChart2State extends State<TodoPieChart> {
                 height: 4,
               ),
               Indicator(
-                color: ChartColor.contentColorPurple,
+                color: AppColors.contentColorPurple,
                 text: 'Third',
                 isSquare: true,
               ),
@@ -87,7 +82,7 @@ class PieChart2State extends State<TodoPieChart> {
                 height: 4,
               ),
               Indicator(
-                color: ChartColor.contentColorGreen,
+                color: AppColors.contentColorGreen,
                 text: 'Fourth',
                 isSquare: true,
               ),
@@ -113,53 +108,53 @@ class PieChart2State extends State<TodoPieChart> {
       switch (i) {
         case 0:
           return PieChartSectionData(
-            color: ChartColor.contentColorBlue,
+            color: AppColors.contentColorBlue,
             value: 40,
             title: '40%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
-              color: ChartColor.mainTextColor1,
+              color: AppColors.mainTextColor1,
               shadows: shadows,
             ),
           );
         case 1:
           return PieChartSectionData(
-            color: ChartColor.contentColorYellow,
+            color: AppColors.contentColorYellow,
             value: 30,
             title: '30%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
-              color: ChartColor.mainTextColor1,
+              color: AppColors.mainTextColor1,
               shadows: shadows,
             ),
           );
         case 2:
           return PieChartSectionData(
-            color: ChartColor.contentColorPurple,
+            color: AppColors.contentColorPurple,
             value: 15,
             title: '15%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
-              color: ChartColor.mainTextColor1,
+              color: AppColors.mainTextColor1,
               shadows: shadows,
             ),
           );
         case 3:
           return PieChartSectionData(
-            color: ChartColor.contentColorGreen,
+            color: AppColors.contentColorGreen,
             value: 15,
             title: '15%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
               fontWeight: FontWeight.bold,
-              color: ChartColor.mainTextColor1,
+              color: AppColors.mainTextColor1,
               shadows: shadows,
             ),
           );

@@ -1,8 +1,15 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'dart:io' as io;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/task.dart';
 import 'package:my_todo/component/container/bubble_container.dart';
@@ -15,9 +22,16 @@ import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/utils/permission.dart';
 import 'package:my_todo/utils/picker.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/web_sandbox.dart';
+import 'package:my_todo/view/add/add_post_page.dart';
+import 'package:my_todo/view/map/locate/locate_page.dart';
 import 'package:my_todo/view/task/detail/task_detail_controller.dart';
+import 'package:my_todo/view/task/snapshot/task_card.dart';
+import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class TaskInfoPage extends StatefulWidget {
@@ -32,7 +46,7 @@ class _TaskInfoPageState extends State<TaskInfoPage>
   TaskInfoController controller = Get.find<TaskInfoController>();
   Rx<List<Widget>> imageWidgets = Rx([]);
   Rx<Widget> body = Rx(Container());
-
+  late TabController _tabController;
   final double infoHeight = 700.0;
   AnimationController? animationController;
   Animation<double>? animation;
@@ -52,6 +66,11 @@ class _TaskInfoPageState extends State<TaskInfoPage>
       ),
     );
     setData();
+
+    _tabController = TabController(
+      length: controller.conds.length,
+      vsync: this,
+    );
     super.initState();
   }
 
@@ -79,6 +98,35 @@ class _TaskInfoPageState extends State<TaskInfoPage>
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> tabViews = [];
+    List<Widget> tabs = List.generate(controller.conds.length, (idx) {
+      var cond = controller.conds[idx];
+      switch (cond.type) {
+        case ConditionType.click:
+          tabViews.add(TaskClickPage());
+        case ConditionType.qr:
+          tabViews.add(TaskQRPage());
+        case ConditionType.locale:
+          tabViews.add(TaskLocalePage());
+        case ConditionType.text:
+          tabViews.add(TaskTextPage());
+        case ConditionType.file:
+          tabViews.add(TaskFilePage());
+      }
+      return Tab(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(cond.icon(), color: Theme.of(context).colorScheme.onPrimary),
+            SizedBox(width: 6),
+            Text(
+              cond.type.toString(),
+              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+            ),
+          ],
+        ),
+      );
+    });
     return todoScaffold(
       context,
       appBar: AppBar(
@@ -97,21 +145,24 @@ class _TaskInfoPageState extends State<TaskInfoPage>
               showTipDialog(context, content: "refresh success");
               debugPrint("refresh submit");
             },
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.cloud_upload),
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(10, (idx) {
-            return BubbleContainer(
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              child: Icon(Icons.task, size: 50),
-            );
-          }),
+        bottom: TabBar(
+          isScrollable: true,
+          controller: _tabController,
+          tabs: tabs,
+          indicator: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).primaryColor,
+              width: 2,
+            ), // 只显示边框
+            borderRadius: BorderRadius.circular(30), // 让边框有圆角
+            color: Colors.transparent, // 确保背景透明
+          ),
         ),
       ),
+      body: TabBarView(controller: _tabController, children: tabViews),
     );
 
     final double tempHeight =
@@ -648,5 +699,194 @@ class _TaskInfoPageState extends State<TaskInfoPage>
         ),
       ),
     );
+  }
+}
+
+class TaskClickPage extends StatefulWidget {
+  const TaskClickPage({super.key});
+
+  @override
+  State<TaskClickPage> createState() => _TaskClickPage();
+}
+
+class _TaskClickPage extends State<TaskClickPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SvgPicture.asset('assets/images/click.svg'),
+        TextButton(
+          onPressed: () {},
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: lighten(Theme.of(context).primaryColor),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class TaskFilePage extends StatefulWidget {
+  const TaskFilePage({super.key});
+
+  @override
+  State<TaskFilePage> createState() => _TaskFilePage();
+}
+
+class _TaskFilePage extends State<TaskFilePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+class TaskTextPage extends StatefulWidget {
+  const TaskTextPage({super.key});
+
+  @override
+  State<TaskTextPage> createState() => _TaskTextPage();
+}
+
+class _TaskTextPage extends State<TaskTextPage> {
+  final QuillController controller = () {
+    return QuillController.basic(
+      config: QuillControllerConfig(
+        clipboardConfig: QuillClipboardConfig(
+          enableExternalRichPaste: true,
+          onImagePaste: (imageBytes) async {
+            if (kIsWeb) {
+              // Dart IO is unsupported on the web.
+              return null;
+            }
+            // Save the image somewhere and return the image URL that will be
+            // stored in the Quill Delta JSON (the document).
+            final newFileName =
+                'image-file-${DateTime.now().toIso8601String()}.png';
+            final newPath = path.join(
+              io.Directory.systemTemp.path,
+              newFileName,
+            );
+            final file = await io.File(
+              newPath,
+            ).writeAsBytes(imageBytes, flush: true);
+            return file.path;
+          },
+        ),
+      ),
+    );
+  }();
+
+  final FocusNode editorFocusNode = FocusNode();
+  final ScrollController editorScrollController = ScrollController();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          QuillSimpleToolbar(
+            controller: controller,
+            config: QuillSimpleToolbarConfig(
+              embedButtons: FlutterQuillEmbeds.toolbarButtons(),
+              showClipboardPaste: true,
+              customButtons: [
+                QuillToolbarCustomButtonOptions(
+                  icon: const Icon(Icons.add_alarm_rounded),
+                  onPressed: () {
+                    controller.document.insert(
+                      controller.selection.extentOffset,
+                      TimeStampEmbed(DateTime.now().toString()),
+                    );
+                    controller.updateSelection(
+                      TextSelection.collapsed(
+                        offset: controller.selection.extentOffset + 1,
+                      ),
+                      ChangeSource.local,
+                    );
+                  },
+                ),
+              ],
+              buttonOptions: QuillSimpleToolbarButtonOptions(
+                base: QuillToolbarBaseButtonOptions(
+                  afterButtonPressed: () {
+                    final isDesktop = {
+                      TargetPlatform.linux,
+                      TargetPlatform.windows,
+                      TargetPlatform.macOS,
+                    }.contains(defaultTargetPlatform);
+                    if (isDesktop) {
+                      editorFocusNode.requestFocus();
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: QuillEditor(
+              focusNode: editorFocusNode,
+              scrollController: editorScrollController,
+              controller: controller,
+              config: QuillEditorConfig(
+                placeholder: 'Start writing your notes...',
+                padding: const EdgeInsets.all(16),
+                embedBuilders: [
+                  ...FlutterQuillEmbeds.editorBuilders(
+                    imageEmbedConfig: QuillEditorImageEmbedConfig(
+                      imageProviderBuilder: (context, imageUrl) {
+                        // https://pub.dev/packages/flutter_quill_extensions#-image-assets
+                        if (imageUrl.startsWith('assets/')) {
+                          return AssetImage(imageUrl);
+                        }
+                        return null;
+                      },
+                    ),
+                    videoEmbedConfig: QuillEditorVideoEmbedConfig(
+                      customVideoBuilder: (videoUrl, readOnly) {
+                        // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
+                        return null;
+                      },
+                    ),
+                  ),
+                  TimeStampEmbedBuilder(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class TaskLocalePage extends StatefulWidget {
+  const TaskLocalePage({super.key});
+
+  @override
+  State<TaskLocalePage> createState() => _TaskLocalePage();
+}
+
+class _TaskLocalePage extends State<TaskLocalePage> {
+  @override
+  Widget build(BuildContext context) {
+    return MapLocatePage();
+  }
+}
+
+class TaskQRPage extends StatefulWidget {
+  const TaskQRPage({super.key});
+
+  @override
+  State<TaskQRPage> createState() => _TaskQRPage();
+}
+
+class _TaskQRPage extends State<TaskQRPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }

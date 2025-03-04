@@ -105,6 +105,7 @@ PreferredSizeWidget todoAppBar(
   Widget? title,
   Widget? leading,
   List<Widget>? actions,
+  PreferredSizeWidget? bottom,
 }) {
   return AppBar(
     title: title,
@@ -113,17 +114,19 @@ PreferredSizeWidget todoAppBar(
     actions: actions,
     elevation: elevation,
     backgroundColor: Theme.of(context).colorScheme.primary,
-    bottom: PreferredSize(
-      preferredSize: const Size.fromHeight(1.0),
-      child: Container(
-        color: ThemeProvider.contrastColor(
-          context,
-          light: HexColor.fromInt(0xceced2),
-          dark: Colors.grey.withOpacity(0.8),
+    bottom:
+        bottom ??
+        PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            color: ThemeProvider.contrastColor(
+              context,
+              light: HexColor.fromInt(0xceced2),
+              dark: Colors.grey.withOpacity(0.8),
+            ),
+            height: 1.0,
+          ),
         ),
-        height: 1.0,
-      ),
-    ),
   );
 }
 
@@ -165,6 +168,7 @@ Scaffold todoScaffold(
                 borderSpacing: actionBorderSpacing,
               )
               : null,
+      bottom: appBar?.bottom,
     ),
     backgroundColor: Theme.of(context).colorScheme.primary,
     body: body,

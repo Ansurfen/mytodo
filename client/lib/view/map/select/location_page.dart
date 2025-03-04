@@ -69,14 +69,11 @@ class _LocatePageState extends State<LocatePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     drawer = MyDrawer(
       child: Column(
         children: [
-          const SizedBox(
-            height: 60,
-          ),
+          const SizedBox(height: 60),
           GestureDetector(
             child: const ReactiveText(text: "back", icon: Icons.abc),
             onTap: () {
@@ -95,17 +92,16 @@ class _LocatePageState extends State<LocatePage> {
             padding: const EdgeInsets.only(left: 10, right: 30),
             child: Container(
               decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(80),
-                      bottomRight: Radius.circular(80)),
-                  color: Colors.green),
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(80),
+                  bottomRight: Radius.circular(80),
+                ),
+                color: Colors.green,
+              ),
               child: const Row(
                 children: [
                   Icon(Icons.location_on),
-                  Text(
-                    "标记点",
-                    style: TextStyle(fontSize: 24),
-                  ),
+                  Text("标记点", style: TextStyle(fontSize: 24)),
                 ],
               ),
             ),
@@ -114,8 +110,10 @@ class _LocatePageState extends State<LocatePage> {
             child: const ReactiveText(text: "标记点", icon: Icons.abc),
             onTap: () {
               // webSandBoxController.sendEvent("screenshot", "");
-              controller.webSandBoxController
-                  .callMethod("switchOpenMarker", null);
+              controller.webSandBoxController.callMethod(
+                "switchOpenMarker",
+                null,
+              );
               Get.back();
             },
           ),
@@ -128,43 +126,49 @@ class _LocatePageState extends State<LocatePage> {
     Rx<bool> focus = Rx(false);
     Size size = MediaQuery.sizeOf(context);
     Widget searchBar = buildFloatingSearchBar(
-        context,
-        (v) {
-          focus.value = v;
-        },
-        controller.model,
-        onTap: () {
-          controller.webSandBoxController.callMethod("hello", ["你好"]);
-        });
+      context,
+      (v) {
+        focus.value = v;
+      },
+      controller.model,
+      onTap: () {
+        controller.webSandBoxController.callMethod("hello", ["你好"]);
+      },
+    );
     return Scaffold(
-        drawerScrimColor: Colors.transparent,
-        drawer:
-            Obx(() => focus.value ? PointerInterceptor(child: drawer) : drawer),
-        onDrawerChanged: (v) {
-          focus.value = v;
-        },
-        body: FutureBuilder<bool>(
-            future: controller.getLocation(context),
-            builder: (ctx, snap) {
-              if (snap.hasData) {
-                return Stack(
-                  children: [
-                    Padding(
-                        padding: const EdgeInsets.only(top: 60),
-                        child: SizedBox(
-                          height: size.height - 60,
-                          child: webSandBox(controller.webSandBoxController),
-                        )),
-                    Obx(
-                      () => focus.value
+      drawerScrimColor: Colors.transparent,
+      drawer: Obx(
+        () => focus.value ? PointerInterceptor(child: drawer) : drawer,
+      ),
+      onDrawerChanged: (v) {
+        focus.value = v;
+      },
+      body: FutureBuilder<bool>(
+        future: controller.getLocation(context),
+        builder: (ctx, snap) {
+          if (snap.hasData) {
+            return Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 60),
+                  child: SizedBox(
+                    height: size.height - 60,
+                    child: webSandBox(controller.webSandBoxController),
+                  ),
+                ),
+                Obx(
+                  () =>
+                      focus.value
                           ? PointerInterceptor(child: searchBar)
                           : searchBar,
-                    )
-                  ],
-                );
-              }
-              return Container();
-            }));
+                ),
+              ],
+            );
+          }
+          return Container();
+        },
+      ),
+    );
   }
 
   @override
@@ -172,25 +176,32 @@ class _LocatePageState extends State<LocatePage> {
     if (kIsWeb) {
       return _buildByWeb(context);
     }
-    Widget searchBar =
-        buildFloatingSearchBar(context, (v) {}, controller.model, onTap: () {
-      controller.webSandBoxController.callMethod("hello", ["你好"]);
-    });
+    Widget searchBar = buildFloatingSearchBar(
+      context,
+      (v) {},
+      controller.model,
+      onTap: () {
+        controller.webSandBoxController.callMethod("hello", ["你好"]);
+      },
+    );
     return Scaffold(
-        drawer: drawer,
-        drawerScrimColor: Colors.transparent,
-        body: FutureBuilder<bool>(
-          future: controller.getLocation(context),
-          builder: (ctx, snap) {
-            if (snap.hasData) {
-              return Stack(children: [
+      drawer: drawer,
+      drawerScrimColor: Colors.transparent,
+      body: FutureBuilder<bool>(
+        future: controller.getLocation(context),
+        builder: (ctx, snap) {
+          if (snap.hasData) {
+            return Stack(
+              children: [
                 webSandBox(controller.webSandBoxController),
-                searchBar
-              ]);
-            }
-            return Container();
-          },
-        ));
+                searchBar,
+              ],
+            );
+          }
+          return Container();
+        },
+      ),
+    );
 
     // return Scaffold(
     //     body: Stack(
@@ -205,8 +216,11 @@ class _LocatePageState extends State<LocatePage> {
 }
 
 Widget buildFloatingSearchBar(
-    BuildContext context, ValueChanged<bool> cb, SearchModel model,
-    {required void Function() onTap}) {
+  BuildContext context,
+  ValueChanged<bool> cb,
+  SearchModel model, {
+  required void Function() onTap,
+}) {
   final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
   final FloatingSearchBarController controller = FloatingSearchBarController();
 
@@ -236,14 +250,9 @@ Widget buildFloatingSearchBar(
     actions: [
       FloatingSearchBarAction(
         showIfOpened: false,
-        child: CircularButton(
-          icon: const Icon(Icons.place),
-          onPressed: onTap,
-        ),
+        child: CircularButton(icon: const Icon(Icons.place), onPressed: onTap),
       ),
-      FloatingSearchBarAction.searchToClear(
-        showIfClosed: false,
-      ),
+      FloatingSearchBarAction.searchToClear(showIfClosed: false),
     ],
     builder: (context, transition) => buildExpandableBody(context, model),
   );
@@ -252,32 +261,41 @@ Widget buildFloatingSearchBar(
 Widget buildExpandableBody(BuildContext context, SearchModel model) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 16),
-    child: Obx(() => Material(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(8),
-          clipBehavior: Clip.antiAlias,
-          child: ImplicitlyAnimatedList<Place>(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            items: model.suggestions.value,
-            insertDuration: const Duration(milliseconds: 700),
-            itemBuilder: (BuildContext context, Animation<double> animation,
-                Place item, _) {
-              return SizeFadeTransition(
-                animation: animation,
-                child: buildItem(context, model, item),
-              );
-            },
-            updateItemBuilder: (BuildContext context,
-                Animation<double> animation, Place item) {
-              return FadeTransition(
-                opacity: animation,
-                child: buildItem(context, model, item),
-              );
-            },
-            areItemsTheSame: (Place a, Place b) => a == b,
-          ),
-        )),
+    child: Obx(
+      () => Material(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(8),
+        clipBehavior: Clip.antiAlias,
+        child: ImplicitlyAnimatedList<Place>(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          items: model.suggestions.value,
+          insertDuration: const Duration(milliseconds: 700),
+          itemBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Place item,
+            _,
+          ) {
+            return SizeFadeTransition(
+              animation: animation,
+              child: buildItem(context, model, item),
+            );
+          },
+          updateItemBuilder: (
+            BuildContext context,
+            Animation<double> animation,
+            Place item,
+          ) {
+            return FadeTransition(
+              opacity: animation,
+              child: buildItem(context, model, item),
+            );
+          },
+          areItemsTheSame: (Place a, Place b) => a == b,
+        ),
+      ),
+    ),
   );
 }
 
@@ -305,9 +323,10 @@ Widget buildItem(BuildContext context, SearchModel model, Place place) {
                 width: 36,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),
-                  child: model.suggestions.value == history
-                      ? const Icon(Icons.history, key: Key('history'))
-                      : const Icon(Icons.place, key: Key('place')),
+                  child:
+                      model.suggestions.value == history
+                          ? const Icon(Icons.history, key: Key('history'))
+                          : const Icon(Icons.place, key: Key('place')),
                 ),
               ),
               const SizedBox(width: 16),
@@ -316,15 +335,13 @@ Widget buildItem(BuildContext context, SearchModel model, Place place) {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      place.name,
-                      style: textTheme.titleMedium,
-                    ),
+                    Text(place.name, style: textTheme.titleMedium),
                     const SizedBox(height: 2),
                     Text(
                       place.level2Address,
-                      style: textTheme.bodyMedium
-                          ?.copyWith(color: Colors.grey.shade600),
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),

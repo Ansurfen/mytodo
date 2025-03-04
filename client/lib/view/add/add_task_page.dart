@@ -1,6 +1,7 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart' as svg_provider;
 import 'package:get/get.dart';
@@ -383,6 +384,7 @@ class _AddTaskPageState extends State<AddTaskPage>
             platform: DevicePlatform.iOS,
             sections: [
               SettingsSection(
+                title: Text("common".tr),
                 tiles: [
                   SettingsTile.navigation(
                     onPressed: (context) {
@@ -414,14 +416,11 @@ class _AddTaskPageState extends State<AddTaskPage>
                     leading: Icon(Icons.topic),
                     value: Text("高三一班"),
                   ),
-                  SettingsTile.navigation(
+                  SettingsTile(
                     title: Text('name'.tr),
                     leading: Icon(Icons.drive_file_rename_outline_outlined),
                     // value: Text("高三一班"),
-                    trailing: Text(
-                      "高三一班",
-                      style: TextStyle(color: Colors.grey),
-                    ),
+                    trailing: Text("高三一班"),
                   ),
                   SettingsTile.navigation(
                     onPressed: (ctx) async {
@@ -483,13 +482,13 @@ class _AddTaskPageState extends State<AddTaskPage>
                           builder: (context, data, _) {
                             return Text(
                               BoardDateFormat('yyyy/MM/dd HH:mm').format(data),
-                              style: TextStyle(
-                                color: ThemeProvider.contrastColor(
-                                  context,
-                                  light: Colors.grey,
-                                  dark: Colors.white,
-                                ),
-                              ),
+                              // style: TextStyle(
+                              //   color: ThemeProvider.contrastColor(
+                              //     context,
+                              //     light: Colors.grey,
+                              //     dark: Colors.white,
+                              //   ),
+                              // ),
                             );
                           },
                         ),
@@ -499,17 +498,62 @@ class _AddTaskPageState extends State<AddTaskPage>
                           builder: (context, data, _) {
                             return Text(
                               '~ ${BoardDateFormat('yyyy/MM/dd HH:mm').format(data)}',
-                              style: TextStyle(
-                                color: ThemeProvider.contrastColor(
-                                  context,
-                                  light: Colors.grey,
-                                  dark: Colors.white,
-                                ),
-                              ),
+                              // style: TextStyle(
+                              //   color: ThemeProvider.contrastColor(
+                              //     context,
+                              //     light: Colors.grey,
+                              //     dark: Colors.white,
+                              //   ),
+                              // ),
                             );
                           },
                         ),
                       ],
+                    ),
+                  ),
+                ],
+              ),
+              SettingsSection(
+                title: Text("condition".tr),
+                tiles: [
+                  SettingsTile.switchTile(
+                    initialValue: false,
+                    onToggle: (v) {},
+                    leading: Icon(Icons.ads_click),
+                    title: Text("click"),
+                  ),
+                  SettingsTile.switchTile(
+                    initialValue: false,
+                    onToggle: (v) {},
+                    leading: Icon(Icons.qr_code),
+                    title: Text("Scan QR"),
+                  ),
+                  SettingsTile.navigation(
+                    leading: Icon(Icons.drive_folder_upload),
+                    title: Text("file upload"),
+                  ),
+                  SettingsTile.navigation(
+                    leading: Icon(Icons.abc),
+                    title: Text("text submit"),
+                  ),
+                  SettingsTile(
+                    onPressed: (ctx) {
+                      showSheetBottom(
+                        ctx,
+                        title: "locale".tr,
+                        child: Column(children: [
+                          
+                        ]),
+                      );
+                    },
+                    leading: Icon(Icons.location_on),
+                    title: Text("locale"),
+                    trailing: badges.Badge(
+                      badgeContent: Text('3'),
+                      badgeStyle: badges.BadgeStyle(
+                        badgeColor: Theme.of(context).primaryColorLight,
+                      ),
+                      badgeAnimation: badges.BadgeAnimation.rotation(),
                     ),
                   ),
                 ],
@@ -522,7 +566,10 @@ class _AddTaskPageState extends State<AddTaskPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text("描述", style: TextStyle(color: Colors.grey)),
+                Padding(
+                  padding: EdgeInsets.only(left: 15),
+                  child: Text("描述", style: TextStyle(color: Colors.grey)),
+                ),
                 SizedBox(height: 10),
                 TextField(
                   minLines: 5,
@@ -561,6 +608,70 @@ class _AddTaskPageState extends State<AddTaskPage>
           ),
         ],
       ),
+    );
+  }
+
+  void showSheetBottom(
+    BuildContext context, {
+    required String title,
+    required Widget child,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        minWidth: double.infinity,
+        minHeight: MediaQuery.sizeOf(context).height - 180,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          height: MediaQuery.of(context).size.height / 2,
+          clipBehavior: Clip.antiAlias,
+          constraints: BoxConstraints(
+            minWidth: double.infinity,
+            minHeight: MediaQuery.sizeOf(context).height - 180,
+          ),
+          decoration: BoxDecoration(
+            color: ThemeProvider.contrastColor(
+              context,
+              light: HexColor.fromInt(0xf5f5f5),
+              dark: HexColor.fromInt(0x1c1c1e),
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(10.0),
+              topRight: Radius.circular(10.0),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Get.back();
+                    },
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: child,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

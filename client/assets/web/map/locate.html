@@ -12,38 +12,47 @@
 <!-- dom-to-image 官方地址：https://github.com/tsayen/dom-to-image -->
 <script src="https://map.qq.com/api/gljs?v=1.exp&key=OB4BZ-D4W3U-B7VVO-4PJWW-6TKDJ-WPB77"></script>
 <script type="text/javascript" src="../lib/web_sandbox.js"></script>
+<script type="text/javascript" src="./binding.js"></script>
 
 <body>
-<div id="container"></div>
-<div class="info">
-    <button class="backBtn" onclick="back()">返回</button>
-    <button class="commitBtn" onclick="commit()">确认</button>
-    <button class="reloadBtn" onclick="reload()">重新定位</button>
-</div>
-<script>
-        const back = () => {
-            alert("返回")
-        }
-
-        const commit = () => {
-            screenshot()
-        }
-
-        const reload = () => {
-            map.distory()
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    initMap(position.coords.latitude, position.coords.longitude);
-                }, (err) => {
-                    alert("未能定位当前位置。");
-                });
-            }
-            else {
-                alert("该浏览器不支持获取地理位置。");
-            }
-        }
-
+    <div id="container"></div>
+    <div class="info">
+        <button class="commitBtn" onclick="commit()">确认</button>
+        <button class="reloadBtn" onclick="reload()">重新定位</button>
+    </div>
+    <script>
         var map, center;
+        const reload = () => {
+            map.destroy()
+            var handle = WebBridge.F.geolocation().handle;
+            handle.then((v) => {
+                if (typeof v == "string") {
+                    if (v.length > 0) {
+                        let pos = JSON.parse(v);
+                        initMap(pos["latitude"], pos["longitude"]);
+                    } else {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition((position) => {
+                                initMap(position.coords.latitude, position.coords.longitude);
+                            }, (err) => {
+                                alert("未能定位当前位置。");
+                                initMap(defaultLat, defaultLng);
+                            });
+                        }
+                        else {
+                            alert("该浏览器不支持获取地理位置。");
+                            initMap(defaultLat, defaultLng);
+                        }
+                    }
+                } else {
+                    initMap(defaultLat, defaultLng);
+                }
+            }).catch((err) => {
+                console.log(err)
+            })
+        }
+
+
         function initMap(lat, lng) {
             center = new TMap.LatLng(lat, lng);
             map = new TMap.Map("container", {
@@ -80,7 +89,7 @@
         }
 
         var position = document.getElementById("position");
-        function screenshot() {
+        function commit() {
             var node = document.getElementById('container');
             domtoimage
                 .toPng(node)
@@ -92,16 +101,32 @@
                 });
         }
         (() => {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    initMap(position.coords.latitude, position.coords.longitude);
-                }, (err) => {
-                    alert("未能定位当前位置。");
-                });
-            }
-            else {
-                alert("该浏览器不支持获取地理位置。");
-            }
+            var handle = WebBridge.F.geolocation().handle;
+            handle.then((v) => {
+                if (typeof v == "string") {
+                    if (v.length > 0) {
+                        let pos = JSON.parse(v);
+                        initMap(pos["latitude"], pos["longitude"]);
+                    } else {
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition((position) => {
+                                initMap(position.coords.latitude, position.coords.longitude);
+                            }, (err) => {
+                                alert("未能定位当前位置。");
+                                initMap(defaultLat, defaultLng);
+                            });
+                        }
+                        else {
+                            alert("该浏览器不支持获取地理位置。");
+                            initMap(defaultLat, defaultLng);
+                        }
+                    }
+                } else {
+                    initMap(defaultLat, defaultLng);
+                }
+            }).catch((err) => {
+                console.log(err)
+            })
         })();
     </script>
 </body>
@@ -122,41 +147,30 @@
 
     .info {
         position: absolute;
-        left: 40%;
+        left: 50%;
         bottom: 10%;
+        transform: translateX(-50%);
+        /* 居中容器 */
         font-size: 14px;
-        width: 270px;
-        padding: 10px;
-        border-radius: 3px;
         display: flex;
         flex-direction: row;
+        /* 水平排列按钮 */
+        gap: 10px;
+        /* 设置按钮间距 */
         z-index: 1;
     }
 
-    .backBtn {
-        background-color: #f66f6a;
-        color: white;
-        border-radius: 5px 0 0 5px;
-        font-size: 16px;
-    }
-
-    .commitBtn {
-        background-color: #f66f6a;
-        color: white;
-        font-size: 16px;
-    }
-
+    .commitBtn,
     .reloadBtn {
-        background-color: #f66f6a;
-        color: white;
-        border-radius: 0 5px 5px 0;
-    }
-
-    button {
-        width: 400px;
+        width: 100px;
+        /* 设置按钮宽度 */
         height: 45px;
         border: 0;
         box-sizing: content-box;
+        font-size: 16px;
+        border-radius: 5px;
+        background-color: #f66f6a;
+        color: white;
     }
 
     button:hover {
