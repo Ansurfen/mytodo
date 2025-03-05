@@ -27,13 +27,13 @@ class WebViewEventChannel {
                 args: v
             });
             return [id, new Promise((resolve) => {
-                    let timer = setInterval(() => {
-                        if (WebViewEventChannel.__webview_event_bridge_data__.get(id) != null) {
-                            clearInterval(timer);
-                            resolve(WebViewEventChannel.__webview_event_bridge_data__.get(id));
-                        }
-                    }, 100);
-                })];
+                let timer = setInterval(() => {
+                    if (WebViewEventChannel.__webview_event_bridge_data__.get(id) != null) {
+                        clearInterval(timer);
+                        resolve(WebViewEventChannel.__webview_event_bridge_data__.get(id));
+                    }
+                }, 100);
+            })];
         };
     }
 }
@@ -66,6 +66,7 @@ class WebBridge {
     static notify(type, detail, origin = "*") {
         let evt = JSON.stringify({ type: type, detail: detail });
         if (kIsPhone) {
+            evt = ["'", ...evt.split(""), "'"].join(""); 
             eval(`${type}.postMessage(${evt});`);
         }
         window.parent.postMessage(evt, origin);
@@ -110,7 +111,7 @@ var __webview_event_listener_entry, kIsPhone = false;
     let pf = navigator.platform;
     let webkit = ua.match(/Web[kK]it[\/]{0,1}([\d.]+)/), android = ua.match(/(Android);?[\s\/]+([\d.]+)?/), osx = !!ua.match(/\(Macintosh\; Intel /), ipad = ua.match(/(iPad).*OS\s([\d_]+)/), ipod = ua.match(/(iPod)(.*OS\s([\d_]+))?/), iphone = !ipad && ua.match(/(iPhone\sOS)\s([\d_]+)/), webos = ua.match(/(webOS|hpwOS)[\s\/]([\d.]+)/), win = /Win\d{2}|Windows/.test(pf), wp = ua.match(/Windows Phone ([\d.]+)/), touchpad = webos && ua.match(/TouchPad/), kindle = ua.match(/Kindle\/([\d.]+)/), silk = ua.match(/Silk\/([\d._]+)/), blackberry = ua.match(/(BlackBerry).*Version\/([\d.]+)/), bb10 = ua.match(/(BB10).*Version\/([\d.]+)/), rimtabletos = ua.match(/(RIM\sTablet\sOS)\s([\d.]+)/), playbook = ua.match(/PlayBook/), chrome = ua.match(/Chrome\/([\d.]+)/) || ua.match(/CriOS\/([\d.]+)/), firefox = ua.match(/Firefox\/([\d.]+)/), firefoxos = ua.match(/\((?:Mobile|Tablet); rv:([\d.]+)\).*Firefox\/[\d.]+/), ie = ua.match(/MSIE\s([\d.]+)/) ||
         ua.match(/Trident\/[\d](?=[^\?]+).*rv:([0-9.].)/), webview = !chrome && ua.match(/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/), safari = webview ||
-        ua.match(/Version\/([\d.]+)([^S](Safari)|[^M]*(Mobile)[^S]*(Safari))/), weixin = ua.match(/MicroMessenger/i);
+            ua.match(/Version\/([\d.]+)([^S](Safari)|[^M]*(Mobile)[^S]*(Safari))/), weixin = ua.match(/MicroMessenger/i);
     // if (browserPlatform.webkit = !!webkit) browserPlatform.version = webkit[1]
     if (webkit) {
         browserPlatform.webkit = !!webkit;

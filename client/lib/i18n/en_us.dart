@@ -131,4 +131,6 @@ Map<String, String> get enUS => {
   "condition_locale": "Locale",
   "condition_file": "File Upload",
   "condition_text": "Text Submit",
+
+  "start_writing_post": "Start writing your post...",
 };

@@ -130,46 +130,54 @@ class _AddPostPageState extends State<AddPostPage> {
       body: SafeArea(
         child: Column(
           children: [
-            QuillSimpleToolbar(
-              controller: addController.post.controller,
-              config: QuillSimpleToolbarConfig(
-                embedButtons: FlutterQuillEmbeds.toolbarButtons(),
-                showClipboardPaste: true,
-                customButtons: [
-                  QuillToolbarCustomButtonOptions(
-                    icon: const Icon(Icons.add_alarm_rounded),
-                    onPressed: () {
-                      addController.post.controller.document.insert(
-                        addController.post.controller.selection.extentOffset,
-                        TimeStampEmbed(DateTime.now().toString()),
-                      );
-                      addController.post.controller.updateSelection(
-                        TextSelection.collapsed(
-                          offset:
-                              addController
-                                  .post
-                                  .controller
-                                  .selection
-                                  .extentOffset +
-                              1,
-                        ),
-                        ChangeSource.local,
-                      );
-                    },
-                  ),
-                ],
-                buttonOptions: QuillSimpleToolbarButtonOptions(
-                  base: QuillToolbarBaseButtonOptions(
-                    afterButtonPressed: () {
-                      final isDesktop = {
-                        TargetPlatform.linux,
-                        TargetPlatform.windows,
-                        TargetPlatform.macOS,
-                      }.contains(defaultTargetPlatform);
-                      if (isDesktop) {
-                        addController.post.editorFocusNode.requestFocus();
-                      }
-                    },
+            Theme(
+              data: ThemeData.light().copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: Theme.of(context).primaryColor,
+                  secondary: Theme.of(context).primaryColorLight,
+                ),
+              ),
+              child: QuillSimpleToolbar(
+                controller: addController.post.controller,
+                config: QuillSimpleToolbarConfig(
+                  embedButtons: FlutterQuillEmbeds.toolbarButtons(),
+                  showClipboardPaste: true,
+                  customButtons: [
+                    QuillToolbarCustomButtonOptions(
+                      icon: const Icon(Icons.add_alarm_rounded),
+                      onPressed: () {
+                        addController.post.controller.document.insert(
+                          addController.post.controller.selection.extentOffset,
+                          TimeStampEmbed(DateTime.now().toString()),
+                        );
+                        addController.post.controller.updateSelection(
+                          TextSelection.collapsed(
+                            offset:
+                                addController
+                                    .post
+                                    .controller
+                                    .selection
+                                    .extentOffset +
+                                1,
+                          ),
+                          ChangeSource.local,
+                        );
+                      },
+                    ),
+                  ],
+                  buttonOptions: QuillSimpleToolbarButtonOptions(
+                    base: QuillToolbarBaseButtonOptions(
+                      afterButtonPressed: () {
+                        final isDesktop = {
+                          TargetPlatform.linux,
+                          TargetPlatform.windows,
+                          TargetPlatform.macOS,
+                        }.contains(defaultTargetPlatform);
+                        if (isDesktop) {
+                          addController.post.editorFocusNode.requestFocus();
+                        }
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -180,7 +188,7 @@ class _AddPostPageState extends State<AddPostPage> {
                 scrollController: addController.post.editorScrollController,
                 controller: addController.post.controller,
                 config: QuillEditorConfig(
-                  placeholder: 'Start writing your notes...',
+                  placeholder: 'start_writing_post'.tr,
                   padding: const EdgeInsets.all(16),
                   embedBuilders: [
                     ...FlutterQuillEmbeds.editorBuilders(

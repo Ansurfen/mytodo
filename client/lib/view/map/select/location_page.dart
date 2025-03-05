@@ -11,6 +11,7 @@ import 'package:implicitly_animated_reorderable_list_2/implicitly_animated_reord
 import 'package:implicitly_animated_reorderable_list_2/transitions.dart';
 import 'package:material_floating_search_bar_2/material_floating_search_bar_2.dart';
 import 'package:my_todo/component/drawer/reactive_text.dart';
+import 'package:my_todo/utils/guard.dart';
 
 import 'package:my_todo/view/map/select/location_controller.dart';
 import 'package:my_todo/view/map/select/place.dart';
@@ -52,6 +53,63 @@ class _MyDrawerState extends State<MyDrawer> {
       backgroundColor: Colors.transparent,
       shadowColor: Colors.transparent,
       child: widget.child,
+    );
+  }
+}
+
+class BottomDrawer extends StatefulWidget {
+  final void Function()? back;
+  final void Function()? marker;
+  final Rx<bool> openMarker;
+  const BottomDrawer({
+    super.key,
+    this.back,
+    this.marker,
+    required this.openMarker,
+  });
+
+  @override
+  State<BottomDrawer> createState() => _BottomDrawerState();
+}
+
+class _BottomDrawerState extends State<BottomDrawer> {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter, // 让 Drawer 贴着底部
+      child: Container(
+        width: double.infinity, // 让 Drawer 充满屏幕宽度
+        height: MediaQuery.of(context).size.height * 0.4, // 限制高度
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(15)), // 圆角
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.location_on),
+              title: Obx(
+                () =>
+                    widget.openMarker.value
+                        ? Text('unmarker'.tr)
+                        : Text('marker'.tr),
+              ),
+              onTap: () {
+                if (widget.marker != null) {
+                  widget.marker!();
+                }
+                widget.openMarker.value = !widget.openMarker.value;
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.exit_to_app),
+              title: Text('back'.tr),
+              onTap: widget.back,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -185,8 +243,18 @@ class _LocatePageState extends State<LocatePage> {
       },
     );
     return Scaffold(
-      drawer: drawer,
-      drawerScrimColor: Colors.transparent,
+      drawer: BottomDrawer(
+        openMarker: controller.openMarker,
+        back: () {
+          Get.back();
+          Get.back(result: controller.pos);
+        },
+        marker: () {
+          controller.switchOpenMarker();
+          Get.back();
+        },
+      ),
+      drawerScrimColor: Colors.black.withOpacity(0.2),
       body: FutureBuilder<bool>(
         future: controller.getLocation(context),
         builder: (ctx, snap) {

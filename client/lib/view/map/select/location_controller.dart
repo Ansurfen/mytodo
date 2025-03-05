@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/map/select/place.dart';
 
 import 'package:my_todo/view/map/select/search_model.dart';
@@ -17,39 +18,50 @@ class LocationController extends GetxController {
   late final SearchModel model;
   List<Place> pos = [];
   Position? position;
+  final Rx<bool> openMarker = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    webSandBoxController = WebSandBoxController()
-      ..id = "flutter-widget"
-      ..width = '640'
-      ..height = '360'
-      ..style?.border = 'none'
-      ..jsEnable = true
-      ..loadFlutterAsset("assets/web/map/select.html")
-      ..addEventChannel("add_marker", (event) {
-        pos.add(Place(
-            name: '',
-            country: '',
-            lat: double.parse(event.data["lat"]),
-            lng: double.parse(event.data["lng"])));
-      })
-      ..addDartHandler("geolocation", (v) {
-        if (position == null) {
-          return "";
-        }
-        return jsonEncode(position);
-      });
+    webSandBoxController =
+        WebSandBoxController()
+          ..id = "flutter-widget"
+          ..width = '640'
+          ..height = '360'
+          ..style?.border = 'none'
+          ..jsEnable = true
+          ..loadFlutterAsset("assets/web/map/select.html")
+          ..addEventChannel("add_marker", (event) {
+            pos.add(
+              Place(
+                name: '',
+                country: '',
+                lat: double.parse(event.data["lat"]),
+                lng: double.parse(event.data["lng"]),
+              ),
+            );
+          })
+          ..addDartHandler("geolocation", (v) {
+            if (position == null) {
+              return "";
+            }
+            return jsonEncode(position);
+          });
     model = SearchModel((v) {
       var coordinates = v as Map<String, double>;
-      webSandBoxController.sendEvent("panTo",
-          {"lat": "${coordinates["lat"]}", "lng": "${coordinates["lng"]}"});
+      webSandBoxController.sendEvent("panTo", {
+        "lat": "${coordinates["lat"]}",
+        "lng": "${coordinates["lng"]}",
+      });
     });
   }
 
   Future<bool> getLocation(BuildContext context) async {
     position = await getPosition(context);
     return true;
+  }
+
+  void switchOpenMarker() {
+    webSandBoxController.callMethod("switchOpenMarker", null);
   }
 }

@@ -279,8 +279,12 @@ class _WebSandBoxController4App implements WebSandBoxController {
     controller.addJavaScriptChannel(
       type,
       onMessageReceived: (msg) {
-        Guard.log.i(msg.message);
-        callback(html.MessageEvent(type, data: msg.message));
+        String evt = msg.message;
+        if (evt.startsWith("'") && evt.endsWith("'")) {
+          evt = evt.substring(1, evt.length - 1);
+        }
+        Map<String, dynamic> json = jsonDecode(evt);
+        callback(html.MessageEvent(type, data: json["detail"]));
       },
     );
   }

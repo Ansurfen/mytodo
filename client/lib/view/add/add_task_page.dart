@@ -7,9 +7,15 @@ import 'package:flutter_svg_provider/flutter_svg_provider.dart' as svg_provider;
 import 'package:get/get.dart';
 import 'package:my_todo/component/radio.dart';
 import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/utils/picker.dart';
+import 'package:my_todo/view/add/file_area.dart';
+import 'package:my_todo/view/add/popular_filter_list.dart';
+import 'package:my_todo/view/map/select/place.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 final List<String> animalAmphibian = ['assets/animal/amphibian/frog.svg'];
@@ -188,6 +194,14 @@ final List<String> plantOther = [
   'assets/plant/other/sheaf_of_rice.svg',
 ];
 
+class LocaleItem {
+  double lng;
+  double lat;
+  int radius;
+
+  LocaleItem({required this.lng, required this.lat, this.radius = 30});
+}
+
 final List<String> foods = ['assets/food/grapes.svg'];
 
 class AddTaskPage extends StatefulWidget {
@@ -211,6 +225,7 @@ class _AddTaskPageState extends State<AddTaskPage>
   final Rx<int> _selectedIndex = 0.obs;
 
   Rx<String> profile = "".obs;
+  RxList<LocaleItem> localeItems = <LocaleItem>[].obs;
 
   @override
   bool get wantKeepAlive => true;
@@ -529,10 +544,56 @@ class _AddTaskPageState extends State<AddTaskPage>
                     title: Text("Scan QR"),
                   ),
                   SettingsTile.navigation(
+                    onPressed: (context) {
+                      showSheetBottom(
+                        context,
+                        title: "file upload",
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("启用"),
+                                CupertinoSwitch(
+                                  value: false,
+                                  onChanged: (bool value) {
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                     leading: Icon(Icons.drive_folder_upload),
                     title: Text("file upload"),
                   ),
                   SettingsTile.navigation(
+                    onPressed: (context) {
+                      showSheetBottom(
+                        context,
+                        title: "text submit",
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("启用"),
+                                CupertinoSwitch(
+                                  value: false,
+                                  onChanged: (bool value) {
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            contentLimit(context),
+                          ],
+                        ),
+                      );
+                    },
                     leading: Icon(Icons.abc),
                     title: Text("text submit"),
                   ),
@@ -541,19 +602,98 @@ class _AddTaskPageState extends State<AddTaskPage>
                       showSheetBottom(
                         ctx,
                         title: "locale".tr,
-                        child: Column(children: [
-                          
-                        ]),
+                        right: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                localeEditor(
+                                  context,
+                                  cb: (v) {
+                                    localeItems.add(v);
+                                  },
+                                );
+                              },
+                              icon: Icon(
+                                Icons.drive_file_rename_outline_outlined,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                for (var v
+                                    in (await RouterProvider.viewMapSelect()
+                                        as List<Place>)) {
+                                  localeItems.add(
+                                    LocaleItem(lng: v.lng, lat: v.lat),
+                                  );
+                                }
+                              },
+                              icon: Icon(
+                                Icons.add,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "经度，纬度，半径",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            Container(height: 8),
+                            Obx(
+                              () => ListView.separated(
+                                shrinkWrap: true,
+                                itemCount: localeItems.length,
+                                itemBuilder: (ctx, idx) {
+                                  return localeBar(
+                                    ctx,
+                                    localeItems[idx],
+                                    edit: () {
+                                      localeEditor(
+                                        ctx,
+                                        cb: (v) {
+                                          localeItems[idx] = v;
+                                        },
+                                        item: localeItems[idx],
+                                      );
+                                    },
+                                    remove: () {
+                                      localeItems.removeAt(idx);
+                                    },
+                                  );
+                                },
+                                separatorBuilder: (
+                                  BuildContext context,
+                                  int index,
+                                ) {
+                                  return Container(height: 10);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       );
                     },
                     leading: Icon(Icons.location_on),
                     title: Text("locale"),
-                    trailing: badges.Badge(
-                      badgeContent: Text('3'),
-                      badgeStyle: badges.BadgeStyle(
-                        badgeColor: Theme.of(context).primaryColorLight,
-                      ),
-                      badgeAnimation: badges.BadgeAnimation.rotation(),
+                    trailing: Obx(
+                      () =>
+                          localeItems.isNotEmpty
+                              ? badges.Badge(
+                                badgeContent: Text(
+                                  localeItems.length.toString(),
+                                ),
+                                badgeStyle: badges.BadgeStyle(
+                                  badgeColor:
+                                      Theme.of(context).primaryColorLight,
+                                ),
+                                badgeAnimation:
+                                    badges.BadgeAnimation.rotation(),
+                              )
+                              : Container(),
                     ),
                   ),
                 ],
@@ -614,6 +754,8 @@ class _AddTaskPageState extends State<AddTaskPage>
   void showSheetBottom(
     BuildContext context, {
     required String title,
+    Widget? right,
+    List<Widget>? actions,
     required Widget child,
   }) {
     showModalBottomSheet(
@@ -651,17 +793,31 @@ class _AddTaskPageState extends State<AddTaskPage>
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Get.back();
-                    },
-                    icon: Icon(
-                      Icons.close,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                      Text(
+                        title,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                  right != null
+                      ? Padding(
+                        padding: EdgeInsets.only(right: 15),
+                        child: right,
+                      )
+                      : Container(),
                 ],
               ),
               Padding(
@@ -699,6 +855,156 @@ class _AddTaskPageState extends State<AddTaskPage>
   }
 }
 
+void localeEditor(
+  BuildContext context, {
+  LocaleItem? item,
+  required void Function(LocaleItem v) cb,
+}) {
+  TextEditingController lngController = TextEditingController(
+    text: item?.lng.toString(),
+  );
+  TextEditingController latController = TextEditingController(
+    text: item?.lat.toString(),
+  );
+  TextEditingController radiusController = TextEditingController(
+    text: item?.radius.toString(),
+  );
+  showTextDialog(
+    context,
+    title: "add",
+    content: Column(
+      children: [
+        TextField(
+          controller: lngController,
+          decoration: InputDecoration(
+            labelText: "longitude".tr,
+            filled: true,
+            fillColor: Theme.of(context).primaryColorLight,
+            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            floatingLabelStyle: TextStyle(color: Colors.black),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            prefixIcon: Icon(Icons.explore, color: Colors.grey),
+          ),
+          style: TextStyle(color: Colors.black),
+        ),
+        Container(height: 20),
+        TextField(
+          controller: latController,
+          decoration: InputDecoration(
+            labelText: "latitude".tr,
+            filled: true,
+            fillColor: Theme.of(context).primaryColorLight,
+            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            floatingLabelStyle: TextStyle(color: Colors.black),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            prefixIcon: Icon(Icons.explore_outlined, color: Colors.grey),
+          ),
+          style: TextStyle(color: Colors.black),
+        ),
+        Container(height: 20),
+        TextField(
+          controller: radiusController,
+          decoration: InputDecoration(
+            labelText: "radius".tr,
+            filled: true,
+            fillColor: Theme.of(context).primaryColorLight,
+            contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            floatingLabelStyle: TextStyle(color: Colors.black),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            prefixIcon: Icon(Icons.circle_outlined, color: Colors.grey),
+          ),
+          style: TextStyle(color: Colors.black),
+        ),
+      ],
+    ),
+    onCancel: () {
+      Get.back();
+    },
+    onConfirm: () {
+      cb(
+        LocaleItem(
+          lng: double.parse(lngController.text),
+          lat: double.parse(latController.text),
+          radius: int.parse(radiusController.text),
+        ),
+      );
+      Get.back();
+    },
+  );
+}
+
+Widget localeBar(
+  BuildContext context,
+  LocaleItem item, {
+  required void Function()? edit,
+  required void Function()? remove,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.grey.withOpacity(0.2),
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 10),
+          child: Text("${item.lng}, ${item.lat}, ${item.radius}"),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: edit,
+              icon: Icon(
+                Icons.edit,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+            IconButton(
+              onPressed: remove,
+              icon: Icon(
+                Icons.remove,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 class RoundedButtonRow extends StatelessWidget {
   final List<String> labels;
   final ValueChanged<int> onTap;
@@ -733,6 +1039,57 @@ class RoundedButtonRow extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+class LocationRow extends StatelessWidget {
+  final String locationText;
+  final VoidCallback onEditPressed;
+  final VoidCallback onRemovePressed;
+
+  const LocationRow({
+    super.key,
+    required this.locationText,
+    required this.onEditPressed,
+    required this.onRemovePressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.2),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: 10),
+            child: Text(locationText),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: onEditPressed,
+                icon: Icon(
+                  Icons.edit,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              IconButton(
+                onPressed: onRemovePressed,
+                icon: Icon(
+                  Icons.remove,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -121,4 +121,6 @@ Map<String, String> get zhCN => {
   "condition_locale": "定位",
   "condition_file": "文件上传",
   "condition_text": "文本提交",
+
+  "start_writing_post": "开始书写你的帖子...",
 };

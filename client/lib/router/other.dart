@@ -18,12 +18,13 @@ import 'package:my_todo/view/splash/splash_page.dart';
 import 'package:my_todo/view/notification/notification_binding.dart';
 import 'package:my_todo/view/notification/notification_page.dart';
 import 'package:my_todo/view/photo/photo_page.dart';
+import 'package:my_todo/view/statistics/statistics_page.dart';
 
 class OtherRouter {
   static List<GetPage> pages = [
     splash,
     setting,
-    // statistic,
+    statistic,
     add,
     photo,
     notification,
@@ -50,8 +51,10 @@ class OtherRouter {
     binding: SettingBinding(),
   );
 
-  // static final statistic =
-  //     GetPage(name: '/statistic', page: () => const StatisticPage());
+  static final statistic = GetPage(
+    name: '/statistic',
+    page: () => const StatisticsPage(),
+  );
 
   static final add = GetPage(
     name: '/add',
