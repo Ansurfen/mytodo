@@ -165,7 +165,8 @@ class TodoThemeData {
     iconTheme: IconThemeData(color: ThemeProvider.style.normal()),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: ThemeProvider.style.normal(),
-      selectionColor: Colors.grey.withOpacity(0.8),
+      selectionColor: ThemeProvider.style.light().withOpacity(0.5),
+      selectionHandleColor: ThemeProvider.style.light(),
     ),
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
@@ -186,7 +187,8 @@ class TodoThemeData {
     fontFamily: getFontFamilyByLanguage(),
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: ThemeProvider.style.normal(),
-      selectionColor: Colors.grey.withOpacity(0.8),
+      selectionColor: ThemeProvider.style.light().withOpacity(0.5),
+      selectionHandleColor: ThemeProvider.style.light(),
     ),
     iconTheme: IconThemeData(color: ThemeProvider.style.normal()),
     primaryColor: ThemeProvider.style.normal(),
@@ -216,25 +218,15 @@ class TodoThemeData {
     _dark = HexColor.fromInt(d);
   }
 
-  Color normal() {
-    return _normal;
-  }
+  Color normal() => _normal;
 
-  Color light() {
-    return _light;
-  }
+  Color light() => _light;
 
-  Color dark() {
-    return _dark;
-  }
+  Color dark() => _dark;
 
-  static lightTheme() {
-    return _lightTheme;
-  }
+  static lightTheme() => _lightTheme;
 
-  static darkTheme() {
-    return _darkTheme;
-  }
+  static darkTheme() => _darkTheme;
 }
 
 abstract class ThemeStyle {

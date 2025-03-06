@@ -7,6 +7,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:intl/intl.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
 import 'package:my_todo/component/container/empty_container.dart';
@@ -37,7 +38,7 @@ class PostDetailPage extends StatefulWidget {
 
 class _PostDetailPageState extends State<PostDetailPage> {
   PostDetailController controller = Get.find<PostDetailController>();
-  QuillController _controller = QuillController.basic();
+  final QuillController _controller = QuillController.basic();
 
   int replaySubID = 0;
   Widget todoDivider(BuildContext context) {
@@ -69,6 +70,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     return Scaffold(
       appBar: todoAppBar(
         context,
+        elevation: 0,
         leading: todoLeadingIconButton(
           context,
           onPressed: Get.back,
@@ -193,32 +195,50 @@ class _PostDetailPageState extends State<PostDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    userProfile(
-                      isMale: controller.data.isMale,
-                      id: controller.data.uid,
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Text(
-                          controller.data.username,
-                          style: const TextStyle(fontSize: 16),
+                        userProfile(
+                          isMale: controller.data.isMale,
+                          id: controller.data.uid,
                         ),
-                        RawChip(
-                          backgroundColor: Theme.of(context).primaryColorLight,
-                          materialTapTargetSize: MaterialTapTargetSize.padded,
-                          avatar: Icon(
-                            Icons.location_on,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          label: Text(
-                            "Unknown",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.data.username,
+                              style: const TextStyle(fontSize: 16),
                             ),
-                          ),
+                            RawChip(
+                              backgroundColor:
+                                  Theme.of(context).primaryColorLight,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.padded,
+                              avatar: Icon(
+                                Icons.location_on,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              label: Text(
+                                "Unknown",
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text("发布于"),
+                        Text(
+                          DateFormat(
+                            'yyyy-MM-dd HH:mm:ss',
+                          ).format(DateTime.now()),
                         ),
                       ],
                     ),

@@ -1,8 +1,7 @@
-import 'package:my_todo/assets.dart';
 
 const kQuillDefaultSample = [
   {
-    'insert': {'image': kScreenshot2},
+    'insert': {'image': 'assets/logo.png'},
     'attributes': {
       'width': '100',
       'height': '100',

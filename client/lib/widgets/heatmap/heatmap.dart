@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:my_todo/theme/color.dart';
+import 'package:my_todo/utils/guard.dart';
 
 class TodoHeatMap extends StatefulWidget {
   const TodoHeatMap({super.key});
@@ -46,15 +50,7 @@ class _HeatMapExample extends State<TodoHeatMap> {
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
                   datasets: heatMapDatasets,
-                  colorsets: const {
-                    1: Colors.red,
-                    3: Colors.orange,
-                    5: Colors.yellow,
-                    7: Colors.green,
-                    9: Colors.blue,
-                    11: Colors.indigo,
-                    13: Colors.purple,
-                  },
+                  colorsets: shuffleAndMapColors(context),
                   onClick: (value) {
                     ScaffoldMessenger.of(
                       context,
@@ -83,4 +79,45 @@ class _HeatMapExample extends State<TodoHeatMap> {
       ],
     );
   }
+}
+
+Map<int, Color> shuffleAndMapColors(BuildContext context) {
+  List<Color> colors = [
+    HexColor.fromInt(0x00a1e5),
+    HexColor.fromInt(0x04b9ae),
+    HexColor.fromInt(0x8866e9),
+    HexColor.fromInt(0xd251a6),
+    HexColor.fromInt(0xff7b52),
+    HexColor.fromInt(0xf94162),
+    Colors.yellow,
+  ];
+
+  // 获取 primary 颜色
+  Color primaryColor = Theme.of(context).primaryColor;
+
+  // 洗牌颜色数组
+  colors.shuffle(Random());
+
+  // 找到 primaryColor 的索引
+  int primaryIndex = colors.indexWhere(
+    (color) => color.toString() == primaryColor.toString(),
+  );
+  if (primaryIndex == -1) {
+    throw Exception("primaryColor 不在颜色列表中！");
+  }
+
+  // 确保 primaryColor 处于 key = 1 的位置
+  if (primaryIndex != 0) {
+    Color temp = colors[0];
+    colors[0] = colors[primaryIndex];
+    colors[primaryIndex] = temp;
+  }
+
+  // 生成符合要求的 Map
+  List<int> keys = [1, 3, 5, 7, 9, 11, 13];
+  Map<int, Color> colorMap = {
+    for (int i = 0; i < colors.length; i++) keys[i]: colors[i],
+  };
+
+  return colorMap;
 }

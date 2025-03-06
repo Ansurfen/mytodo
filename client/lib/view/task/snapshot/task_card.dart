@@ -1,11 +1,11 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
-import 'dart:io';
 import 'dart:math';
 
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/mock/provider.dart';
@@ -68,7 +68,7 @@ class TaskCardOld extends StatelessWidget {
     }
     return GestureDetector(
       onTap: () {
-        RouterProvider.viewTaskDetail(model.id, []);
+        RouterProvider.toTaskDetail(model.id, []);
       },
       child: Card(
         color: ThemeProvider.contrastColor(
@@ -213,13 +213,6 @@ class TaskCard extends StatefulWidget {
 
 class _TaskCardState extends State<TaskCard>
     with AutomaticKeepAliveClientMixin {
-  List<Color> colors = [
-    const Color(0xff8D7AEE),
-    const Color(0xffF468B7),
-    const Color(0xffFEC85C),
-    const Color(0xff5FD0D3),
-    const Color(0xffBFACAA),
-  ];
   Random r = Random();
 
   @override
@@ -242,15 +235,8 @@ class _TaskCardState extends State<TaskCard>
       baseColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
       expandedColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
       leading: CircleAvatar(
-        backgroundColor: colors[r.nextInt(colors.length)],
-        child: Text(
-          widget.title[0],
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
+        backgroundColor: Theme.of(context).primaryColorLight,
+        child: SvgPicture.asset(widget.model.icon),
       ),
       title: Text(
         widget.title,
@@ -295,15 +281,15 @@ class _TaskCardState extends State<TaskCard>
             // TODO
             IconButton(
               onPressed: () {
-                RouterProvider.viewTaskDetail(1, conds);
+                RouterProvider.toTaskDetail(1, conds);
               },
-              icon: Icon(Icons.article, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.article, color: Colors.grey),
             ),
             IconButton(
               onPressed: () {
                 RouterProvider.viewTopicMember(widget.model.id);
               },
-              icon: Icon(Icons.group, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.group, color: Colors.grey),
             ),
             IconButton(
               onPressed: () async {
@@ -319,7 +305,7 @@ class _TaskCardState extends State<TaskCard>
                 );
                 await TodoClipboard.set(widget.model.inviteCode);
               },
-              icon: Icon(Icons.share, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.share, color: Colors.grey),
             ),
           ],
         ),
@@ -337,22 +323,33 @@ class _TaskCardState extends State<TaskCard>
           children: [
             Text(
               item.type.toString(),
-              style: const TextStyle(
-                color: Colors.black,
+              style: TextStyle(
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.black,
+                  dark: Colors.white,
+                ),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               item.subtitle,
-              style: const TextStyle(color: Colors.black54, fontSize: 16),
+              style: TextStyle(
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.black54,
+                  dark: Colors.white,
+                ),
+                fontSize: 16,
+              ),
             ),
           ],
         ),
-        trailing:
-            item.finish
-                ? Icon(Icons.check, color: Colors.greenAccent)
-                : Icon(Icons.close, color: Colors.redAccent),
+        trailing: Icon(
+          Icons.task_alt,
+          color: item.finish ? const Color(0xffFBC800) : Colors.grey,
+        ),
         leading: Icon(item.icon()),
       ),
     );

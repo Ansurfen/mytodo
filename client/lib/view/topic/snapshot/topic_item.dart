@@ -4,6 +4,7 @@
 import 'dart:math';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/router/provider.dart';
@@ -116,13 +117,6 @@ class TopicCard extends StatefulWidget {
 
 class _TopicCardState extends State<TopicCard>
     with AutomaticKeepAliveClientMixin {
-  List<Color> colors = [
-    const Color(0xff8D7AEE),
-    const Color(0xffF468B7),
-    const Color(0xffFEC85C),
-    const Color(0xff5FD0D3),
-    const Color(0xffBFACAA),
-  ];
   Random r = Random();
 
   @override
@@ -141,15 +135,16 @@ class _TopicCardState extends State<TopicCard>
       baseColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
       expandedColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
       leading: CircleAvatar(
-        backgroundColor: colors[r.nextInt(colors.length)],
-        child: Text(
-          widget.title[0],
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
+        backgroundColor: Theme.of(context).primaryColorLight,
+        child: SvgPicture.asset(widget.model.icon),
+        // child: Text(
+        //   widget.title[0],
+        //   style: const TextStyle(
+        //     color: Colors.white,
+        //     fontWeight: FontWeight.bold,
+        //     fontSize: 16,
+        //   ),
+        // ),
       ),
       title: Text(
         widget.title,
@@ -193,15 +188,12 @@ These buttons control the next card down!""",
           buttonHeight: 52.0,
           buttonMinWidth: 90.0,
           children: [
-            // TODO 
+            // TODO
             IconButton(
               onPressed: () {
                 RouterProvider.viewTopicDetail(widget.model.id, widget.model);
               },
-              icon: Icon(
-                Icons.details,
-                color: Theme.of(context).primaryColor,
-              ),
+              icon: Icon(Icons.details, color: Theme.of(context).primaryColor),
             ),
             IconButton(
               onPressed: () {

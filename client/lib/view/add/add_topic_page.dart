@@ -1,9 +1,9 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/container/bubble_container.dart';
@@ -34,7 +34,9 @@ class _AddTopicPageState extends State<AddTopicPage>
   final Rx<int> _selectedIndex = 0.obs;
 
   Rx<String> profile = "".obs;
-  
+
+  bool isPublic = false;
+
   @override
   void initState() {
     profile.value = animalMammal[Mock.number(max: animalMammal.length - 1)];
@@ -74,29 +76,6 @@ class _AddTopicPageState extends State<AddTopicPage>
             ),
           ),
           onTap: () {
-            // showCupertinoModalPopup(
-            //   context: context,
-            //   builder: (context) {
-            //     return CupertinoActionSheet(
-            //       title: Text('Choose an option'),
-            //       message: Text('Choose one of the options below.'),
-            //       actions: <CupertinoActionSheetAction>[
-            //         CupertinoActionSheetAction(
-            //           child: Text('Option 1'),
-            //           onPressed: () {
-            //             Navigator.pop(context);
-            //           },
-            //         ),
-            //         CupertinoActionSheetAction(
-            //           child: Text('Option 2'),
-            //           onPressed: () {
-            //             Navigator.pop(context);
-            //           },
-            //         ),
-            //       ],
-            //     );
-            //   },
-            // );
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
@@ -129,66 +108,74 @@ class _AddTopicPageState extends State<AddTopicPage>
                       topRight: Radius.circular(10.0),
                     ),
                   ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Get.back();
-                            },
-                            icon: Icon(
-                              Icons.close,
-                              color: Theme.of(context).colorScheme.onPrimary,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Get.back();
+                              },
+                              icon: Icon(
+                                Icons.close,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                            Text(
+                              "select_icon".tr,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                Obx(
+                                  () => RoundedButtonRow(
+                                    labels: [
+                                      "animal_amphibian".tr,
+                                      "animal_bird".tr,
+                                      "animal_bug".tr,
+                                      "animal_mammal".tr,
+                                      "animal_marine".tr,
+                                      "animal_reptile".tr,
+                                      "plant_flower".tr,
+                                      "plant_other".tr,
+                                      "food".tr,
+                                    ],
+                                    onTap: (index) {
+                                      Guard.log.i(index);
+                                      _selectedIndex.value = index;
+                                    },
+                                    selectedIndex: _selectedIndex.value,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            "选择图标",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              Obx(
-                                () => RoundedButtonRow(
-                                  labels: [
-                                    "animal_amphibian".tr,
-                                    "animal_bird".tr,
-                                    "animal_bug".tr,
-                                    "animal_mammal".tr,
-                                    "animal_marine".tr,
-                                    "animal_reptile".tr,
-                                    "plant_flower".tr,
-                                    "plant_other".tr,
-                                    "food".tr,
-                                  ],
-                                  onTap: (index) {
-                                    Guard.log.i(index);
-                                    _selectedIndex.value = index;
-                                  },
-                                  selectedIndex: _selectedIndex.value,
-                                ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: ThemeProvider.contrastColor(
+                                context,
+                                light: Colors.white,
+                                dark: CupertinoColors.darkBackgroundGray,
                               ),
-                            ],
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(20),
+                              ),
+                            ),
+                            child: Obx(() => candidates[_selectedIndex.value]),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(20)),
-                          ),
-                          child: Obx(() => candidates[_selectedIndex.value]),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -202,10 +189,34 @@ class _AddTopicPageState extends State<AddTopicPage>
           sections: [
             SettingsSection(
               tiles: [
+                SettingsTile.switchTile(
+                  leading: Icon(Icons.visibility),
+                  activeSwitchColor: Theme.of(context).primaryColor,
+                  initialValue: isPublic,
+                  onToggle: (v) {
+                    setState(() {
+                      isPublic = v;
+                    });
+                  },
+                  title: Text("task_is_public".tr),
+                ),
                 SettingsTile.navigation(
+                  onPressed: (context) {
+                    showTextDialog(
+                      context,
+                      title: "name",
+                      content: TextField(controller: nameController),
+                      onConfirm: () {
+                        setState(() {
+                          Get.back();
+                        });
+                      },
+                      onCancel: () => Get.back(),
+                    );
+                  },
                   title: Text('name'.tr),
                   leading: Icon(Icons.drive_file_rename_outline_outlined),
-                  value: Text("高三一班"),
+                  value: Text(nameController.text),
                 ),
               ],
             ),
@@ -224,26 +235,25 @@ class _AddTopicPageState extends State<AddTopicPage>
                 minLines: 5,
                 maxLines: null,
                 decoration: InputDecoration(
-                  hintText: '随便说点啥吧~', // Hint text
-                  hintStyle: TextStyle(color: Colors.grey), // Hint text color
-                  filled: true, // Fill the background
-                  fillColor: Colors.white, // Set the background color to white
+                  hintText: 'just_say_something'.tr,
+                  hintStyle: TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: ThemeProvider.contrastColor(
+                    context,
+                    light: Colors.white,
+                    dark: CupertinoColors.darkBackgroundGray,
+                  ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15), // Rounded corners
-                    borderSide:
-                        BorderSide.none, // Remove border color (optional)
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      15,
-                    ), // Keep rounded corners when focused
+                    borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide.none, // Remove focused border color
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      15,
-                    ), // Keep rounded corners when enabled
-                    borderSide: BorderSide.none, // Remove enabled border color
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
@@ -303,6 +313,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                           nameController.text,
                           descController.text,
                           "",
+                          "",
                         ),
                       );
                       showCopyableTipDialog(
@@ -327,7 +338,7 @@ class _AddTopicPageState extends State<AddTopicPage>
   Widget _buildGridView(List<String> icons) {
     return GridView.builder(
       shrinkWrap: true,
-      physics: ClampingScrollPhysics(),
+      physics: NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         crossAxisSpacing: 4,

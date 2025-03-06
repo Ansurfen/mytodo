@@ -10,6 +10,7 @@ import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/view/add/add_task_page.dart';
 
 class TopicSnapshotController extends GetxController
     with GetTickerProviderStateMixin {
@@ -33,6 +34,7 @@ class TopicSnapshotController extends GetxController
             Mock.username(),
             Mock.text(),
             Mock.text(),
+            animalMammal[Mock.number(max: animalMammal.length - 1)],
           );
         }),
       );

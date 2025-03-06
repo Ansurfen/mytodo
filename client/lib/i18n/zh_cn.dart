@@ -95,10 +95,17 @@ Map<String, String> get zhCN => {
   "task_month": "月度",
   "task_year": "年度",
 
+  "task_is_public": "公开",
+
   "topic_me": "我的",
   "topic_find": "发现",
 
   "task": "任务",
+  "topic": "频道",
+  "post": "帖子",
+
+  "name": "名称",
+  "schedule": "时间表",
 
   // settings
   "common": "通用",
@@ -123,4 +130,30 @@ Map<String, String> get zhCN => {
   "condition_text": "文本提交",
 
   "start_writing_post": "开始书写你的帖子...",
+
+  // refresh
+  'refresh_drag': '上拉加载',
+  'refresh_armed': '刷新',
+  'refresh_ready': '加载中...',
+  'refresh_processing': '加载中...',
+  'refresh_processed': '刷新成功',
+  'refresh_no_more': '没有更多',
+  'refresh_failed': '未能加载',
+  'refresh_message': '更新时间: %T',
+
+  "select_icon": "选择图标",
+
+  "just_say_something": "随便说点啥吧...",
+
+  "filter_status": "状态",
+  "filter_running": "进行中",
+  "filter_finish": "已完成",
+  "filter_timeout": "已超时",
+
+  "start_date": "开始日期",
+  "end_date": "截止日期",
+  "start_time": "开始时间",
+  "end_time": "截止时间",
+
+  "search": "搜索...",
 };

@@ -400,7 +400,7 @@ class _ConversionPageState extends State<ConversionPage> {
           ),
           imageMessageConfig: ImageMessageConfiguration(
             onTap: (msg) {
-              RouterProvider.viewPhoto(type: PhotoType.img, url: msg.message);
+              RouterProvider.toPhoto(type: PhotoType.img, url: msg.message);
             },
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
             shareIconConfig: ShareIconConfiguration(

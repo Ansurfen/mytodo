@@ -7,13 +7,14 @@ part of 'topic.dart';
 // **************************************************************************
 
 GetTopicDto _$GetTopicDtoFromJson(Map<String, dynamic> json) => GetTopicDto(
-      json['id'] as int? ?? 0,
-      DateTime.parse(json['created_at'] as String),
-      DateTime.parse(json['deleted_at'] as String),
-      json['name'] as String,
-      json['desc'] as String,
-      json['invite_code'] as String,
-    );
+  json['id'] as int? ?? 0,
+  DateTime.parse(json['created_at'] as String),
+  DateTime.parse(json['deleted_at'] as String),
+  json['name'] as String,
+  json['desc'] as String,
+  json['invite_code'] as String,
+  json['icon'] as String,
+);
 
 Map<String, dynamic> _$GetTopicDtoToJson(GetTopicDto instance) =>
     <String, dynamic>{

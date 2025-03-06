@@ -104,11 +104,18 @@ Map<String, String> get enUS => {
   "task_month": "Monthly",
   "task_year": "Yearly",
 
+  "task_is_public": "Public",
+
   //
   "topic_me": "Me",
   "topic_find": "Find",
 
   "task": "Task",
+  "topic": "Topic",
+  "post": "Post",
+
+  "name": "Name",
+  "schedule": "Schedule",
 
   // settings
   "common": "Common",
@@ -133,4 +140,30 @@ Map<String, String> get enUS => {
   "condition_text": "Text Submit",
 
   "start_writing_post": "Start writing your post...",
+
+  // refresh
+  'refresh_drag': 'Pull to load',
+  'refresh_armed': 'Release ready',
+  'refresh_ready': 'Loading...',
+  'refresh_processing': 'Loading...',
+  'refresh_processed': 'Succeeded',
+  'refresh_no_more': 'No more',
+  'refresh_failed': 'Failed',
+  'refresh_message': 'Last updated at %T',
+
+  "select_icon": "Select Icon",
+
+  "just_say_something": "Just say something...",
+
+  "filter_status": "Status",
+  "filter_running": "Running",
+  "filter_finish": "Finished",
+  "filter_timeout": "Timeout",
+
+  "start_date": "Start Date",
+  "end_date": "End Date",
+  "start_time": "Start Time",
+  "end_time": "End Time",
+
+  "search": "Search...",
 };

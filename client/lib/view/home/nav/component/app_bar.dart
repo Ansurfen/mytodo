@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/i18n/exception.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/permission.dart';
@@ -26,40 +27,38 @@ Widget notificationWidget(BuildContext context) {
         curve: Curves.easeInCubic,
       ),
       showBadge: true,
-      badgeStyle: badges.BadgeStyle(
-        badgeColor: Theme.of(context).primaryColorDark,
-      ),
+      badgeStyle: badges.BadgeStyle(badgeColor: Theme.of(context).primaryColor),
       badgeContent: Text(
-        "3",
+        Mock.number(min: 1, max: 100).toString(),
         style: TextStyle(color: Theme.of(context).colorScheme.primary),
       ),
       child: IconButton(
-          icon: const Icon(Icons.notifications),
-          onPressed: () {
-            RouterProvider.viewNotification();
-            // grantPermission(context, Permission.notification, allowWeb: true)
-            //     .then((ok) {
-            //   if (ok) {
-            //     TNotification.sendJson("新消息", "....", params: {});
-            //   }
-            // });
-          }),
+        icon: const Icon(Icons.notifications),
+        onPressed: () {
+          RouterProvider.viewNotification();
+          // grantPermission(context, Permission.notification, allowWeb: true)
+          //     .then((ok) {
+          //   if (ok) {
+          //     TNotification.sendJson("新消息", "....", params: {});
+          //   }
+          // });
+        },
+      ),
     ),
   );
 }
 
 Widget settingWidget() {
   return const IconButton(
-      onPressed: RouterProvider.viewSetting,
-      icon: Icon(Icons.settings));
+    onPressed: RouterProvider.viewSetting,
+    icon: Icon(Icons.settings),
+  );
 }
 
 Widget multiWidget(BuildContext context) {
   return DropdownButtonHideUnderline(
     child: DropdownButton2(
-      customButton: const Icon(
-        Icons.more_vert,
-      ),
+      customButton: const Icon(Icons.more_vert),
       items: [
         ...MenuItems.firstItems.map(
           (item) => DropdownMenuItem<MenuItem>(
@@ -100,10 +99,7 @@ Widget multiWidget(BuildContext context) {
 }
 
 class MenuItem {
-  const MenuItem({
-    required this.text,
-    required this.icon,
-  });
+  const MenuItem({required this.text, required this.icon});
 
   final String text;
   final IconData icon;
@@ -121,17 +117,16 @@ abstract class MenuItems {
   static Widget buildItem(BuildContext context, MenuItem item) {
     return Row(
       children: [
-        Icon(item.icon,
-            color: Theme.of(context).colorScheme.onPrimary, size: 22),
-        const SizedBox(
-          width: 10,
+        Icon(
+          item.icon,
+          color: Theme.of(context).colorScheme.onPrimary,
+          size: 22,
         ),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             item.text,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
           ),
         ),
       ],

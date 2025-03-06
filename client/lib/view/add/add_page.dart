@@ -374,7 +374,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
                                     distValue.value,
                                     () async {
                                       List<Place> temp =
-                                          await RouterProvider.viewMapSelect();
+                                          await RouterProvider.toMapSelect();
                                       for (var element in temp) {
                                         controller.pos.value.add(element);
                                       }

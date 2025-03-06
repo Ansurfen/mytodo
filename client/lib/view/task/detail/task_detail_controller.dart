@@ -41,7 +41,7 @@ class TaskInfoController extends GetxController {
       },
       (v) {},
       (v) {
-        RouterProvider.viewMapLocate()?.then((res) {
+        RouterProvider.toMapLocate()?.then((res) {
           commitTask(
             CommitTaskRequest(id, TaskCondType.locale.index, res),
           ).then((res) {
@@ -225,7 +225,7 @@ class TaskForm {
         "task_cond_locale".tr,
         "task_cond_locale_more".tr,
         onTap: (v) {
-          RouterProvider.viewMapLocate()?.then((res) {
+          RouterProvider.toMapLocate()?.then((res) {
             commitTask(
               CommitTaskRequest(id, TaskCondType.locale.index, res),
             ).then((res) {

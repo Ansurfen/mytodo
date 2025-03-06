@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:my_todo/widgets/heatmap/heatmap.dart';
 
 class TodoHeatMapCalendar extends StatefulWidget {
   const TodoHeatMapCalendar({super.key});
@@ -38,15 +39,7 @@ class _HeatMapCalendarExample extends State<TodoHeatMapCalendar> {
               flexible: true,
               datasets: heatMapDatasets,
               colorMode: isOpacityMode ? ColorMode.opacity : ColorMode.color,
-              colorsets: const {
-                1: Colors.red,
-                3: Colors.orange,
-                5: Colors.yellow,
-                7: Colors.green,
-                9: Colors.blue,
-                11: Colors.indigo,
-                13: Colors.purple,
-              },
+              colorsets: shuffleAndMapColors(context),
             ),
           ),
         ),

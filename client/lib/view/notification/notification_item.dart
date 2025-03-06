@@ -253,7 +253,7 @@ class MailTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Icon(
-                  mail.isUnread ? Icons.task_alt : Icons.task_alt,
+                  Icons.task_alt,
                   color: mail.isUnread ? const Color(0xffFBC800) : Colors.grey,
                 ),
               ],

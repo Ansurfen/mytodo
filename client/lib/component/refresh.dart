@@ -16,28 +16,28 @@ class TodoRefreshFooter extends ClassicFooter {
   double? get infiniteOffset => null;
 
   @override
-  String? get dragText => "refresh.drag".tr;
+  String? get dragText => "refresh_drag".tr;
 
   @override
-  String? get armedText => "refresh.armed".tr;
+  String? get armedText => "refresh_armed".tr;
 
   @override
-  String? get readyText => "refresh.ready".tr;
+  String? get readyText => "refresh_ready".tr;
 
   @override
-  String? get processingText => "refresh.processing".tr;
+  String? get processingText => "refresh_processing".tr;
 
   @override
-  String? get processedText => "refresh.processed".tr;
+  String? get processedText => "refresh_processed".tr;
 
   @override
-  String? get noMoreText => "refresh.no_more".tr;
+  String? get noMoreText => "refresh_no_more".tr;
 
   @override
-  String? get failedText => "refresh.failed".tr;
+  String? get failedText => "refresh_failed".tr;
 
   @override
-  String? get messageText => "refresh.message".tr;
+  String? get messageText => "refresh_message".tr;
 
   @override
   IconThemeData? get iconTheme =>
@@ -50,28 +50,28 @@ class TodoRefreshHeader extends ClassicHeader {
   TodoRefreshHeader(this.context);
 
   @override
-  String? get dragText => "refresh.drag".tr;
+  String? get dragText => "refresh_drag".tr;
 
   @override
-  String? get armedText => "refresh.armed".tr;
+  String? get armedText => "refresh_armed".tr;
 
   @override
-  String? get readyText => "refresh.ready".tr;
+  String? get readyText => "refresh_ready".tr;
 
   @override
-  String? get processingText => "refresh.processing".tr;
+  String? get processingText => "refresh_processing".tr;
 
   @override
-  String? get processedText => "refresh.processed".tr;
+  String? get processedText => "refresh_processed".tr;
 
   @override
-  String? get noMoreText => "refresh.no_more".tr;
+  String? get noMoreText => "refresh_no_more".tr;
 
   @override
-  String? get failedText => "refresh.failed".tr;
+  String? get failedText => "refresh_failed".tr;
 
   @override
-  String? get messageText => "refresh.message".tr;
+  String? get messageText => "refresh_message".tr;
 
   @override
   IconThemeData? get iconTheme =>

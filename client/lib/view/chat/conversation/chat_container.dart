@@ -57,7 +57,7 @@ class _ChatContainerState extends State<ChatContainer> {
   Widget imageSection(String url) {
     return GestureDetector(
       onTap: () {
-        RouterProvider.viewPhoto(type: PhotoType.img, url: url);
+        RouterProvider.toPhoto(type: PhotoType.img, url: url);
       },
       child: Image(
         image: NetworkImage(url),

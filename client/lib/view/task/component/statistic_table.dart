@@ -66,7 +66,7 @@ class StatisticTable extends StatelessWidget {
                 bottom: 18,
               ),
               child: GestureDetector(
-                onTap: RouterProvider.viewStatistic,
+                onTap: RouterProvider.toStatistic,
                 child: Container(
                   decoration: BoxDecoration(
                     color: ThemeProvider.contrastColor(

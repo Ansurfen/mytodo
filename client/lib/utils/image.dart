@@ -9,7 +9,7 @@ class ImageView {
   static Widget svg(String path, {double? width, double? height}) {
     return GestureDetector(
         onTap: () {
-          RouterProvider.viewPhoto(type: PhotoType.svg, url: path);
+          RouterProvider.toPhoto(type: PhotoType.svg, url: path);
         },
         child: Image(
           image: Svg(path),
@@ -22,7 +22,7 @@ class ImageView {
       {BoxFit? fit, double? width, double? height}) {
     return GestureDetector(
         onTap: () {
-          RouterProvider.viewPhoto(type: PhotoType.img, url: path);
+          RouterProvider.toPhoto(type: PhotoType.img, url: path);
         },
         child: Image(
           image: NetworkImage(path),
@@ -36,7 +36,7 @@ class ImageView {
       {BoxFit? fit, double? width, double? height}) {
     return GestureDetector(
         onTap: () {
-          RouterProvider.viewPhoto(type: PhotoType.img, url: path);
+          RouterProvider.toPhoto(type: PhotoType.img, url: path);
         },
         child: Image(
           image: AssetImage(path),

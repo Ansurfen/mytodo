@@ -53,7 +53,8 @@ class RouterProvider {
 
   static String initialRoute() {
     // return UserRouter.edit.name;
-    return OtherRouter.statistic.name;
+    return HomeRouter.nav.name;
+    // return OtherRouter.statistic.name;
     // return MapRouter.locate.name;
     if (Guard.isLogin() || Guard.isOffline()) {
       return HomeRouter.nav.name;
@@ -100,31 +101,31 @@ class RouterProvider {
     to(OtherRouter.add);
   }
 
-  static void viewStatistic() {
-    // to(OtherRouter.statistic);
+  static void toStatistic() {
+    to(OtherRouter.statistic);
   }
 
-  static void viewPostDetail(int id) {
+  static void toPostDetail(int id) {
     to(OtherRouter.post, query: "?id=$id");
   }
 
-  static void viewTaskDetail(int id, List<ConditionItem> conds) {
+  static void toTaskDetail(int id, List<ConditionItem> conds) {
     to(TaskRouter.detail, query: "?id=$id", arguments: conds);
   }
 
-  static void viewUserSign() {
+  static void toUserSign() {
     offNamed(UserRouter.sign);
   }
 
-  static Future? viewMapSelect() {
+  static Future? toMapSelect() {
     return to(MapRouter.select);
   }
 
-  static Future? viewMapLocate() {
+  static Future? toMapLocate() {
     return to(MapRouter.locate);
   }
 
-  static void viewPhoto({required PhotoType type, required String url}) {
+  static void toPhoto({required PhotoType type, required String url}) {
     switch (type) {
       case PhotoType.svg:
         to(OtherRouter.photo, query: "?type=svg&url=$url");

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:showcaseview/showcaseview.dart';
 
 class Detail extends StatefulWidget {
-  const Detail({Key? key}) : super(key: key);
+  const Detail({super.key});
 
   @override
   State<Detail> createState() => _DetailState();

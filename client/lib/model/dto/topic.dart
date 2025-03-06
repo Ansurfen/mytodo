@@ -22,13 +22,23 @@ class GetTopicDto {
   @JsonKey(name: "desc")
   String desc;
 
+  @JsonKey(name: "icon")
+  String icon;
+
   // int creator;
 
   @JsonKey(name: "invite_code")
   String inviteCode;
 
-  GetTopicDto(this.id, this.createAt, this.deleteAt, this.name, this.desc,
-      this.inviteCode);
+  GetTopicDto(
+    this.id,
+    this.createAt,
+    this.deleteAt,
+    this.name,
+    this.desc,
+    this.inviteCode,
+    this.icon,
+  );
 
   factory GetTopicDto.fromJson(Map<String, Object?> json) =>
       _$GetTopicDtoFromJson(json);

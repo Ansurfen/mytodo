@@ -39,7 +39,7 @@ Future<GetTopicResponse> getTopic(GetTopicRequest req) async {
   if (Guard.isOffline()) {
     return GetTopicResponse((await TopicDao.findMany())
         .map((e) => GetTopicDto(e.id ?? 0, DateTime.timestamp(),
-            DateTime.timestamp(), e.name, e.desc, ""))
+            DateTime.timestamp(), e.name, e.desc, "", ""))
         .toList());
   }
   return GetTopicResponse.fromResponse(await HTTP.get('/topic/get',

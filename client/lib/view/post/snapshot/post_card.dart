@@ -69,6 +69,7 @@ class _PostCardState extends State<PostCard> {
                                 "Unknown",
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 12,
                                 ),
                               ))
                         ],
@@ -90,7 +91,7 @@ class _PostCardState extends State<PostCard> {
             GestureDetector(
               onTap: () {
                 Get.lazyPut(() => PostDetailController());
-                RouterProvider.viewPostDetail(widget.model.id);
+                RouterProvider.toPostDetail(widget.model.id);
               },
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -117,7 +118,7 @@ class _PostCardState extends State<PostCard> {
                   children: [
                     IconButton(
                         onPressed: () {
-                          RouterProvider.viewPostDetail(widget.model.id);
+                          RouterProvider.toPostDetail(widget.model.id);
                         },
                         icon: Icon(
                           Icons.chat_bubble_outline,
