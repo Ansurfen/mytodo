@@ -1,17 +1,13 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/component/form/form_input_field.dart';
-import 'package:my_todo/component/button/shadow_button.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/view/user/edit/edit_controller.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/dialog.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class EditPage extends StatefulWidget {
@@ -62,7 +58,7 @@ class _EditPageState extends State<EditPage> {
                   title: Text("security".tr),
                   tiles: [
                     SettingsTile.navigation(
-                      title: Text("edit_password"),
+                      title: Text("edit_password".tr),
                       onPressed: (ctx) {
                         showModalBottomSheet(
                           context: context,
@@ -139,17 +135,15 @@ class _EditPageState extends State<EditPage> {
                                                 Theme.of(context).primaryColor,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(
-                                                    10,
-                                                  ), 
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Text(
                                               "save".tr,
                                               style: TextStyle(
                                                 color:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .onPrimary, 
+                                                    Theme.of(
+                                                      context,
+                                                    ).colorScheme.onPrimary,
                                                 fontSize: 16,
                                               ),
                                             ),
@@ -167,13 +161,13 @@ class _EditPageState extends State<EditPage> {
                                       children: [
                                         PasswordTextField(
                                           controller: _passwordController,
-                                          labelText: "新密码",
+                                          labelText: "edit_new_password".tr,
                                         ),
                                         SizedBox(height: 15),
                                         PasswordTextField(
                                           controller:
                                               _confirmPasswordController,
-                                          labelText: "确认密码",
+                                          labelText: "edit_confirm_password".tr,
                                         ),
                                         if (_errorText != null) // 显示错误信息
                                           Padding(

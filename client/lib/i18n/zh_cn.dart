@@ -77,6 +77,7 @@ Map<String, String> get zhCN => {
   "chat_friend": "好友",
 
   "online": "在线",
+  "offline": "离线",
 
   "post_me": "我的",
   "post_friend": "好友",
@@ -156,4 +157,10 @@ Map<String, String> get zhCN => {
   "end_time": "截止时间",
 
   "search": "搜索...",
+
+  "unknown": "未知",
+
+  "edit_password": "修改密码",
+  "edit_new_password": "新密码",
+  "edit_confirm_password": "确认密码",
 };

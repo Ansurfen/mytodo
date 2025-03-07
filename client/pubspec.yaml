@@ -98,6 +98,7 @@ dependencies:
   flutter_svg: ^2.0.17
   flutter_heatmap_calendar: ^1.0.5
   universal_platform: ^1.1.0
+  azlistview: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

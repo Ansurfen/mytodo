@@ -85,7 +85,8 @@ Map<String, String> get enUS => {
   "chat_msg": "Message",
   "chat_friend": "Friend",
 
-  "online": "online",
+  "online": "Online",
+  "offline": "Offline",
 
   "post_me": "Me",
   "post_friend": "Friend",
@@ -166,4 +167,10 @@ Map<String, String> get enUS => {
   "end_time": "End Time",
 
   "search": "Search...",
+
+  "unknown": "Unknown",
+
+  "edit_password": "Edit Password",
+  "edit_new_password": "New Password",
+  "edit_confirm_password": "Confirm Password",
 };

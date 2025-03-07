@@ -30,7 +30,7 @@ class _ProfilePageState extends State<ProfilePage> {
           onPressed: Get.back,
           icon: Icons.arrow_back_ios,
         ),
-        elevation: 5,
+        elevation: 0,
         actions: [
           notificationWidget(context),
           const SizedBox(width: 30),
@@ -49,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 30),
               CircleAvatar(
                 backgroundImage: TodoImage.userProfile(controller.id),
                 radius: 50,

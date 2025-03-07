@@ -207,9 +207,12 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              controller.data.username,
-                              style: const TextStyle(fontSize: 16),
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 10),
+                              child: Text(
+                                controller.data.username,
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
                             RawChip(
                               backgroundColor:
@@ -221,7 +224,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                               label: Text(
-                                "Unknown",
+                                "unknown".tr,
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.primary,
                                   fontSize: 12,
@@ -233,12 +236,18 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       ],
                     ),
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text("发布于"),
                         Text(
                           DateFormat(
-                            'yyyy-MM-dd HH:mm:ss',
-                          ).format(DateTime.now()),
+                            'yyyy-MM-dd',
+                          ).format(DateTime.now()), // 显示日期
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        SizedBox(width: 8), // 添加一些间距
+                        Text(
+                          DateFormat('HH:mm:ss').format(DateTime.now()), // 显示时间
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       ],
                     ),

@@ -188,7 +188,7 @@ class _ConversationState extends State<Conversation> {
         ],
       ),
       onTap: () {
-        RouterProvider.viewUserProfile(controller.user.id);
+        RouterProvider.toUserProfile(controller.user.id);
       },
     );
   }

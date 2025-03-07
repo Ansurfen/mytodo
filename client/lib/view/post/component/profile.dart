@@ -28,7 +28,7 @@ Widget userProfile({required bool isMale, required int id}) {
     children: [
       GestureDetector(
         onTap: () {
-          RouterProvider.viewUserProfile(id);
+          RouterProvider.toUserProfile(id);
         },
         child: CircleAvatar(
           backgroundImage: TodoImage.userProfile(id),

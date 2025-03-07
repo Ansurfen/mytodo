@@ -73,7 +73,7 @@ class RouterProvider {
     return to(OtherRouter.setting);
   }
 
-  static void viewUserProfile(int id) {
+  static void toUserProfile(int id) {
     to(UserRouter.profile, query: "?id=$id");
   }
 

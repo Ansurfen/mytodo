@@ -8,13 +8,16 @@ import 'dart:io';
 
 import 'package:chatview/chatview.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 import 'package:my_todo/config.dart';
 import 'package:my_todo/data.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/theme.dart';
 import 'package:my_todo/router/provider.dart';
+import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/view/chat/conversation/conversion_controller.dart';
 import 'package:universal_html/html.dart' as html;
@@ -30,7 +33,7 @@ class ConversionPage extends StatefulWidget {
 
 class _ConversionPageState extends State<ConversionPage> {
   AppTheme theme = LightTheme();
-  bool isDarkTheme = false;
+
   ConversionController controller = getx.Get.find<ConversionController>();
 
   final _chatController = ChatController(
@@ -181,13 +184,17 @@ class _ConversionPageState extends State<ConversionPage> {
           enableScrollToBottomButton: true,
         ),
         scrollToBottomButtonConfig: ScrollToBottomButtonConfig(
-          backgroundColor: theme.textFieldBackgroundColor,
+          backgroundColor: Theme.of(context).primaryColorLight,
           border: Border.all(
-            color: isDarkTheme ? Colors.transparent : Colors.grey,
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.grey,
+              dark: Colors.transparent,
+            ),
           ),
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: theme.themeIconColor,
+            color: Colors.black,
             weight: 10,
             size: 30,
           ),
@@ -195,94 +202,141 @@ class _ConversionPageState extends State<ConversionPage> {
         chatViewState: ChatViewState.hasMessages,
         chatViewStateConfig: ChatViewStateConfiguration(
           loadingWidgetConfig: ChatViewStateWidgetConfiguration(
-            loadingIndicatorColor: theme.outgoingChatBubbleColor,
+            loadingIndicatorColor: Theme.of(context).primaryColor,
           ),
           onReloadButtonTap: () {},
         ),
         typeIndicatorConfig: TypeIndicatorConfiguration(
-          flashingCircleBrightColor: theme.flashingCircleBrightColor,
-          flashingCircleDarkColor: theme.flashingCircleDarkColor,
+          flashingCircleBrightColor: Theme.of(context).primaryColorLight,
+          flashingCircleDarkColor: Theme.of(context).primaryColorDark,
         ),
         appBar: ChatViewAppBar(
-          elevation: theme.elevation,
-          backGroundColor: theme.appBarColor,
+          elevation: 0,
+          backGroundColor: Theme.of(context).colorScheme.primary,
           profilePicture: Data.profileImage,
-          backArrowColor: theme.backArrowColor,
+          backArrowColor: ThemeProvider.contrastColor(
+            context,
+            light: Colors.black,
+            dark: Theme.of(context).primaryColor,
+          ),
           chatTitle: controller.chatsnapshot.name,
           chatTitleTextStyle: TextStyle(
-            color: theme.appBarTitleTextStyle,
             fontWeight: FontWeight.bold,
             fontSize: 18,
             letterSpacing: 0.25,
           ),
           userStatus: () {
-            if (!controller.chatsnapshot.isTopic &&
-                controller.chatsnapshot.isOnline) {
-              return "online".tr;
+            if (!controller.chatsnapshot.isTopic) {
+              if (controller.chatsnapshot.isOnline) {
+                return "online".tr;
+              } else {
+                return "offline".tr;
+              }
             }
             // TODO: xx person online
-            return "";
+            return "${Mock.number()} ${"online".tr}";
           }(),
           userStatusTextStyle: const TextStyle(color: Colors.grey),
           actions: [
-            // IconButton(
-            //   onPressed: _onThemeIconTap,
-            //   icon: Icon(
-            //     isDarkTheme
-            //         ? Icons.brightness_4_outlined
-            //         : Icons.dark_mode_outlined,
-            //     color: theme.themeIconColor,
-            //   ),
-            // ),
             IconButton(
               tooltip: 'Toggle TypingIndicator',
               onPressed: _showHideTypingIndicator,
-              icon: Icon(Icons.keyboard, color: theme.themeIconColor),
+              icon: Icon(
+                Icons.keyboard,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
             IconButton(
               tooltip: 'Simulate Message receive',
               onPressed: receiveMessage,
               icon: Icon(
                 Icons.supervised_user_circle,
-                color: theme.themeIconColor,
+                color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ],
         ),
         chatBackgroundConfig: ChatBackgroundConfiguration(
-          messageTimeIconColor: theme.messageTimeIconColor,
-          messageTimeTextStyle: TextStyle(color: theme.messageTimeTextColor),
-          defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
-            textStyle: TextStyle(color: theme.chatHeaderColor, fontSize: 17),
+          messageTimeIconColor: ThemeProvider.contrastColor(
+            context,
+            light: Colors.black,
+            dark: Colors.white,
           ),
-          backgroundColor: theme.backgroundColor,
+          messageTimeTextStyle: TextStyle(
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.black,
+              dark: Colors.white,
+            ),
+          ),
+          defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
+            textStyle: TextStyle(
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+              fontSize: 17,
+            ),
+          ),
+          backgroundColor: ThemeProvider.contrastColor(
+            context,
+            light: CupertinoColors.lightBackgroundGray,
+            dark: Theme.of(context).colorScheme.primary,
+          ),
         ),
         sendMessageConfig: SendMessageConfiguration(
           imagePickerIconsConfig: ImagePickerIconsConfiguration(
-            cameraIconColor: theme.cameraIconColor,
-            galleryIconColor: theme.galleryIconColor,
+            cameraIconColor: ThemeProvider.contrastColor(
+              context,
+              light: Colors.black,
+              dark: Theme.of(context).primaryColor,
+            ),
+            galleryIconColor: ThemeProvider.contrastColor(
+              context,
+              light: Colors.black,
+              dark: Theme.of(context).primaryColor,
+            ),
           ),
-          replyMessageColor: theme.replyMessageColor,
-          defaultSendButtonColor: theme.sendButtonColor,
-          replyDialogColor: theme.replyDialogColor,
-          replyTitleColor: theme.replyTitleColor,
-          textFieldBackgroundColor: theme.textFieldBackgroundColor,
-          closeIconColor: theme.closeIconColor,
+          replyMessageColor: Colors.black,
+          defaultSendButtonColor: Theme.of(context).primaryColor,
+          replyDialogColor: Theme.of(context).primaryColorLight,
+          replyTitleColor: Theme.of(context).primaryColor,
+          textFieldBackgroundColor: ThemeProvider.contrastColor(
+            context,
+            light: Colors.grey.shade100,
+            dark: CupertinoColors.darkBackgroundGray,
+          ),
+          closeIconColor: Colors.black,
           textFieldConfig: TextFieldConfiguration(
             onMessageTyping: (status) {
               /// Do with status
               debugPrint(status.toString());
             },
             compositionThresholdTime: const Duration(seconds: 1),
-            textStyle: TextStyle(color: theme.textFieldTextColor),
+            textStyle: TextStyle(
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+            ),
           ),
-          micIconColor: theme.replyMicIconColor,
+          micIconColor: Colors.black,
           voiceRecordingConfiguration: VoiceRecordingConfiguration(
-            backgroundColor: theme.waveformBackgroundColor,
-            recorderIconColor: theme.recordIconColor,
+            backgroundColor: ThemeProvider.contrastColor(
+              context,
+              light: Colors.white,
+              dark: Theme.of(context).primaryColorLight,
+            ),
+            recorderIconColor: ThemeProvider.contrastColor(
+              context,
+              light: Colors.black,
+              dark: Theme.of(context).primaryColor,
+            ),
             waveStyle: WaveStyle(
               showMiddleLine: false,
-              waveColor: theme.waveColor ?? Colors.white,
+              waveColor: Colors.black,
               extendWaveform: true,
             ),
           ),
@@ -290,47 +344,87 @@ class _ConversionPageState extends State<ConversionPage> {
         chatBubbleConfig: ChatBubbleConfiguration(
           outgoingChatBubbleConfig: ChatBubble(
             linkPreviewConfig: LinkPreviewConfiguration(
-              backgroundColor: theme.linkPreviewOutgoingChatColor,
-              bodyStyle: theme.outgoingChatLinkBodyStyle,
-              titleStyle: theme.outgoingChatLinkTitleStyle,
+              backgroundColor: ThemeProvider.contrastColor(
+                context,
+                light: Color(0xffFCD8DC),
+                dark: Color(0xff272336),
+              ),
+              bodyStyle: TextStyle(
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.grey,
+                  dark: Colors.white,
+                ),
+              ),
+              titleStyle: TextStyle(
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.black,
+                  dark: Colors.white,
+                ),
+              ),
             ),
             receiptsWidgetConfig: const ReceiptsWidgetConfig(
               showReceiptsIn: ShowReceiptsIn.all,
             ),
-            color: theme.outgoingChatBubbleColor,
+            color: Theme.of(context).primaryColor,
           ),
           inComingChatBubbleConfig: ChatBubble(
             linkPreviewConfig: LinkPreviewConfiguration(
               linkStyle: TextStyle(
-                color: theme.inComingChatBubbleTextColor,
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.black,
+                  dark: Colors.white,
+                ),
                 decoration: TextDecoration.underline,
               ),
               backgroundColor: theme.linkPreviewIncomingChatColor,
               bodyStyle: theme.incomingChatLinkBodyStyle,
               titleStyle: theme.incomingChatLinkTitleStyle,
             ),
-            textStyle: TextStyle(color: theme.inComingChatBubbleTextColor),
+            textStyle: TextStyle(
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+            ),
             onMessageRead: (message) {
               /// send your message reciepts to the other client
               debugPrint('Message Read');
             },
             senderNameTextStyle: TextStyle(
-              color: theme.inComingChatBubbleTextColor,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
             ),
-            color: theme.inComingChatBubbleColor,
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.white,
+              dark: CupertinoColors.darkBackgroundGray,
+            ),
           ),
         ),
         replyPopupConfig: ReplyPopupConfiguration(
-          backgroundColor: theme.replyPopupColor,
-          buttonTextStyle: TextStyle(color: theme.replyPopupButtonColor),
-          topBorderColor: theme.replyPopupTopBorderColor,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          buttonTextStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
+          topBorderColor: Theme.of(context).colorScheme.onPrimary,
         ),
         reactionPopupConfig: ReactionPopupConfiguration(
           shadow: BoxShadow(
-            color: isDarkTheme ? Colors.black54 : Colors.grey.shade400,
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.grey.shade400,
+              dark: Colors.black54,
+            ),
             blurRadius: 20,
           ),
-          backgroundColor: theme.reactionPopupColor,
+          backgroundColor: Theme.of(context).primaryColorLight,
           userReactionCallback: (message, emoji) async {
             Response response = await HTTP.post(
               "/chat/topic/reaction",
@@ -372,24 +466,52 @@ class _ConversionPageState extends State<ConversionPage> {
             return Text(_custom["data"]);
           },
           messageReactionConfig: MessageReactionConfiguration(
-            backgroundColor: theme.messageReactionBackGroundColor,
-            borderColor: theme.messageReactionBackGroundColor,
+            backgroundColor: ThemeProvider.contrastColor(
+              context,
+              light: Color(0xFFEEEEEE),
+              dark: Colors.black,
+            ),
+            borderColor: ThemeProvider.contrastColor(
+              context,
+              light: Color(0xFFEEEEEE),
+              dark: Colors.grey.shade100,
+            ),
             reactedUserCountTextStyle: TextStyle(
-              color: theme.inComingChatBubbleTextColor,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
             ),
             reactionCountTextStyle: TextStyle(
-              color: theme.inComingChatBubbleTextColor,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
             ),
             reactionsBottomSheetConfig: ReactionsBottomSheetConfiguration(
-              backgroundColor: theme.backgroundColor,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               reactedUserTextStyle: TextStyle(
-                color: theme.inComingChatBubbleTextColor,
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.black,
+                  dark: Colors.white,
+                ),
               ),
               reactionWidgetDecoration: BoxDecoration(
-                color: theme.inComingChatBubbleColor,
+                color: ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.white,
+                  dark: CupertinoColors.darkBackgroundGray,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: isDarkTheme ? Colors.black12 : Colors.grey.shade200,
+                    color: ThemeProvider.contrastColor(
+                      context,
+                      light: Colors.grey.shade200,
+                      dark: Colors.black12,
+                    ),
                     offset: const Offset(0, 20),
                     blurRadius: 40,
                   ),
@@ -404,23 +526,23 @@ class _ConversionPageState extends State<ConversionPage> {
             },
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
             shareIconConfig: ShareIconConfiguration(
-              defaultIconBackgroundColor: theme.shareIconBackgroundColor,
-              defaultIconColor: theme.shareIconColor,
+              defaultIconBackgroundColor: const Color(0xFFE0E0E0),
+              defaultIconColor: Colors.black,
             ),
           ),
         ),
         profileCircleConfig: ProfileCircleConfiguration(
           profileImageUrl: Data.profileImage,
           onAvatarTap: (user) {
-            RouterProvider.viewUserProfile(int.parse(user.id));
+            RouterProvider.toUserProfile(int.parse(user.id));
           },
         ),
         repliedMessageConfig: RepliedMessageConfiguration(
-          backgroundColor: theme.repliedMessageColor,
-          verticalBarColor: theme.verticalBarColor,
+          backgroundColor: Theme.of(context).primaryColorLight,
+          verticalBarColor: Theme.of(context).primaryColor,
           repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
             enableHighlightRepliedMsg: true,
-            highlightColor: Colors.pinkAccent.shade100,
+            highlightColor: Theme.of(context).primaryColorLight,
             highlightScale: 1.1,
           ),
           textStyle: const TextStyle(
@@ -428,22 +550,36 @@ class _ConversionPageState extends State<ConversionPage> {
             fontWeight: FontWeight.bold,
             letterSpacing: 0.25,
           ),
-          replyTitleTextStyle: TextStyle(color: theme.repliedTitleTextColor),
+          replyTitleTextStyle: TextStyle(
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.black,
+              dark: Colors.white,
+            ),
+          ),
         ),
         swipeToReplyConfig: SwipeToReplyConfiguration(
-          replyIconColor: theme.swipeToReplyIconColor,
+          replyIconColor: Colors.black,
         ),
         replySuggestionsConfig: ReplySuggestionsConfig(
           itemConfig: SuggestionItemConfig(
             decoration: BoxDecoration(
-              color: theme.textFieldBackgroundColor,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: theme.outgoingChatBubbleColor ?? Colors.white,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.white,
+                dark: CupertinoColors.darkBackgroundGray,
               ),
+              // borderRadius: BorderRadius.circular(8),
+              // border: Border.all(
+              //   color: theme.outgoingChatBubbleColor ?? Colors.white,
+              // ),
             ),
             textStyle: TextStyle(
-              color: isDarkTheme ? Colors.white : Colors.black,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
             ),
           ),
           onTap:
@@ -484,18 +620,6 @@ class _ConversionPageState extends State<ConversionPage> {
     });
     Future.delayed(const Duration(seconds: 1), () {
       _chatController.initialMessageList.last.setStatus = MessageStatus.read;
-    });
-  }
-
-  void _onThemeIconTap() {
-    setState(() {
-      if (isDarkTheme) {
-        theme = LightTheme();
-        isDarkTheme = false;
-      } else {
-        theme = DarkTheme();
-        isDarkTheme = true;
-      }
     });
   }
 }
@@ -697,7 +821,15 @@ class BubbleChat extends StatelessWidget {
           padding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       margin: margin ?? const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
       decoration: BoxDecoration(
-        color: backgroundColor ?? (isSender ? Colors.redAccent : Colors.white),
+        color:
+            backgroundColor ??
+            (isSender
+                ? Theme.of(context).primaryColor
+                : ThemeProvider.contrastColor(
+                  context,
+                  light: Colors.white,
+                  dark: CupertinoColors.darkBackgroundGray,
+                )),
         borderRadius: borderRadius ?? BorderRadius.circular(12),
       ),
       child: child,

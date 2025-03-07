@@ -1,6 +1,7 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/i18n/i18n.dart';
@@ -177,10 +178,13 @@ class TodoThemeData {
       error: Colors.white,
       onError: Colors.white,
       surface: Colors.white,
-      onSurface: Colors.white,
+      onSurface: Colors.black,
       tertiary: Colors.white38,
       onTertiary: Color(0xFF282E45),
     ),
+    // popupMenuTheme: PopupMenuThemeData(
+    //   textStyle: TextStyle(color: Colors.black),
+    // ),
   );
   static ThemeData _darkTheme = ThemeData(
     useMaterial3: false,
@@ -202,11 +206,14 @@ class TodoThemeData {
       onSecondary: Colors.white70,
       error: Colors.white,
       onError: Colors.white,
-      surface: Colors.white,
+      surface: CupertinoColors.darkBackgroundGray,
       onSurface: Colors.white,
       tertiary: Color(0xFF282E45),
       onTertiary: Colors.white38,
     ),
+    // popupMenuTheme: PopupMenuThemeData(
+    //   textStyle: TextStyle(color: Colors.black),
+    // ),
   );
   late final Color _normal;
   late final Color _light;

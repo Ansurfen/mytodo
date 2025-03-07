@@ -1,12 +1,12 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/container/empty_container.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
-import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:my_todo/view/post/snapshot/post_card.dart';
@@ -25,12 +25,15 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
   PostSnapshotController controller = Get.find<PostSnapshotController>();
 
   Widget _postCardSpace() {
-    return Container(
-      height: 10,
-      color: ThemeProvider.contrastColor(
-        context,
-        light: Colors.grey.withOpacity(0.2),
-        dark: HexColor.fromInt(0x1c1c1e),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16), // 让分割线缩进
+      child: Divider(
+        color: ThemeProvider.contrastColor(
+          context,
+          light: Colors.grey.shade300,
+          dark: CupertinoColors.systemGrey,
+        ),
+        thickness: 1,
       ),
     );
   }
@@ -90,19 +93,22 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
           onTap: () {
             showTipDialog(context, content: "what_is_post".tr);
           },
-          child: ListView.separated(
-            itemCount: controller.data.value.length,
-            itemBuilder: (BuildContext context, int index) {
-              return PostCard(
-                more: () {
-                  controller.handlePost(context);
-                },
-                model: PostDetailModel.fromDto(controller.data.value[index]),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return _postCardSpace();
-            },
+          child: Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: ListView.separated(
+              itemCount: controller.data.value.length,
+              itemBuilder: (BuildContext context, int index) {
+                return PostCard(
+                  more: () {
+                    controller.handlePost(context);
+                  },
+                  model: PostDetailModel.fromDto(controller.data.value[index]),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return _postCardSpace();
+              },
+            ),
           ),
         ),
       ),
@@ -164,19 +170,22 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
           onTap: () {
             showTipDialog(context, content: "what_is_post".tr);
           },
-          child: ListView.separated(
-            itemCount: controller.data.value.length,
-            itemBuilder: (BuildContext context, int index) {
-              return PostCard(
-                more: () {
-                  controller.handlePost(context);
-                },
-                model: PostDetailModel.fromDto(controller.data.value[index]),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return _postCardSpace();
-            },
+          child: Padding(
+            padding: EdgeInsets.only(top: 10),
+            child: ListView.separated(
+              itemCount: controller.data.value.length,
+              itemBuilder: (BuildContext context, int index) {
+                return PostCard(
+                  more: () {
+                    controller.handlePost(context);
+                  },
+                  model: PostDetailModel.fromDto(controller.data.value[index]),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return _postCardSpace();
+              },
+            ),
           ),
         ),
       ),

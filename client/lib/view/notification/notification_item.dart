@@ -50,7 +50,7 @@ class _NotificationItemState extends State<NotificationItem> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          RouterProvider.viewUserProfile(widget.data.id);
+                          RouterProvider.toUserProfile(widget.data.id);
                         },
                         child: Text(
                           res.name,
