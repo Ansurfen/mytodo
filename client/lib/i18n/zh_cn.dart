@@ -72,6 +72,7 @@ Map<String, String> get zhCN => {
   "share": "分享",
   "readed": "标为已读",
   "top": "置顶",
+  "down": "取消置顶",
 
   "chat_msg": "消息",
   "chat_friend": "好友",
@@ -81,6 +82,13 @@ Map<String, String> get zhCN => {
 
   "post_me": "我的",
   "post_friend": "好友",
+
+  "comment": "评论",
+  "views": "访客",
+  "history": "历史",
+
+  "year": "年",
+  "month": "月",
 
   // showcase
   "showcase_back": "返回",
@@ -163,4 +171,11 @@ Map<String, String> get zhCN => {
   "edit_password": "修改密码",
   "edit_new_password": "新密码",
   "edit_confirm_password": "确认密码",
+
+  "new_friend": "新朋友",
+
+  'day_ago': "天前",
+  'hour_ago': "小时前",
+  'min_ago': "分钟前",
+  'sec_ago': "秒前",
 };

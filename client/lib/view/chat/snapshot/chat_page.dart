@@ -9,10 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:lpinyin/lpinyin.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/animate.dart';
+import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/utils/time.dart';
 import 'package:my_todo/view/chat/snapshot/chat_controller.dart';
@@ -31,15 +34,39 @@ class _ChatPageState extends State<ChatPage>
     with AutomaticKeepAliveClientMixin {
   ChatController controller = Get.find<ChatController>();
   final List<ContactInfo> _contacts = [];
+  RxList<ContactInfo> filteredItems = <ContactInfo>[].obs;
 
   @override
   void initState() {
     super.initState();
-    _contacts.addAll([
-      ContactInfo(name: "a", tagIndex: "a"),
-      ContactInfo(name: "b", tagIndex: "b"),
-      ContactInfo(name: "aa", tagIndex: "a"),
-    ]);
+    _contacts.addAll(
+      List.generate(Mock.number(min: 5), (idx) {
+        return ContactInfo(name: Mock.username(), about: Mock.text());
+      }),
+    );
+    _handleList(_contacts);
+    filteredItems.value = List.from(_contacts);
+  }
+
+  void _handleList(List<ContactInfo> list) {
+    if (list.isEmpty) return;
+    for (int i = 0, length = list.length; i < length; i++) {
+      String pinyin = PinyinHelper.getPinyinE(list[i].name);
+      String tag = pinyin.substring(0, 1).toUpperCase();
+      list[i].namePinyin = pinyin;
+      if (RegExp("[A-Z]").hasMatch(tag)) {
+        list[i].tagIndex = tag;
+      } else {
+        list[i].tagIndex = "#";
+      }
+    }
+    // A-Z sort.
+    SuspensionUtil.sortListBySuspensionTag(_contacts);
+
+    // show sus tag.
+    SuspensionUtil.setShowSuspensionStatus(_contacts);
+
+    setState(() {});
   }
 
   @override
@@ -86,95 +113,194 @@ class _ChatPageState extends State<ChatPage>
   }
 
   Widget chatView(BuildContext context) {
-    return refreshContainer(
-      context: context,
-      onRefresh: () {},
-      onLoad: () {},
-      child: FadeAnimatedBuilder(
-        opacity: TodoAnimateStyle.fadeOutOpacity(
-          controller.animationController,
-        ),
-        animation: controller.animationController,
-        child: Obx(
-          () => ListView.separated(
-            padding: const EdgeInsets.all(10),
-            separatorBuilder: (BuildContext context, int index) {
-              return Align(
-                alignment: Alignment.centerRight,
-                child: SizedBox(
-                  height: 0.5,
-                  width: MediaQuery.of(context).size.width / 1.3,
-                  child: const Divider(),
-                ),
-              );
-            },
-            itemCount: controller.data.value.length,
-            itemBuilder: (BuildContext context, int index) {
-              Chatsnapshot chat = controller.data.value[index];
-              return Slidable(
-                key: ValueKey(index),
-                startActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  dismissible: DismissiblePane(onDismissed: () {}),
-                  children: [
-                    SlidableAction(
-                      onPressed: (BuildContext context) {},
-                      backgroundColor: const Color(0xFFFE4A49),
-                      foregroundColor: Colors.white,
-                      icon: Icons.delete,
-                      label: 'delete'.tr,
-                    ),
-                    SlidableAction(
-                      onPressed: (BuildContext context) {
-                        TodoShare.share(controller.data.value[index].name);
-                      },
-                      backgroundColor: const Color(0xFF21B7CA),
-                      foregroundColor: Colors.white,
-                      icon: Icons.share,
-                      label: 'share'.tr,
-                    ),
-                  ],
-                ),
-
-                // The end action pane is the one at the right or the bottom side.
-                endActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  children: [
-                    SlidableAction(
-                      // An action can be bigger than the others.
-                      flex: 2,
-                      onPressed: (BuildContext context) {},
-                      backgroundColor: const Color(0xFF7BC043),
-                      foregroundColor: Colors.white,
-                      icon: Icons.archive,
-                      label: 'readed'.tr,
-                    ),
-                    SlidableAction(
-                      backgroundColor: const Color(0xFF0392CF),
-                      foregroundColor: Colors.white,
-                      icon: Icons.toc,
-                      label: 'top'.tr,
-                      onPressed: (BuildContext context) {},
-                    ),
-                  ],
-                ),
-                child: ChatItem(
-                  uid: chat.id,
-                  name: chat.name,
-                  isOnline: chat.isOnline,
-                  counter: chat.unreaded,
-                  msg: chat.lastMsg,
-                  time: formatTimeDifference(chat.lastAt),
-                  isTopic: chat.isTopic,
-                  onTap: () {
-                    RouterProvider.viewChatConversation(chat);
-                  },
-                ),
-              );
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: CupertinoSearchTextField(
+            placeholder: "search".tr,
+            style: TextStyle(
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+            ),
+            onChanged: (v) {
+              controller.searchQuery = v;
+              if (v.isEmpty) {
+                controller.updateFilteredList("");
+              } else {
+                controller.updateFilteredList(v);
+              }
             },
           ),
         ),
-      ),
+        Expanded(
+          child: refreshContainer(
+            context: context,
+            onRefresh: () {},
+            onLoad: () {},
+            child: FadeAnimatedBuilder(
+              opacity: TodoAnimateStyle.fadeOutOpacity(
+                controller.animationController,
+              ),
+              animation: controller.animationController,
+              child: Obx(
+                () => ListView.separated(
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        height: 0.5,
+                        width: MediaQuery.of(context).size.width / 1.3,
+                        child: const Divider(),
+                      ),
+                    );
+                  },
+                  itemCount:
+                      controller.filteredSnapItems.length +
+                      controller.pinnedItems.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Chatsnapshot chat;
+                    bool isPinned = false;
+                    if (index < controller.pinnedItems.length) {
+                      chat = controller.pinnedItems[index];
+                      isPinned = true;
+                    } else {
+                      chat =
+                          controller.filteredSnapItems[index -
+                              controller.pinnedItems.length];
+                    }
+                    return Slidable(
+                      key: ValueKey(index),
+                      startActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        // TODO
+                        // dismissible: DismissiblePane(
+                        //   onDismissed: () {
+                        //     controller.removeItem(chat);
+                        //   },
+                        // ),
+                        children: [
+                          SlidableAction(
+                            onPressed: (BuildContext context) {
+                              controller.removeItem(chat);
+                            },
+                            backgroundColor: const Color(0xFFFE4A49),
+                            foregroundColor: Colors.white,
+                            icon: Icons.delete,
+                            label: 'delete'.tr,
+                          ),
+                          SlidableAction(
+                            onPressed: (BuildContext context) {
+                              TodoShare.share(
+                                controller.filteredSnapItems[index].name,
+                              );
+                            },
+                            backgroundColor: const Color(0xFF21B7CA),
+                            foregroundColor: Colors.white,
+                            icon: Icons.share,
+                            label: 'share'.tr,
+                          ),
+                        ],
+                      ),
+                      // The end action pane is the one at the right or the bottom side.
+                      endActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        children: [
+                          SlidableAction(
+                            // An action can be bigger than the others.
+                            flex: 2,
+                            onPressed: (BuildContext context) {
+                              chat.unreaded = 0;
+                              if (controller.pinnedItems.contains(chat)) {
+                                controller.pinnedItems[index] = chat;
+                              } else {
+                                controller.filteredSnapItems[index -
+                                        controller.pinnedItems.length] =
+                                    chat;
+                              }
+                            },
+                            backgroundColor: const Color(0xFF7BC043),
+                            foregroundColor: Colors.white,
+                            icon: Icons.archive,
+                            label: 'readed'.tr,
+                          ),
+                          SlidableAction(
+                            flex: isPinned ? 2 : 1,
+                            backgroundColor: const Color(0xFF0392CF),
+                            foregroundColor: Colors.white,
+                            icon:
+                                isPinned ? Icons.download : Icons.upload_sharp,
+                            label: isPinned ? 'down'.tr : 'top'.tr,
+                            onPressed: (BuildContext context) {
+                              if (!controller.pinnedItems.contains(chat)) {
+                                controller.pinnedItems.add(chat);
+                                controller.allItems.remove(chat);
+                                controller.updateFilteredList(
+                                  controller.searchQuery,
+                                );
+                              } else {
+                                controller.pinnedItems.remove(chat);
+                                controller.allItems.insert(0, chat);
+                                controller.updateFilteredList(
+                                  controller.searchQuery,
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      child:
+                          isPinned
+                              ? Container(
+                                color: ThemeProvider.contrastColor(
+                                  context,
+                                  light: Colors.grey.shade100,
+                                  dark: CupertinoColors.darkBackgroundGray,
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: ChatItem(
+                                  uid: chat.id,
+                                  name: chat.name,
+                                  isOnline: chat.isOnline,
+                                  counter: chat.unreaded,
+                                  msg: chat.lastMsg,
+                                  time: formatTimeDifference(chat.lastAt),
+                                  isTopic: chat.isTopic,
+                                  onTap: () {
+                                    RouterProvider.viewChatConversation(chat);
+                                  },
+                                ),
+                              )
+                              : Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: ChatItem(
+                                  uid: chat.id,
+                                  name: chat.name,
+                                  isOnline: chat.isOnline,
+                                  counter: chat.unreaded,
+                                  msg: chat.lastMsg,
+                                  time: formatTimeDifference(chat.lastAt),
+                                  isTopic: chat.isTopic,
+                                  onTap: () {
+                                    RouterProvider.viewChatConversation(chat);
+                                  },
+                                ),
+                              ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+        Container(
+          height: 65,
+          decoration: BoxDecoration(color: Colors.transparent),
+        ),
+      ],
     );
   }
 
@@ -183,71 +309,89 @@ class _ChatPageState extends State<ChatPage>
       children: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          child: CupertinoSearchTextField(),
+          child: CupertinoSearchTextField(
+            placeholder: "search".tr,
+            style: TextStyle(
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+            ),
+            onChanged: (v) {
+              if (v.isEmpty) {
+                filteredItems.value = List.from(_contacts);
+              } else {
+                filteredItems.clear();
+                for (var item in _contacts) {
+                  if (item.name.contains(v)) {
+                    filteredItems.add(item);
+                  }
+                }
+              }
+            },
+          ),
         ),
         ListTile(
-          leading: Text("新朋友", style: TextStyle(fontSize: 18)),
+          leading: Text("new_friend".tr, style: TextStyle(fontSize: 18)),
           trailing: Icon(Icons.arrow_forward_ios_sharp),
         ),
-        AzListView(
-          data: _contacts,
-          itemCount: _contacts.length,
-          itemBuilder: (context, index) {
-            if (index == 0) return _buildHeader();
-            return _buildListItem(_contacts[index]);
-          },
-          physics: BouncingScrollPhysics(),
-          indexBarData: SuspensionUtil.getTagIndexList(_contacts),
-          indexHintBuilder: (context, hint) {
-            return Container(
-              alignment: Alignment.center,
-              width: 60.0,
-              height: 60.0,
-              decoration: BoxDecoration(
-                color: Colors.blue[700]!.withAlpha(200),
-                shape: BoxShape.circle,
+        Expanded(
+          child: Obx(
+            () => AzListView(
+              data: filteredItems,
+              itemCount: filteredItems.length,
+              itemBuilder: (context, index) {
+                return _buildListItem(filteredItems[index]);
+              },
+              physics: BouncingScrollPhysics(),
+              indexBarData: SuspensionUtil.getTagIndexList(filteredItems),
+              indexHintBuilder: (context, hint) {
+                return Container(
+                  alignment: Alignment.center,
+                  width: 60.0,
+                  height: 60.0,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withAlpha(200),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    hint,
+                    style: TextStyle(color: Colors.white, fontSize: 30.0),
+                  ),
+                );
+              },
+              indexBarMargin: EdgeInsets.all(10),
+              indexBarOptions: IndexBarOptions(
+                needRebuild: true,
+                decoration: getIndexBarDecoration(
+                  ThemeProvider.contrastColor(
+                    context,
+                    light: Colors.white,
+                    dark: Color(0xFF090912),
+                  ),
+                ),
+                downDecoration: getIndexBarDecoration(
+                  ThemeProvider.contrastColor(
+                    context,
+                    light: Colors.white,
+                    dark: Color(0xFF090912),
+                  ),
+                ),
               ),
-              child: Text(
-                hint,
-                style: TextStyle(color: Colors.white, fontSize: 30.0),
-              ),
-            );
-          },
-          indexBarMargin: EdgeInsets.all(10),
-          indexBarOptions: IndexBarOptions(
-            needRebuild: true,
-            decoration: getIndexBarDecoration(Colors.grey[50]!),
-            downDecoration: getIndexBarDecoration(Colors.grey[200]!),
+            ),
           ),
+        ),
+        Container(
+          height: 65,
+          decoration: BoxDecoration(color: Colors.transparent),
         ),
       ],
     );
   }
 
   Decoration getIndexBarDecoration(Color color) {
-    return BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(20.0),
-      border: Border.all(color: Colors.grey[300]!, width: .5),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          ClipOval(child: SvgPicture.asset("assets/logo.svg", width: 80.0)),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text("远行", textScaleFactor: 1.2),
-          ),
-          Text("+86 182-286-44678"),
-        ],
-      ),
-    );
+    return BoxDecoration(color: color);
   }
 
   Widget _buildSusWidget(String susTag) {
@@ -257,8 +401,8 @@ class _ChatPageState extends State<ChatPage>
       width: double.infinity,
       alignment: Alignment.centerLeft,
       child: Row(
-        children: <Widget>[
-          Text('$susTag', textScaleFactor: 1.2),
+        children: [
+          Text(susTag, textScaleFactor: 1.2),
           Expanded(child: Divider(height: .0, indent: 10.0)),
         ],
       ),
@@ -268,20 +412,26 @@ class _ChatPageState extends State<ChatPage>
   Widget _buildListItem(ContactInfo model) {
     String susTag = model.getSuspensionTag();
     return Column(
-      children: <Widget>[
+      children: [
         Offstage(
           offstage: model.isShowSuspension != true,
           child: _buildSusWidget(susTag),
         ),
         ListTile(
           leading: CircleAvatar(
-            backgroundColor: Colors.blue[700],
-            child: Text(model.name[0], style: TextStyle(color: Colors.white)),
+            backgroundColor: Theme.of(context).primaryColorLight,
+            child: SvgPicture.asset("assets/images/flutter.svg"),
           ),
-          title: Text(model.name),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(model.name),
+              Container(height: 5),
+              Text(model.about, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          ),
           onTap: () {
-            print("OnItemClick: $model");
-            Navigator.pop(context, model);
+            RouterProvider.toUserProfile(1);
           },
         ),
       ],
@@ -294,6 +444,7 @@ class _ChatPageState extends State<ChatPage>
 
 class ContactInfo extends ISuspensionBean {
   String name;
+  String about;
   String? tagIndex;
   String? namePinyin;
 
@@ -306,6 +457,7 @@ class ContactInfo extends ISuspensionBean {
 
   ContactInfo({
     required this.name,
+    this.about = "",
     this.tagIndex,
     this.namePinyin,
     this.bgColor,
@@ -317,6 +469,7 @@ class ContactInfo extends ISuspensionBean {
 
   ContactInfo.fromJson(Map<String, dynamic> json)
     : name = json['name'],
+      about = json['about'],
       img = json['img'],
       id = json['id']?.toString(),
       firstletter = json['firstletter'];

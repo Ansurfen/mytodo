@@ -88,7 +88,9 @@ class Chatsnapshot {
   static Chatsnapshot random() {
     return Chatsnapshot(
       unreaded: Mock.number(max: 100),
-      lastAt: Mock.dateTime(),
+      lastAt: DateTime.now().subtract(
+        Duration(seconds: Mock.number(max: 100000)),
+      ),
       lastMsg: Mock.text(),
       name: Mock.username(),
       id: Mock.number(),

@@ -122,63 +122,69 @@ class _PostDetailPageState extends State<PostDetailPage> {
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.primary,
-      bottomNavigationBar: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: ThemeProvider.contrastColor(
-                        context,
-                        light: HexColor.fromInt(0xceced2),
-                        dark: Colors.grey.withOpacity(0.8),
+      resizeToAvoidBottomInset: true,
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: ThemeProvider.contrastColor(
+                          context,
+                          light: HexColor.fromInt(0xceced2),
+                          dark: Colors.grey.withOpacity(0.8),
+                        ),
+                        width: 1,
                       ),
-                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: TodoInput(
+                      showChild: controller.showReply,
+                      controller: todoInputController,
+                      onTap: (v) {
+                        if (v.isEmpty) {
+                          return;
+                        }
+                        controller.postMessage(v).then((value) {
+                          setState(() {});
+                        });
+                        // if (controller.isCommentReply()) {
+                        //   if (replaySubID == 0) {
+                        //     controller
+                        //         .comments[controller.selectedComment]?.replies
+                        //         .add(PostComment(
+                        //             content: [v],
+                        //             id: "",
+                        //             images: [],
+                        //             username: "",
+                        //             createdAt: DateTime.now(),
+                        //             replies: []));
+                        //   }
+                        //   replaySubID = 0;
+                        //   controller.freeCommentReply();
+                      },
+                      child: replyBar(),
                     ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: TodoInput(
-                    showChild: controller.showReply,
-                    controller: todoInputController,
-                    onTap: (v) {
-                      if (v.isEmpty) {
-                        return;
-                      }
-                      controller.postMessage(v).then((value) {
-                        setState(() {});
-                      });
-                      // if (controller.isCommentReply()) {
-                      //   if (replaySubID == 0) {
-                      //     controller
-                      //         .comments[controller.selectedComment]?.replies
-                      //         .add(PostComment(
-                      //             content: [v],
-                      //             id: "",
-                      //             images: [],
-                      //             username: "",
-                      //             createdAt: DateTime.now(),
-                      //             replies: []));
-                      //   }
-                      //   replaySubID = 0;
-                      //   controller.freeCommentReply();
-                    },
-                    child: replyBar(),
-                  ),
+                TodoInputView(
+                  controller: todoInputController,
+                  state: key,
+                  maxWidth: constraints.maxWidth,
                 ),
-              ),
-              TodoInputView(
-                controller: todoInputController,
-                state: key,
-                maxWidth: constraints.maxWidth,
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
       body: refreshContainer(
         context: context,
@@ -194,68 +200,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        userProfile(
-                          isMale: controller.data.isMale,
-                          id: controller.data.uid,
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(bottom: 10),
-                              child: Text(
-                                controller.data.username,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ),
-                            RawChip(
-                              backgroundColor:
-                                  Theme.of(context).primaryColorLight,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.padded,
-                              avatar: Icon(
-                                Icons.location_on,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              label: Text(
-                                "unknown".tr,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          DateFormat(
-                            'yyyy-MM-dd',
-                          ).format(DateTime.now()), // 显示日期
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        SizedBox(width: 8), // 添加一些间距
-                        Text(
-                          DateFormat('HH:mm:ss').format(DateTime.now()), // 显示时间
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                Text(controller.data.content),
-                const SizedBox(height: 15),
+                _postHeader(),
                 // ...controller.model.imageUri
                 //     .map((e) => Image.network(e))
                 //     .toList(),
@@ -292,7 +237,30 @@ class _PostDetailPageState extends State<PostDetailPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.visibility_outlined,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          "浏览${Mock.number(max: 1000)}次",
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
                 todoDivider(context),
                 EmptyContainer(
                   icon: Icons.comment,
@@ -319,6 +287,54 @@ class _PostDetailPageState extends State<PostDetailPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _postHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            userProfile(
+              isMale: controller.data.isMale,
+              id: controller.data.uid,
+            ),
+            const SizedBox(width: 10),
+            Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    // controller.data.username,
+                    Mock.username(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  RawChip(
+                    backgroundColor: Theme.of(context).primaryColorLight,
+                    materialTapTargetSize: MaterialTapTargetSize.padded,
+                    avatar: Icon(
+                      Icons.location_on,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    label: Text(
+                      "unknown".tr,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

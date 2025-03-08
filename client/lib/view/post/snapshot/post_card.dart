@@ -3,8 +3,11 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/share.dart';
@@ -38,6 +41,7 @@ class _PostCardState extends State<PostCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   userProfile(
                     isMale: widget.model.isMale,
@@ -49,30 +53,19 @@ class _PostCardState extends State<PostCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 10),
-                          child: Text(
-                            widget.model.username,
-                            style: const TextStyle(fontSize: 16),
+                        Text(
+                          widget.model.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
-                        RawChip(
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                          backgroundColor: Theme.of(context).primaryColorLight,
-                          avatar: Icon(
-                            Icons.location_on,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          label: Text(
-                            "unknown".tr,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 12,
-                            ),
-                          ),
+                        Container(height: 5),
+                        Text(
+                          DateFormat(
+                            "yyyy-MM-dd HH:mm:ss",
+                          ).format(widget.model.createAt),
+                          style: TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -111,69 +104,104 @@ class _PostCardState extends State<PostCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      RouterProvider.toPostDetail(widget.model.id);
-                    },
-                    icon: Icon(
-                      Icons.chat_bubble_outline,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.visibility_outlined,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        "浏览${Mock.number(max: 1000)}次",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ],
                   ),
-                  Text("${widget.model.commentCnt}"),
+                  Container(height: 5),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Colors.grey),
+                      Text(
+                        "unknown".tr,
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ],
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  favoriteButton(
-                    context,
-                    selected: widget.model.isFavorite,
-                    onChange: (v) {
-                      if (widget.model.isFavorite) {
-                        postUnFavorite(
-                          PostUnFavoriteRequest(id: widget.model.id),
-                        ).then((res) {
-                          if (res.success) {
-                            setState(() {
-                              widget.model.favoriteCnt--;
-                              widget.model.isFavorite = false;
-                            });
-                          }
-                        });
-                      } else {
-                        postFavorite(
-                          PostFavoriteRequest(id: widget.model.id),
-                        ).then((res) {
-                          if (res.success) {
-                            setState(() {
-                              widget.model.favoriteCnt++;
-                              widget.model.isFavorite = true;
-                            });
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  Text("${widget.model.favoriteCnt}"),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      TodoShare.shareUri(
+                  Row(
+                    children: [
+                      favoriteButton(
                         context,
-                        Uri.parse("${Guard.server}/post?id=${widget.model.id}"),
-                      );
-                    },
-                    icon: Icon(
-                      Icons.open_in_new,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                        selected: widget.model.isFavorite,
+                        onChange: (v) {
+                          if (widget.model.isFavorite) {
+                            postUnFavorite(
+                              PostUnFavoriteRequest(id: widget.model.id),
+                            ).then((res) {
+                              if (res.success) {
+                                setState(() {
+                                  widget.model.favoriteCnt--;
+                                  widget.model.isFavorite = false;
+                                });
+                              }
+                            });
+                          } else {
+                            postFavorite(
+                              PostFavoriteRequest(id: widget.model.id),
+                            ).then((res) {
+                              if (res.success) {
+                                setState(() {
+                                  widget.model.favoriteCnt++;
+                                  widget.model.isFavorite = true;
+                                });
+                              }
+                            });
+                          }
+                        },
+                      ),
+                      Text("${widget.model.favoriteCnt}"),
+                    ],
                   ),
-                  Text("share".tr),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          RouterProvider.toPostDetail(widget.model.id);
+                        },
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                      Text("${widget.model.commentCnt}"),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          TodoShare.shareUri(
+                            context,
+                            Uri.parse(
+                              "${Guard.server}/post?id=${widget.model.id}",
+                            ),
+                          );
+                        },
+                        icon: Icon(
+                          FontAwesomeIcons.share,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],

@@ -316,7 +316,7 @@ class _TaskPageState extends State<TaskPage>
                                           readOnly: true,
                                           onTap: () async {
                                             DateTime? dateTime =
-                                                await _selectDate(
+                                                await todoSelectDate(
                                                   context,
                                                   initialDate: DateFormat(
                                                     'MM/dd/yyyy',
@@ -402,7 +402,7 @@ class _TaskPageState extends State<TaskPage>
                                           readOnly: true,
                                           onTap: () async {
                                             DateTime? dateTime =
-                                                await _selectDate(
+                                                await todoSelectDate(
                                                   context,
                                                   initialDate: DateFormat(
                                                     'MM/dd/yyyy',
@@ -490,9 +490,8 @@ class _TaskPageState extends State<TaskPage>
                                           controller: startTimeController,
                                           readOnly: true,
                                           onTap: () async {
-                                            TimeOfDay? time = await _selectTime(
-                                              context,
-                                            );
+                                            TimeOfDay? time =
+                                                await todoSelectTime(context);
                                             // TODO check valid
                                             if (time != null) {
                                               startTimeController.text = time
@@ -552,9 +551,8 @@ class _TaskPageState extends State<TaskPage>
                                           controller: endTimeController,
                                           readOnly: true,
                                           onTap: () async {
-                                            TimeOfDay? time = await _selectTime(
-                                              context,
-                                            );
+                                            TimeOfDay? time =
+                                                await todoSelectTime(context);
                                             if (time != null) {
                                               endTimeController.text = time
                                                   .format(context);
@@ -729,87 +727,85 @@ class _TaskPageState extends State<TaskPage>
 
   @override
   bool get wantKeepAlive => true;
-
-  Future<DateTime?> _selectDate(
-    BuildContext context, {
-    DateTime? initialDate,
-  }) async {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return showDatePicker(
-      context: context,
-      initialDate: initialDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData(
-            brightness: isDarkMode ? Brightness.dark : Brightness.light,
-            dialogTheme: DialogTheme(
-              backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            ),
-            colorScheme:
-                isDarkMode
-                    ? ColorScheme.dark(
-                      primary: Theme.of(context).primaryColor, // 选中颜色（暗色模式）
-                      onSurface: Colors.white, // 文本颜色
-                    )
-                    : ColorScheme.light(
-                      primary: Theme.of(context).primaryColor, // 选中颜色（亮色模式）
-                      onSurface: Colors.black, // 文本颜色
-                    ),
-            textTheme: TextTheme(
-              bodyMedium: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black, // 文本颜色
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-  }
-
-  Future<TimeOfDay?> _selectTime(
-    BuildContext context, {
-    TimeOfDay? initialTime,
-  }) async {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return showTimePicker(
-      context: context,
-      initialTime: initialTime ?? TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData(
-            brightness: isDarkMode ? Brightness.dark : Brightness.light,
-            dialogTheme: DialogTheme(
-              backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            ),
-            colorScheme:
-                isDarkMode
-                    ? ColorScheme.dark(
-                      primary: Theme.of(context).primaryColor, // 选中颜色（暗色模式）
-                      onSurface: Colors.white, // 文本颜色
-                    )
-                    : ColorScheme.light(
-                      primary: Theme.of(context).primaryColor, // 选中颜色（亮色模式）
-                      onSurface: Colors.black, // 文本颜色
-                    ),
-            textTheme: TextTheme(
-              bodyMedium: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black, // 文本颜色
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-  }
 }
 
-List<String> taskTypes = ["已完成", "进行中", "未开始"];
-// TODO：time picker, topic, task type
+Future<DateTime?> todoSelectDate(
+  BuildContext context, {
+  DateTime? initialDate,
+  DateTime? firstDate,
+}) async {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+  return showDatePicker(
+    context: context,
+    initialDate: initialDate ?? DateTime.now(),
+    firstDate: firstDate ?? DateTime.now(),
+    lastDate: DateTime(2100),
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData(
+          brightness: isDarkMode ? Brightness.dark : Brightness.light,
+          dialogTheme: DialogTheme(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          ),
+          colorScheme:
+              isDarkMode
+                  ? ColorScheme.dark(
+                    primary: Theme.of(context).primaryColor, // 选中颜色（暗色模式）
+                    onSurface: Colors.white, // 文本颜色
+                  )
+                  : ColorScheme.light(
+                    primary: Theme.of(context).primaryColor, // 选中颜色（亮色模式）
+                    onSurface: Colors.black, // 文本颜色
+                  ),
+          textTheme: TextTheme(
+            bodyMedium: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black, // 文本颜色
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+}
+
+Future<TimeOfDay?> todoSelectTime(
+  BuildContext context, {
+  TimeOfDay? initialTime,
+}) async {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  return showTimePicker(
+    context: context,
+    initialTime: initialTime ?? TimeOfDay.now(),
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData(
+          brightness: isDarkMode ? Brightness.dark : Brightness.light,
+          dialogTheme: DialogTheme(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          ),
+          colorScheme:
+              isDarkMode
+                  ? ColorScheme.dark(
+                    primary: Theme.of(context).primaryColor, // 选中颜色（暗色模式）
+                    onSurface: Colors.white, // 文本颜色
+                  )
+                  : ColorScheme.light(
+                    primary: Theme.of(context).primaryColor, // 选中颜色（亮色模式）
+                    onSurface: Colors.black, // 文本颜色
+                  ),
+          textTheme: TextTheme(
+            bodyMedium: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black, // 文本颜色
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+}
 
 class SearchTextField extends StatefulWidget {
   const SearchTextField({super.key});

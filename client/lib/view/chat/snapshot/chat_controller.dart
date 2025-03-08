@@ -10,8 +10,11 @@ import 'package:my_todo/utils/guard.dart';
 class ChatController extends GetxController with GetTickerProviderStateMixin {
   late TabController tabController;
   late final AnimationController animationController;
-  Rx<List<Chatsnapshot>> data = Rx([]);
+  List<Chatsnapshot> allItems = [];
+  RxList<Chatsnapshot> pinnedItems = <Chatsnapshot>[].obs;
+  RxList<Chatsnapshot> filteredSnapItems = <Chatsnapshot>[].obs;
 
+  String searchQuery = "";
   @override
   void onInit() {
     super.onInit();
@@ -22,7 +25,8 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
     );
     Future.delayed(Duration.zero, () {
       if (Guard.isDevMode()) {
-        data.value = Chatsnapshot.randomList();
+        allItems = Chatsnapshot.randomList();
+        updateFilteredList("");
       } else {
         chatSnapshot().then((res) {
           // data.value = res.data;
@@ -32,5 +36,26 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 100), () {
       animationController.forward();
     });
+  }
+
+  void updateFilteredList(String query) {
+    filteredSnapItems.value =
+        allItems
+            .where(
+              (item) =>
+                  !pinnedItems.contains(item) &&
+                  item.name.toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
+  }
+
+  void removeItem(Chatsnapshot item) {
+    if (pinnedItems.contains(item)) {
+      pinnedItems.remove(item);
+    } else {
+      allItems.remove(item);
+      filteredSnapItems.remove(item);
+    }
+    updateFilteredList(searchQuery);
   }
 }

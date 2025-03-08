@@ -80,6 +80,7 @@ Map<String, String> get enUS => {
   "share": "Share",
   "readed": "Readed",
   "top": "Top",
+  "down": "Down",
 
   //
   "chat_msg": "Message",
@@ -90,6 +91,13 @@ Map<String, String> get enUS => {
 
   "post_me": "Me",
   "post_friend": "Friend",
+
+  "comment": "Comment",
+  "views": "Views",
+  "history": "History",
+
+  "year": "Year",
+  "month": "Month",
 
   // showcase
   "showcase_back": "Back",
@@ -173,4 +181,11 @@ Map<String, String> get enUS => {
   "edit_password": "Edit Password",
   "edit_new_password": "New Password",
   "edit_confirm_password": "Confirm Password",
+
+  "new_friend": "New Friend",
+
+  'day_ago': "Day ago",
+  'hour_ago': "Hour ago",
+  'min_ago': "Minute ago",
+  'sec_ago': "Second ago",
 };
