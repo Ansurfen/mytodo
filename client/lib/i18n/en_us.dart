@@ -113,7 +113,8 @@ Map<String, String> get enUS => {
   "task_month": "Monthly",
   "task_year": "Yearly",
 
-  "task_is_public": "Public",
+  "topic_is_public": "Public",
+  "topic_tag": "Tags",
 
   //
   "topic_me": "Me",
@@ -127,6 +128,7 @@ Map<String, String> get enUS => {
   "schedule": "Schedule",
 
   // settings
+  "setting": "Setting",
   "common": "Common",
   "language": "Language",
   "dark_mode": "Dark Mode",
@@ -188,4 +190,9 @@ Map<String, String> get enUS => {
   'hour_ago': "Hour ago",
   'min_ago': "Minute ago",
   'sec_ago': "Second ago",
+
+  "clipboard": "Clipboard",
+
+  "remove_member": "Remove Member",
+  "remove_member_desc": "Confirm to remove the member",
 };

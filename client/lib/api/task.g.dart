@@ -8,7 +8,7 @@ part of 'task.dart';
 
 CreateTaskRequest _$CreateTaskRequestFromJson(Map<String, dynamic> json) =>
     CreateTaskRequest(
-      json['topic'] as int,
+      (json['topic'] as num).toInt(),
       json['name'] as String,
       json['desc'] as String,
       DateTime.parse(json['departure'] as String),
@@ -28,8 +28,8 @@ Map<String, dynamic> _$CreateTaskRequestToJson(CreateTaskRequest instance) =>
 
 CommitTaskRequest _$CommitTaskRequestFromJson(Map<String, dynamic> json) =>
     CommitTaskRequest(
-      json['tid'] as int,
-      json['type'] as int,
+      (json['tid'] as num).toInt(),
+      (json['type'] as num).toInt(),
       json['param'] as String,
     );
 
@@ -41,11 +41,7 @@ Map<String, dynamic> _$CommitTaskRequestToJson(CommitTaskRequest instance) =>
     };
 
 TaskHasPermRequest _$TaskHasPermRequestFromJson(Map<String, dynamic> json) =>
-    TaskHasPermRequest(
-      tid: json['tid'] as int,
-    );
+    TaskHasPermRequest(tid: (json['tid'] as num).toInt());
 
 Map<String, dynamic> _$TaskHasPermRequestToJson(TaskHasPermRequest instance) =>
-    <String, dynamic>{
-      'tid': instance.tid,
-    };
+    <String, dynamic>{'tid': instance.tid};

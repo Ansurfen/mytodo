@@ -6,8 +6,11 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
+import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/model/vo/post.dart';
 import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
+import 'package:my_todo/view/post/snapshot/post_card.dart';
 import 'package:my_todo/view/user/profile/profile_controller.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -119,22 +122,30 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              GridView.builder(
+              ListView.separated(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                primary: false,
-                padding: const EdgeInsets.all(5),
-                itemCount: 15,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 200 / 200,
-                ),
-                itemBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ImageView.svg("assets/images/flutter.svg"),
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, idx) {
+                  return PostCard(
+                    model: PostDetailModel(
+                      0,
+                      0,
+                      Mock.username(),
+                      false,
+                      DateTime.now(),
+                      "",
+                      [],
+                      0,
+                      0,
+                      false,
+                    ),
+                    more: () {},
                   );
                 },
+                separatorBuilder: (context, idx) {
+                  return Divider();
+                },
+                itemCount: 10,
               ),
             ],
           ),

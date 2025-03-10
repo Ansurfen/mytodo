@@ -4,6 +4,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/abc/utils.dart';
 import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/refresh.dart';
@@ -38,12 +39,12 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
           icon: Icons.arrow_back_ios,
         ),
         title: Text("member".tr),
-        elevation: 5,
+        elevation: 0,
         actions: [
           notificationWidget(context),
-          const SizedBox(width: 30),
+          const SizedBox(width: 15),
           settingWidget(),
-          const SizedBox(width: 20),
+          const SizedBox(width: 15),
           const IconButton(
             onPressed: RouterProvider.viewTopicInvite,
             icon: Icon(Icons.share),
@@ -72,7 +73,6 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
             itemBuilder: (BuildContext context, int index) {
               Map friend = friends[index];
               TopicMember member = controller.members.value[index];
-              int perm = Mock.number(max: 1);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: ListTile(
@@ -83,12 +83,12 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
                   contentPadding: const EdgeInsets.all(0),
                   title: Text(
                     member.name,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   subtitle: Text(friend['status']),
                   trailing: IconButton(
                     onPressed: () {
-                      handleMember(perm);
+                      actionByPermission(MemberPermission.owner);
                     },
                     icon: const Icon(Icons.more_vert),
                   ),
@@ -104,38 +104,70 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
     );
   }
 
-  void handleMember(int perm) {
+  void _addFriend() {
+    Get.back();
+    showSnack(context, "success");
+  }
+
+  void actionByPermission(MemberPermission perm) {
+    Column actions;
+    switch (perm) {
+      case MemberPermission.member:
+        actions = Column(
+          children: [
+            dialogAction(icon: Icons.add, text: "add".tr, onTap: _addFriend),
+          ],
+        );
+      case MemberPermission.admin:
+        actions = Column(
+          children: [
+            dialogAction(icon: Icons.add, text: "add".tr, onTap: _addFriend),
+            const Divider(),
+            dialogAction(
+              icon: Icons.delete,
+              text: "delete".tr,
+              onTap: () {
+                Navigator.of(context).pop();
+                showAlert(
+                  context,
+                  title: "remove_member".tr,
+                  content: "remove_member_desc".tr,
+                  onConfirm: () {},
+                );
+              },
+            ),
+          ],
+        );
+      case MemberPermission.owner:
+        actions = Column(
+          children: [
+            dialogAction(icon: Icons.add, text: "add".tr, onTap: _addFriend),
+            const SizedBox(height: 15),
+            dialogAction(icon: Icons.notifications, text: "notification"),
+            const SizedBox(height: 15),
+            const Divider(),
+            dialogAction(
+              icon: Icons.delete,
+              text: "delete".tr,
+              onTap: () {
+                Navigator.of(context).pop();
+                showAlert(
+                  context,
+                  title: "remove_member".tr,
+                  content: "remove_member_desc".tr,
+                  onConfirm: () {},
+                );
+              },
+            ),
+          ],
+        );
+    }
+
     showCupertinoModalPopup(
       context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
-            message: Column(
-              children: [
-                dialogAction(
-                  icon: perm == 0 ? Icons.power : Icons.power_off,
-                  text: perm == 0 ? "grant" : "un_grant",
-                  onTap: () {},
-                ),
-                const SizedBox(height: 15),
-                dialogAction(icon: Icons.notifications, text: "notification"),
-                const SizedBox(height: 15),
-                const Divider(),
-                dialogAction(
-                  icon: Icons.delete,
-                  text: "delete".tr,
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    showAlert(
-                      context,
-                      title: "移除成员",
-                      content: "确认移除该成员",
-                      onConfirm: () {},
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+      builder: (BuildContext context) => CupertinoActionSheet(message: actions),
     );
   }
 }
+
+enum MemberPermission { member, admin, owner }

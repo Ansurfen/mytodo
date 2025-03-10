@@ -232,14 +232,18 @@ class _TaskCardState extends State<TaskCard>
     return ExpansionTileCard(
       key: key,
       elevation: 0,
-      baseColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
-      expandedColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
+      baseColor: Colors.transparent,
+      expandedColor: Colors.transparent,
+      borderRadius: BorderRadius.zero,
       leading: CircleAvatar(
+        radius: 30,
         backgroundColor: Theme.of(context).primaryColorLight,
         child: SvgPicture.asset(widget.model.icon),
       ),
       title: Text(
         widget.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 16,
@@ -248,6 +252,8 @@ class _TaskCardState extends State<TaskCard>
       ),
       subtitle: Text(
         widget.msg,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: isLight ? Colors.black26 : Colors.grey,
           fontWeight: FontWeight.bold,

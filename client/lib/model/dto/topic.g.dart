@@ -7,7 +7,7 @@ part of 'topic.dart';
 // **************************************************************************
 
 GetTopicDto _$GetTopicDtoFromJson(Map<String, dynamic> json) => GetTopicDto(
-  json['id'] as int? ?? 0,
+  (json['id'] as num?)?.toInt() ?? 0,
   DateTime.parse(json['created_at'] as String),
   DateTime.parse(json['deleted_at'] as String),
   json['name'] as String,
@@ -23,5 +23,6 @@ Map<String, dynamic> _$GetTopicDtoToJson(GetTopicDto instance) =>
       'deleted_at': instance.deleteAt.toIso8601String(),
       'name': instance.name,
       'desc': instance.desc,
+      'icon': instance.icon,
       'invite_code': instance.inviteCode,
     };

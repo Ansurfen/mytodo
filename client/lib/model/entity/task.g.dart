@@ -14,30 +14,24 @@ Task _$TaskFromJson(Map<String, dynamic> json) {
   return Task(
     json['name'] as String? ?? '',
     json['desc'] as String? ?? '',
-    json['departure'] as int? ?? 0,
-    json['arrival'] as int? ?? 0,
-    id: json['id'] as int? ?? 0,
-    user: json['user'] as int? ?? 0,
+    (json['departure'] as num?)?.toInt() ?? 0,
+    (json['arrival'] as num?)?.toInt() ?? 0,
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    user: (json['user'] as num?)?.toInt() ?? 0,
   );
 }
 
 Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
-      'id': instance.id,
-      'user': instance.user,
-      'name': instance.name,
-      'desc': instance.desc,
-      'departure': instance.startAt,
-      'arrival': instance.endAt,
-    };
+  'id': instance.id,
+  'user': instance.user,
+  'name': instance.name,
+  'desc': instance.desc,
+  'departure': instance.startAt,
+  'arrival': instance.endAt,
+};
 
 TaskCondition _$TaskConditionFromJson(Map<String, dynamic> json) =>
-    TaskCondition(
-      json['type'] as int,
-      json['param'] as String,
-    );
+    TaskCondition((json['type'] as num).toInt(), json['param'] as String);
 
 Map<String, dynamic> _$TaskConditionToJson(TaskCondition instance) =>
-    <String, dynamic>{
-      'type': instance.type,
-      'param': instance.param,
-    };
+    <String, dynamic>{'type': instance.type, 'param': instance.param};

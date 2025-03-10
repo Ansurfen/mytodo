@@ -8,10 +8,10 @@ part of 'chat.dart';
 
 GetChatRequest _$GetChatRequestFromJson(Map<String, dynamic> json) =>
     GetChatRequest(
-      from: json['from'] as int,
-      to: json['to'] as int,
-      page: json['page'] as int,
-      pageSize: json['pageSize'] as int,
+      from: (json['from'] as num).toInt(),
+      to: (json['to'] as num).toInt(),
+      page: (json['page'] as num).toInt(),
+      pageSize: (json['pageSize'] as num).toInt(),
     );
 
 Map<String, dynamic> _$GetChatRequestToJson(GetChatRequest instance) =>

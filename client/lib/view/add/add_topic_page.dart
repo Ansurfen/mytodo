@@ -4,6 +4,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:my_todo/abc/utils.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/container/bubble_container.dart';
@@ -18,6 +20,7 @@ import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/add/add_task_page.dart';
 import 'package:my_todo/view/add/component/form.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:badges/badges.dart' as badges;
 
 class AddTopicPage extends StatefulWidget {
   const AddTopicPage({super.key});
@@ -36,6 +39,7 @@ class _AddTopicPageState extends State<AddTopicPage>
   Rx<String> profile = "".obs;
 
   bool isPublic = false;
+  RxList<String> tags = <String>[].obs;
 
   @override
   void initState() {
@@ -198,7 +202,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                       isPublic = v;
                     });
                   },
-                  title: Text("task_is_public".tr),
+                  title: Text("topic_is_public".tr),
                 ),
                 SettingsTile.navigation(
                   onPressed: (context) {
@@ -217,6 +221,23 @@ class _AddTopicPageState extends State<AddTopicPage>
                   title: Text('name'.tr),
                   leading: Icon(Icons.drive_file_rename_outline_outlined),
                   value: Text(nameController.text),
+                ),
+                SettingsTile.navigation(
+                  onPressed: (context) => showTagsPicker(context),
+                  title: Text("topic_tag".tr),
+                  leading: Icon(FontAwesomeIcons.tag),
+                  trailing: Obx(
+                    () =>
+                        tags.isNotEmpty
+                            ? badges.Badge(
+                              badgeContent: Text(tags.length.toString()),
+                              badgeStyle: badges.BadgeStyle(
+                                badgeColor: Theme.of(context).primaryColorLight,
+                              ),
+                              badgeAnimation: badges.BadgeAnimation.rotation(),
+                            )
+                            : Container(),
+                  ),
                 ),
               ],
             ),
@@ -355,6 +376,123 @@ class _AddTopicPageState extends State<AddTopicPage>
           child: SvgPicture.asset(icons[index], width: 30, height: 30),
         );
       },
+    );
+  }
+
+  void showTagsPicker(BuildContext context) {
+    TextEditingController tagController = TextEditingController();
+    showSheetBottom(
+      context,
+      title: "topic_tag".tr,
+      right: Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              showTextDialog(
+                context,
+                title: "add".tr,
+                content: Column(
+                  children: [
+                    TextField(
+                      controller: tagController,
+                      decoration: InputDecoration(
+                        labelText: "name".tr,
+                        filled: true,
+                        fillColor: Theme.of(context).primaryColorLight,
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 20,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        floatingLabelStyle: TextStyle(color: Colors.black),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).primaryColor,
+                            width: 2,
+                          ),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.drive_file_rename_outline_outlined,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ],
+                ),
+                onConfirm: () {
+                  if (tagController.text.isEmpty) {
+                    showSnack(context, "The tag's name is empty!");
+                    return;
+                  }
+                  tags.add(tagController.text);
+                  tagController.clear();
+                  Get.back();
+                },
+                onCancel: () {
+                  Get.back();
+                },
+              );
+            },
+            icon: Icon(
+              Icons.add,
+              color: ThemeProvider.contrastColor(
+                context,
+                light: Colors.black,
+                dark: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("name".tr, style: TextStyle(color: Colors.grey)),
+          Container(height: 8),
+          Obx(() {
+            List<Widget> widgets = [];
+            for (var i = 0; i < tags.length; i++) {
+              String v = tags[i];
+              widgets.add(
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColorLight,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        v.tr,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          tags.removeAt(i);
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return Wrap(spacing: 8.0, children: widgets);
+          }),
+        ],
+      ),
     );
   }
 }

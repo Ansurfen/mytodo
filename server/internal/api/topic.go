@@ -1,8 +1,10 @@
 package api
 
 type TopicNewRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	IsPublic    bool     `json:"is_public"`
+	Tags        []string `json:"tags"`
 }
 
 type TopicJoinRequest struct {

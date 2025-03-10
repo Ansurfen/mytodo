@@ -6,12 +6,10 @@ part of 'image.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-MImage _$MImageFromJson(Map<String, dynamic> json) => MImage(
-      json['name'] as String? ?? '',
-      json['path'] as String? ?? '',
-    );
+MImage _$MImageFromJson(Map<String, dynamic> json) =>
+    MImage(json['name'] as String? ?? '', json['path'] as String? ?? '');
 
 Map<String, dynamic> _$MImageToJson(MImage instance) => <String, dynamic>{
-      'name': instance.name,
-      'path': instance.path,
-    };
+  'name': instance.name,
+  'path': instance.path,
+};

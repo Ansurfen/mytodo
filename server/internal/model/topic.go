@@ -8,10 +8,12 @@ import (
 
 type Topic struct {
 	Model
-	Creator     uint   `json:"creator"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	InviteCode  string `json:"invite_code"`
+	Creator     uint                        `json:"creator"`
+	Name        string                      `json:"name"`
+	Description string                      `json:"description"`
+	IsPublic    bool                        `json:"is_public"`
+	Tags        datatypes.JSONSlice[string] `json:"tags" gorm:"type:json"`
+	InviteCode  string                      `json:"invite_code"`
 }
 
 func (Topic) TableName() string {

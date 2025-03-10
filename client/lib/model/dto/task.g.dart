@@ -7,14 +7,14 @@ part of 'task.dart';
 // **************************************************************************
 
 GetTaskDto _$GetTaskDtoFromJson(Map<String, dynamic> json) => GetTaskDto(
-      json['id'] as int,
-      json['topic'] as String,
-      json['name'] as String,
-      json['desc'] as String,
-      DateTime.parse(json['departure'] as String),
-      DateTime.parse(json['arrival'] as String),
-      (json['conds'] as List<dynamic>).map((e) => e as int).toList(),
-    );
+  (json['id'] as num).toInt(),
+  json['topic'] as String,
+  json['name'] as String,
+  json['desc'] as String,
+  DateTime.parse(json['departure'] as String),
+  DateTime.parse(json['arrival'] as String),
+  (json['conds'] as List<dynamic>).map((e) => (e as num).toInt()).toList(),
+);
 
 Map<String, dynamic> _$GetTaskDtoToJson(GetTaskDto instance) =>
     <String, dynamic>{
@@ -28,14 +28,14 @@ Map<String, dynamic> _$GetTaskDtoToJson(GetTaskDto instance) =>
     };
 
 InfoTaskDto _$InfoTaskDtoFromJson(Map<String, dynamic> json) => InfoTaskDto(
-      json['name'] as String,
-      json['desc'] as String,
-      DateTime.parse(json['departure'] as String),
-      DateTime.parse(json['arrival'] as String),
-      (json['conds'] as List<dynamic>)
-          .map((e) => InfoTaskCondition.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+  json['name'] as String,
+  json['desc'] as String,
+  DateTime.parse(json['departure'] as String),
+  DateTime.parse(json['arrival'] as String),
+  (json['conds'] as List<dynamic>)
+      .map((e) => InfoTaskCondition.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
 
 Map<String, dynamic> _$InfoTaskDtoToJson(InfoTaskDto instance) =>
     <String, dynamic>{
@@ -48,7 +48,7 @@ Map<String, dynamic> _$InfoTaskDtoToJson(InfoTaskDto instance) =>
 
 InfoTaskCondition _$InfoTaskConditionFromJson(Map<String, dynamic> json) =>
     InfoTaskCondition(
-      json['type'] as int,
+      (json['type'] as num).toInt(),
       (json['want_params'] as List<dynamic>).map((e) => e as String).toList(),
       (json['got_params'] as List<dynamic>?)
               ?.map((e) => e as String)

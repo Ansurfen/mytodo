@@ -124,7 +124,7 @@ func main() {
 
 		db.OSS().PutObject(context.TODO(), "chat", file.Filename, src, file.Size, minio.PutObjectOptions{})
 	})
-	// r.Run(fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port))
+	r.Run(fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port))
 }
 
 type Message struct {

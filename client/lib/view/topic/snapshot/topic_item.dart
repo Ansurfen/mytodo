@@ -5,13 +5,16 @@ import 'dart:math';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/router/topic.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/clipboard.dart';
 import 'package:my_todo/utils/share.dart';
+import 'package:my_todo/view/topic/snapshot/topic_page.dart';
 
 class TopicItem extends StatefulWidget {
   final String dp;
@@ -132,9 +135,11 @@ class _TopicCardState extends State<TopicCard>
     return ExpansionTileCard(
       key: key,
       elevation: 0,
-      baseColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
-      expandedColor: isLight ? Colors.grey.shade50 : HexColor.fromInt(0x1c1c1e),
+      baseColor: Colors.transparent,
+      expandedColor: Colors.transparent,
+      borderRadius: BorderRadius.zero,
       leading: CircleAvatar(
+        radius: 30,
         backgroundColor: Theme.of(context).primaryColorLight,
         child: SvgPicture.asset(widget.model.icon),
         // child: Text(
@@ -154,13 +159,26 @@ class _TopicCardState extends State<TopicCard>
           color: Theme.of(context).colorScheme.onPrimary,
         ),
       ),
-      subtitle: Text(
-        widget.msg,
-        style: TextStyle(
-          color: isLight ? Colors.black26 : Colors.grey,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
+      subtitle: Column(
+        children: [
+          Text(
+            widget.msg,
+            maxLines: 3,
+            style: TextStyle(
+              color: isLight ? Colors.black26 : Colors.grey,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+          Container(height: 5),
+          tags(
+            context,
+            List.generate(Mock.number(max: 5), (idx) {
+              return Mock.username();
+            }),
+            limit: 22,
+          ),
+        ],
       ),
       children: [
         const Divider(thickness: 1.0, height: 1.0),
@@ -172,34 +190,28 @@ class _TopicCardState extends State<TopicCard>
               vertical: 8.0,
             ),
             child: Text(
-              """Hi there, I'm a drop-in replacement for Flutter's ExpansionTile.
-
-Use me any time you think your app could benefit from being just a bit more Material.
-
-These buttons control the next card down!""",
+              Mock.text(),
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium!.copyWith(fontSize: 16),
             ),
           ),
         ),
-        ButtonBar(
+        OverflowBar(
           alignment: MainAxisAlignment.spaceAround,
-          buttonHeight: 52.0,
-          buttonMinWidth: 90.0,
           children: [
             // TODO
             IconButton(
               onPressed: () {
                 RouterProvider.viewTopicDetail(widget.model.id, widget.model);
               },
-              icon: Icon(Icons.details, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.calendar_month, color: Colors.grey),
             ),
             IconButton(
               onPressed: () {
                 RouterProvider.viewTopicMember(widget.model.id);
               },
-              icon: Icon(Icons.group, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.group, color: Colors.grey),
             ),
             IconButton(
               onPressed: () async {
@@ -208,14 +220,14 @@ These buttons control the next card down!""",
                   Uri.parse(widget.model.inviteCode),
                 ).then(
                   (value) => Get.snackbar(
-                    "Clipboard",
+                    "clipboard".tr,
                     "Topic's invite code is copied on clipboard.",
                     backgroundColor: Theme.of(context).colorScheme.primary,
                   ),
                 );
                 await TodoClipboard.set(widget.model.inviteCode);
               },
-              icon: Icon(Icons.share, color: Theme.of(context).primaryColor),
+              icon: Icon(FontAwesomeIcons.ticket, color: Colors.grey),
             ),
           ],
         ),

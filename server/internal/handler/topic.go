@@ -37,6 +37,8 @@ func TopicNew(ctx *gin.Context) {
 		Creator:     u.ID,
 		Name:        req.Name,
 		Description: req.Description,
+		IsPublic:    req.IsPublic,
+		Tags:        req.Tags,
 		InviteCode:  uuid.NewString(),
 	}
 	err = tx.Create(&topic).Error

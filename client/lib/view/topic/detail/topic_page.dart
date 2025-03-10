@@ -14,6 +14,8 @@ import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
+import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/topic/detail/topic_controller.dart';
 
 class TopicPage extends StatefulWidget {
@@ -28,7 +30,9 @@ class _TopicPageState extends State<TopicPage> {
   var calendarMode = CalendarView.day3;
   @override
   Widget build(BuildContext context) {
+    bool darkMode = ThemeProvider.isDarkByContext(context);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
@@ -100,12 +104,12 @@ class _TopicPageState extends State<TopicPage> {
                     child: ListTile(
                       leading: Icon(
                         mode.icon,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: darkMode ? Colors.white : Colors.black,
                       ),
                       title: Text(
                         mode.text,
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: darkMode ? Colors.white : Colors.black,
                         ),
                       ),
                     ),
@@ -131,12 +135,12 @@ class _TopicPageState extends State<TopicPage> {
                     child: ListTile(
                       leading: Icon(
                         mode.icon,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: darkMode ? Colors.white : Colors.black,
                       ),
                       title: Text(
                         mode.text,
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: darkMode ? Colors.white : Colors.black,
                         ),
                       ),
                     ),

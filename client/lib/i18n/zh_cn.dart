@@ -104,7 +104,8 @@ Map<String, String> get zhCN => {
   "task_month": "月度",
   "task_year": "年度",
 
-  "task_is_public": "公开",
+  "topic_is_public": "公开",
+  "topic_tag": "标签",
 
   "topic_me": "我的",
   "topic_find": "发现",
@@ -117,6 +118,7 @@ Map<String, String> get zhCN => {
   "schedule": "时间表",
 
   // settings
+  "setting": "设置",
   "common": "通用",
   "language": "语言",
   "dark_mode": "黑暗模式",
@@ -178,4 +180,9 @@ Map<String, String> get zhCN => {
   'hour_ago': "小时前",
   'min_ago': "分钟前",
   'sec_ago': "秒前",
+
+  "clipboard": "剪贴板",
+
+  "remove_member": "移除成员",
+  "remove_member_desc": "确定移除该成员",
 };

@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/caarlos0/log"
@@ -20,8 +19,8 @@ type TodoConf struct {
 
 func New() (ret TodoConf) {
 	ReadYAML("boot.yaml", &ret)
-	viper.BindEnv("email.senderEmail", "ABC")
-	fmt.Println(viper.GetString("email.senderEmail"))
+	// viper.BindEnv("email.senderEmail", "ABC")
+	// fmt.Println(viper.GetString("email.senderEmail"))
 	return
 }
 

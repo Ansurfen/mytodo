@@ -7,19 +7,17 @@ part of 'post.dart';
 // **************************************************************************
 
 GetPostDto _$GetPostDtoFromJson(Map<String, dynamic> json) => GetPostDto(
-      json['id'] as int? ?? 0,
-      json['uid'] as int? ?? 0,
-      json['username'] as String? ?? '',
-      json['isMale'] as bool? ?? true,
-      string2DateTime(json['created_at'] as String),
-      json['content'] as String? ?? '',
-      json['image'] == null
-          ? []
-          : MImage.imagesFromJson(json['image'] as List?),
-      json['fc'] as int? ?? 0,
-      json['cc'] as int? ?? 0,
-      json['is_favorite'] as bool? ?? false,
-    );
+  (json['id'] as num?)?.toInt() ?? 0,
+  (json['uid'] as num?)?.toInt() ?? 0,
+  json['username'] as String? ?? '',
+  json['isMale'] as bool? ?? true,
+  string2DateTime(json['created_at'] as String),
+  json['content'] as String? ?? '',
+  json['image'] == null ? [] : MImage.imagesFromJson(json['image'] as List?),
+  (json['fc'] as num?)?.toInt() ?? 0,
+  (json['cc'] as num?)?.toInt() ?? 0,
+  json['is_favorite'] as bool? ?? false,
+);
 
 Map<String, dynamic> _$GetPostDtoToJson(GetPostDto instance) =>
     <String, dynamic>{

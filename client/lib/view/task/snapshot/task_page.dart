@@ -65,7 +65,7 @@ class _TaskPageState extends State<TaskPage>
         title: Padding(
           padding: const EdgeInsets.only(top: 5, left: 40),
           child: Text(
-            "MyTodo".tr,
+            "MyTodo",
             style: const TextStyle(fontSize: 20, fontFamily: 'Pacifico'),
           ),
         ),
@@ -228,7 +228,20 @@ class _TaskPageState extends State<TaskPage>
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ListView.separated(
                           separatorBuilder: (context, index) {
-                            return Container(height: 5);
+                            return Align(
+                              alignment: Alignment.centerRight,
+                              child: SizedBox(
+                                height: 0.5,
+                                width: MediaQuery.of(context).size.width / 1.3,
+                                child: Divider(
+                                  color: ThemeProvider.contrastColor(
+                                    context,
+                                    light: Colors.grey,
+                                    dark: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
@@ -267,459 +280,14 @@ class _TaskPageState extends State<TaskPage>
                     ),
                   ),
                 ),
+                Container(
+                  height: 65,
+                  decoration: BoxDecoration(color: Colors.transparent),
+                ),
               ],
             ),
           ),
-          Obx(
-            () =>
-                controller.showMask.value
-                    ? Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            controller.showMask.value = false;
-                          },
-                          child: Container(
-                            height: MediaQuery.of(context).size.height,
-                            color: Colors.black.withOpacity(0.4),
-                          ),
-                        ),
-                        Container(
-                          height: MediaQuery.of(context).size.height / 3,
-                          decoration: BoxDecoration(
-                            color: ThemeProvider.contrastColor(
-                              context,
-                              light: Colors.white,
-                              dark: Colors.black,
-                            ),
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10),
-                              bottomRight: Radius.circular(10),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(15),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SearchTextField(),
-                                Container(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 8.0,
-                                        ), // 右边添加间隔
-                                        child: TextField(
-                                          controller: startDateController,
-                                          readOnly: true,
-                                          onTap: () async {
-                                            DateTime? dateTime =
-                                                await todoSelectDate(
-                                                  context,
-                                                  initialDate: DateFormat(
-                                                    'MM/dd/yyyy',
-                                                  ).parse(
-                                                    startDateController.text,
-                                                  ),
-                                                );
-                                            if (dateTime != null) {
-                                              // 检查选择的日期是否晚于结束日期
-                                              DateTime? endDate = DateFormat(
-                                                'MM/dd/yyyy',
-                                              ).parse(endDateController.text);
-                                              if (dateTime.isAtSameMomentAs(
-                                                    endDate,
-                                                  ) ||
-                                                  dateTime.isBefore(endDate)) {
-                                                // 如果选择的startDate比endDate早，更新startDateController
-                                                startDateController
-                                                    .text = DateFormat(
-                                                  'MM/dd/yyyy',
-                                                ).format(dateTime);
-                                              } else {
-                                                showToast(
-                                                  "Start Date cannot be later than End Date.",
-                                                );
-                                              }
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            labelStyle: TextStyle(
-                                              color:
-                                                  Theme.of(
-                                                    context,
-                                                  ).primaryColor,
-                                            ),
-                                            floatingLabelStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            labelText: "start_date".tr,
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.auto,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  vertical: 8.0,
-                                                  horizontal: 12.0,
-                                                ), // 缩小内边距
-                                          ),
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                        ), // 左边添加间隔
-                                        child: TextField(
-                                          controller: endDateController,
-                                          readOnly: true,
-                                          onTap: () async {
-                                            DateTime? dateTime =
-                                                await todoSelectDate(
-                                                  context,
-                                                  initialDate: DateFormat(
-                                                    'MM/dd/yyyy',
-                                                  ).parse(
-                                                    endDateController.text,
-                                                  ),
-                                                );
-                                            if (dateTime != null) {
-                                              // 检查选择的日期是否早于开始日期
-                                              DateTime? startDate = DateFormat(
-                                                'MM/dd/yyyy',
-                                              ).parse(startDateController.text);
-                                              if (dateTime.isAtSameMomentAs(
-                                                    startDate,
-                                                  ) ||
-                                                  dateTime.isAfter(startDate)) {
-                                                // 如果选择的endDate比startDate晚，更新endDateController
-                                                endDateController
-                                                    .text = DateFormat(
-                                                  'MM/dd/yyyy',
-                                                ).format(dateTime);
-                                              } else {
-                                                // 如果endDate比startDate早，提示用户
-                                                showToast(
-                                                  "End Date cannot be earlier than Start Date.",
-                                                );
-                                              }
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            labelText: "end_date".tr,
-                                            labelStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            floatingLabelStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.auto,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  vertical: 8.0,
-                                                  horizontal: 12.0,
-                                                ), // 缩小内边距
-                                          ),
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 8.0,
-                                        ), // 在 TextField 之间添加间隔
-                                        child: TextField(
-                                          controller: startTimeController,
-                                          readOnly: true,
-                                          onTap: () async {
-                                            TimeOfDay? time =
-                                                await todoSelectTime(context);
-                                            // TODO check valid
-                                            if (time != null) {
-                                              startTimeController.text = time
-                                                  .format(context);
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            hintText: "start_time".tr,
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            floatingLabelStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.auto,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  vertical: 8.0,
-                                                  horizontal: 12.0,
-                                                ), // 调整内边距
-                                          ),
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                        ), // 添加左间隔
-                                        child: TextField(
-                                          controller: endTimeController,
-                                          readOnly: true,
-                                          onTap: () async {
-                                            TimeOfDay? time =
-                                                await todoSelectTime(context);
-                                            if (time != null) {
-                                              endTimeController.text = time
-                                                  .format(context);
-                                            }
-                                          },
-                                          decoration: InputDecoration(
-                                            hintText: "end_time".tr,
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                            floatingLabelStyle: TextStyle(
-                                              color:
-                                                  Theme.of(
-                                                    context,
-                                                  ).primaryColor,
-                                            ),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.auto,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              borderSide: BorderSide(
-                                                color: Colors.grey,
-                                                width: 2,
-                                              ),
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                  vertical: 8.0,
-                                                  horizontal: 12.0,
-                                                ), // 调整内边距
-                                          ),
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(height: 10),
-                                Text(
-                                  "filter_status".tr,
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Container(height: 5),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Obx(
-                                      () => InkWell(
-                                        onTap: () {
-                                          filterRunning.value =
-                                              !filterRunning.value;
-                                        },
-                                        child: Row(
-                                          children: [
-                                            filterRunning.value
-                                                ? Icon(
-                                                  Icons.check_box,
-                                                  color:
-                                                      Theme.of(
-                                                        context,
-                                                      ).primaryColor,
-                                                )
-                                                : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  color: Colors.grey,
-                                                ),
-                                            Text(
-                                              "filter_running".tr,
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Obx(
-                                      () => InkWell(
-                                        onTap: () {
-                                          filterFinish.value =
-                                              !filterFinish.value;
-                                        },
-                                        child: Row(
-                                          children: [
-                                            filterFinish.value
-                                                ? Icon(
-                                                  Icons.check_box,
-                                                  color:
-                                                      Theme.of(
-                                                        context,
-                                                      ).primaryColor,
-                                                )
-                                                : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  color: Colors.grey,
-                                                ),
-                                            Text(
-                                              "filter_finish".tr,
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Obx(
-                                      () => InkWell(
-                                        onTap: () {
-                                          filterTimeout.value =
-                                              !filterTimeout.value;
-                                        },
-                                        child: Row(
-                                          children: [
-                                            filterTimeout.value
-                                                ? Icon(
-                                                  Icons.check_box,
-                                                  color:
-                                                      Theme.of(
-                                                        context,
-                                                      ).primaryColor,
-                                                )
-                                                : Icon(
-                                                  Icons.check_box_outline_blank,
-                                                  color: Colors.grey,
-                                                ),
-                                            Text(
-                                              "filter_timeout".tr,
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                    : Container(),
-          ),
+          Obx(() => controller.showMask.value ? filterPicker() : Container()),
         ],
       ),
     );
@@ -727,6 +295,375 @@ class _TaskPageState extends State<TaskPage>
 
   @override
   bool get wantKeepAlive => true;
+
+  Widget filterPicker() {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            controller.showMask.value = false;
+          },
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black.withOpacity(0.4),
+          ),
+        ),
+        Container(
+          height: MediaQuery.of(context).size.height / 3,
+          decoration: BoxDecoration(
+            color: ThemeProvider.contrastColor(
+              context,
+              light: Colors.white,
+              dark: Colors.black,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SearchTextField(),
+                Container(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0), // 右边添加间隔
+                        child: TextField(
+                          controller: startDateController,
+                          readOnly: true,
+                          onTap: () async {
+                            DateTime? dateTime = await todoSelectDate(
+                              context,
+                              initialDate: DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(startDateController.text),
+                            );
+                            if (dateTime != null) {
+                              // 检查选择的日期是否晚于结束日期
+                              DateTime? endDate = DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(endDateController.text);
+                              if (dateTime.isAtSameMomentAs(endDate) ||
+                                  dateTime.isBefore(endDate)) {
+                                // 如果选择的startDate比endDate早，更新startDateController
+                                startDateController.text = DateFormat(
+                                  'MM/dd/yyyy',
+                                ).format(dateTime);
+                              } else {
+                                showToast(
+                                  "Start Date cannot be later than End Date.",
+                                );
+                              }
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelStyle: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            floatingLabelStyle: TextStyle(color: Colors.grey),
+                            labelText: "start_date".tr,
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ), // 缩小内边距
+                          ),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0), // 左边添加间隔
+                        child: TextField(
+                          controller: endDateController,
+                          readOnly: true,
+                          onTap: () async {
+                            DateTime? dateTime = await todoSelectDate(
+                              context,
+                              initialDate: DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(endDateController.text),
+                            );
+                            if (dateTime != null) {
+                              // 检查选择的日期是否早于开始日期
+                              DateTime? startDate = DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(startDateController.text);
+                              if (dateTime.isAtSameMomentAs(startDate) ||
+                                  dateTime.isAfter(startDate)) {
+                                // 如果选择的endDate比startDate晚，更新endDateController
+                                endDateController.text = DateFormat(
+                                  'MM/dd/yyyy',
+                                ).format(dateTime);
+                              } else {
+                                // 如果endDate比startDate早，提示用户
+                                showToast(
+                                  "End Date cannot be earlier than Start Date.",
+                                );
+                              }
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelText: "end_date".tr,
+                            labelStyle: TextStyle(color: Colors.grey),
+                            floatingLabelStyle: TextStyle(color: Colors.grey),
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ), // 缩小内边距
+                          ),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          right: 8.0,
+                        ), // 在 TextField 之间添加间隔
+                        child: TextField(
+                          controller: startTimeController,
+                          readOnly: true,
+                          onTap: () async {
+                            TimeOfDay? time = await todoSelectTime(context);
+                            // TODO check valid
+                            if (time != null) {
+                              startTimeController.text = time.format(context);
+                            }
+                          },
+                          decoration: InputDecoration(
+                            hintText: "start_time".tr,
+                            hintStyle: TextStyle(color: Colors.grey),
+                            floatingLabelStyle: TextStyle(color: Colors.grey),
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ), // 调整内边距
+                          ),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0), // 添加左间隔
+                        child: TextField(
+                          controller: endTimeController,
+                          readOnly: true,
+                          onTap: () async {
+                            TimeOfDay? time = await todoSelectTime(context);
+                            if (time != null) {
+                              endTimeController.text = time.format(context);
+                            }
+                          },
+                          decoration: InputDecoration(
+                            hintText: "end_time".tr,
+                            hintStyle: TextStyle(color: Colors.grey),
+                            floatingLabelStyle: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            floatingLabelBehavior: FloatingLabelBehavior.auto,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ), // 调整内边距
+                          ),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(height: 10),
+                Text(
+                  "filter_status".tr,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Container(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Obx(
+                      () => InkWell(
+                        onTap: () {
+                          filterRunning.value = !filterRunning.value;
+                        },
+                        child: Row(
+                          children: [
+                            filterRunning.value
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
+                            Text(
+                              "filter_running".tr,
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => InkWell(
+                        onTap: () {
+                          filterFinish.value = !filterFinish.value;
+                        },
+                        child: Row(
+                          children: [
+                            filterFinish.value
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
+                            Text(
+                              "filter_finish".tr,
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => InkWell(
+                        onTap: () {
+                          filterTimeout.value = !filterTimeout.value;
+                        },
+                        child: Row(
+                          children: [
+                            filterTimeout.value
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
+                            Text(
+                              "filter_timeout".tr,
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 Future<DateTime?> todoSelectDate(

@@ -6,7 +6,6 @@ import 'dart:collection';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/tabIcon/tabIcon_data.dart';
-import 'package:my_todo/utils/guide.dart';
 import 'package:my_todo/view/chat/snapshot/chat_controller.dart';
 import 'package:my_todo/view/chat/snapshot/chat_page.dart';
 import 'package:my_todo/view/post/snapshot/post_page.dart';
@@ -84,7 +83,9 @@ class NavigatorController extends GetxController
     pageController = PageController();
     tabIconsList[index].isSelected = true;
     animationController = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this);
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
   }
 
   @override

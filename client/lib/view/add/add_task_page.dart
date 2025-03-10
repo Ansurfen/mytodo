@@ -770,45 +770,70 @@ class _AddTaskPageState extends State<AddTaskPage>
     );
   }
 
-  void showSheetBottom(
-    BuildContext context, {
-    required String title,
-    Widget? right,
-    List<Widget>? actions,
-    required Widget child,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        minWidth: double.infinity,
-        minHeight: MediaQuery.sizeOf(context).height - 180,
+  Widget _buildGridView(List<String> icons) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
+        childAspectRatio: 1.0,
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
+      itemCount: icons.length,
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () {
+            profile.value = icons[index];
+            Get.back();
+          },
+          child: SvgPicture.asset(icons[index], width: 30, height: 30),
+        );
+      },
+    );
+  }
+}
+
+void showSheetBottom(
+  BuildContext context, {
+  required String title,
+  Widget? right,
+  List<Widget>? actions,
+  required Widget child,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    constraints: BoxConstraints(
+      minWidth: double.infinity,
+      minHeight: MediaQuery.sizeOf(context).height - 180,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+    ),
+    builder: (BuildContext context) {
+      return Container(
+        height: MediaQuery.of(context).size.height / 2,
+        clipBehavior: Clip.antiAlias,
+        constraints: BoxConstraints(
+          minWidth: double.infinity,
+          minHeight: MediaQuery.sizeOf(context).height - 180,
         ),
-      ),
-      builder: (BuildContext context) {
-        return Container(
-          height: MediaQuery.of(context).size.height / 2,
-          clipBehavior: Clip.antiAlias,
-          constraints: BoxConstraints(
-            minWidth: double.infinity,
-            minHeight: MediaQuery.sizeOf(context).height - 180,
+        decoration: BoxDecoration(
+          color: ThemeProvider.contrastColor(
+            context,
+            light: HexColor.fromInt(0xf5f5f5),
+            dark: HexColor.fromInt(0x1c1c1e),
           ),
-          decoration: BoxDecoration(
-            color: ThemeProvider.contrastColor(
-              context,
-              light: HexColor.fromInt(0xf5f5f5),
-              dark: HexColor.fromInt(0x1c1c1e),
-            ),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10.0),
-              topRight: Radius.circular(10.0),
-            ),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(10.0),
+            topRight: Radius.circular(10.0),
           ),
+        ),
+        child: SingleChildScrollView(
           child: Column(
             children: [
               Row(
@@ -845,33 +870,10 @@ class _AddTaskPageState extends State<AddTaskPage>
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGridView(List<String> icons) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-        childAspectRatio: 1.0,
-      ),
-      itemCount: icons.length,
-      itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () {
-            profile.value = icons[index];
-            Get.back();
-          },
-          child: SvgPicture.asset(icons[index], width: 30, height: 30),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
 }
 
 void localeEditor(
