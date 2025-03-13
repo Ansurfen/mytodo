@@ -16,6 +16,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.87
 	github.com/o1egl/govatar v0.4.1
 	github.com/relvacode/iso8601 v1.6.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.5

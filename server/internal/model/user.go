@@ -6,7 +6,7 @@ type User struct {
 	Model
 
 	// IsMale indicates the user's gender (true for male, false for female).
-	IsMale bool `json:"isMale" gorm:"column:is_male"`
+	IsMale bool `json:"is_male" gorm:"column:is_male"`
 
 	// Email is the user's email address, must be unique.
 	Email string `json:"email" gorm:"column:email;type:varchar(50);unique;"`
@@ -19,6 +19,8 @@ type User struct {
 
 	// Password is the user's hashed password.
 	Password string `json:"password" gorm:"column:password;type:text;"`
+
+	About string `json:"about"`
 }
 
 func (User) TableName() string {

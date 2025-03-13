@@ -10,7 +10,6 @@ import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/chat.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/dialog.dart';

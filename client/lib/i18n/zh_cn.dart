@@ -185,4 +185,15 @@ Map<String, String> get zhCN => {
 
   "remove_member": "移除成员",
   "remove_member_desc": "确定移除该成员",
+
+  "security": "安全",
+
+  "sign_out": "登出",
+
+  "home": "首页",
+  "feedback": "反馈",
+  "me": "我的",
+  "rate_the_app": "分享APP",
+  "about_us": "关于我们",
+  "logger": "日志",
 };

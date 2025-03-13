@@ -24,7 +24,7 @@ Map<String, dynamic> _$PostToJson(Post instance) => <String, dynamic>{
 };
 
 PostComment _$PostCommentFromJson(Map<String, dynamic> json) => PostComment(
-  id: json['_id'] as String? ?? '',
+  id: (json['id'] as num?)?.toInt() ?? 0,
   pid: (json['pid'] as num?)?.toInt() ?? 0,
   uid: (json['uid'] as num?)?.toInt() ?? 0,
   reply: (json['reply'] as num?)?.toInt() ?? 0,
@@ -46,7 +46,7 @@ PostComment _$PostCommentFromJson(Map<String, dynamic> json) => PostComment(
 
 Map<String, dynamic> _$PostCommentToJson(PostComment instance) =>
     <String, dynamic>{
-      '_id': instance.id,
+      'id': instance.id,
       'pid': instance.pid,
       'uid': instance.uid,
       'reply': instance.reply,

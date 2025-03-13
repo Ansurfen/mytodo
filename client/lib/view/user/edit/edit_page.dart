@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/user/edit/edit_controller.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/dialog.dart';
@@ -49,9 +50,74 @@ class _EditPageState extends State<EditPage> {
                 SettingsSection(
                   title: Text("common".tr),
                   tiles: [
-                    SettingsTile(title: Text("username".tr)),
-                    SettingsTile(title: Text("phone_number".tr)),
-                    SettingsTile(title: Text("email".tr)),
+                    SettingsTile.navigation(
+                      title: Text("username".tr),
+                      onPressed: (context) {
+                        showTextDialog(
+                          context,
+                          title: "username".tr,
+                          content: TextField(
+                            controller: controller.userController,
+                          ),
+                          onConfirm: () {
+                            setState(() {
+                              Get.back();
+                            });
+                          },
+                          onCancel: () => Get.back(),
+                        );
+                      },
+                      value: Text(controller.userController.text),
+                    ),
+                    // TODO
+                    SettingsTile.navigation(title: Text("about".tr)),
+                    SettingsTile.navigation(
+                      title: Text("phone_number".tr),
+                      onPressed: (context) {
+                        showTextDialog(
+                          context,
+                          title: "phone_number".tr,
+                          content: TextField(
+                            controller: controller.telephoneController,
+                          ),
+                          onConfirm: () {
+                            setState(() {
+                              Get.back();
+                            });
+                          },
+                          onCancel: () => Get.back(),
+                        );
+                      },
+                      value: Text(controller.telephoneController.text),
+                    ),
+                    SettingsTile.navigation(
+                      title: Text("email".tr),
+                      onPressed: (context) {
+                        showTextDialog(
+                          context,
+                          title: "email".tr,
+                          content: TextField(
+                            controller: controller.emailController,
+                          ),
+                          onConfirm: () {
+                            setState(() {
+                              Get.back();
+                            });
+                          },
+                          onCancel: () => Get.back(),
+                        );
+                      },
+                      value: Text(controller.emailController.text),
+                    ),
+                    SettingsTile.switchTile(
+                      initialValue: Guard.u?.isMale,
+                      onToggle: (v) {
+                        Guard.u?.isMale = v;
+                        setState(() {});
+                      },
+                      activeSwitchColor: Theme.of(context).primaryColor,
+                      title: Text("is_male".tr),
+                    ),
                   ],
                 ),
                 SettingsSection(

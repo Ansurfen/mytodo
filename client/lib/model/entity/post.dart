@@ -27,10 +27,11 @@ class Post {
   int deleteAt;
 
   @JsonKey(
-      name: "image",
-      defaultValue: null,
-      required: false,
-      fromJson: MImage.imagesFromJson)
+    name: "image",
+    defaultValue: null,
+    required: false,
+    fromJson: MImage.imagesFromJson,
+  )
   List<MImage>? images;
 
   Post(this.uid, this.content, this.createAt, this.deleteAt, this.images);
@@ -42,8 +43,8 @@ class Post {
 
 @JsonSerializable()
 class PostComment {
-  @JsonKey(name: "_id", defaultValue: '')
-  String id;
+  @JsonKey(name: "id")
+  int id;
 
   @JsonKey(name: "pid")
   int pid;
@@ -78,19 +79,20 @@ class PostComment {
   @JsonKey(name: "you_favorite", defaultValue: false)
   bool youFavorite;
 
-  PostComment(
-      {this.id = '',
-      this.pid = 0,
-      this.uid = 0,
-      this.reply = 0,
-      required this.username,
-      this.replyName = "",
-      required this.createdAt,
-      required this.content,
-      required this.replies,
-      required this.images,
-      this.favorite = 0,
-      this.youFavorite = false});
+  PostComment({
+    this.id = 0,
+    this.pid = 0,
+    this.uid = 0,
+    this.reply = 0,
+    required this.username,
+    this.replyName = "",
+    required this.createdAt,
+    required this.content,
+    required this.replies,
+    required this.images,
+    this.favorite = 0,
+    this.youFavorite = false,
+  });
 
   factory PostComment.fromJson(JsonObject json) {
     var v = _$PostCommentFromJson(json);

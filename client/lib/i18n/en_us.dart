@@ -195,4 +195,15 @@ Map<String, String> get enUS => {
 
   "remove_member": "Remove Member",
   "remove_member_desc": "Confirm to remove the member",
+
+  "security": "Security",
+
+  "sign_out": "Sign Out",
+
+  "home": "Home",
+  "feedback": "Feedback",
+  "me": "Me",
+  "rate_the_app": "Rate the app",
+  "about_us": "About Us",
+  "logger": "Logger",
 };

@@ -15,9 +15,15 @@ import 'package:my_todo/utils/guard.dart';
 class EditController extends GetxController {
   Image? _profileImage;
   TFile? tFile;
-  TextEditingController userController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController telephoneController = TextEditingController();
+  TextEditingController userController = TextEditingController(
+    text: Guard.u?.name,
+  );
+  TextEditingController emailController = TextEditingController(
+    text: Guard.u?.email,
+  );
+  TextEditingController telephoneController = TextEditingController(
+    text: Guard.u?.telephone,
+  );
 
   ImageProvider<Object>? profileImage() {
     if (Guard.isLogin() && _profileImage == null) {
@@ -67,17 +73,26 @@ class EditController extends GetxController {
         );
         return;
       }
-      userEdit(UserEditRequest(userController.text, emailController.text,
-              telephone: telephoneController.text, profile: tFile))
+      userEdit(
+            UserEditRequest(
+              userController.text,
+              emailController.text,
+              telephone: telephoneController.text,
+              profile: tFile,
+            ),
+          )
           .then((value) {
-        userGet(UserGetRequest()).then((res) {
-          Guard.setUser(res.user);
-        }).onError((error, stackTrace) {
-          print(error);
-        });
-      }).onError((error, stackTrace) {
-        showTipDialog(context, content: error.toString());
-      });
+            userGet(UserGetRequest())
+                .then((res) {
+                  Guard.setUser(res.user);
+                })
+                .onError((error, stackTrace) {
+                  print(error);
+                });
+          })
+          .onError((error, stackTrace) {
+            showTipDialog(context, content: error.toString());
+          });
     };
   }
 }

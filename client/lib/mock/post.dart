@@ -7,7 +7,7 @@ import 'package:my_todo/model/entity/post.dart';
 List<PostComment> comments = List.generate(
     10,
     (index) => PostComment(
-        id: "$index",
+        id: index,
         content: [Mock.text()],
         images: [],
         username: Mock.username(),
@@ -15,7 +15,7 @@ List<PostComment> comments = List.generate(
         replies: List.generate(
             Mock.number(max: 10),
             (index) => PostComment(
-                id: "$index",
+                id: index,
                 content: [Mock.text()],
                 reply: Mock.boolean() ? Mock.number() : 0,
                 replyName: Mock.boolean() ? Mock.username() : "",

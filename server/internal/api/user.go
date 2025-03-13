@@ -2,9 +2,32 @@ package api
 
 import "mytodo/internal/model"
 
-type UserSignRequest struct {
+type UserSignUpRequest struct {
+	Email     string `json:"email"`
+	Password  string `json:"pwd"`
+	Username  string `json:"username"`
+	Telephone string `json:"telephone"`
+	IsMale    bool   `json:"is_male"`
+	OTP       string `json:"otp"`
+}
+
+type UserVerifyOTPRequest struct {
+	Email string `json:"email"`
+}
+
+type UserVerifyOTPResponse struct {
+	OTP string `json:"otp"`
+}
+
+type UserLoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"pwd"`
+}
+
+type UserRecoverRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"pwd"`
+	OTP      string `json:"otp"`
 }
 
 type UserSignResponse struct {

@@ -229,7 +229,7 @@ class Guard {
   static String get jwt {
     String? token = Store.localStorage.getString("jwt");
     if (token != null) {
-      return token;
+      return "Bearer $token";
     }
     return "";
   }

@@ -799,6 +799,10 @@ void showSheetBottom(
   required String title,
   Widget? right,
   List<Widget>? actions,
+  EdgeInsetsGeometry childPadding = const EdgeInsets.symmetric(
+    horizontal: 20,
+    vertical: 20,
+  ),
   required Widget child,
 }) {
   showModalBottomSheet(
@@ -864,10 +868,7 @@ void showSheetBottom(
                       : Container(),
                 ],
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: child,
-              ),
+              Padding(padding: childPadding, child: child),
             ],
           ),
         ),

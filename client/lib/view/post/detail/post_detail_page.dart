@@ -4,6 +4,7 @@
 import 'dart:convert';
 
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
@@ -26,8 +27,12 @@ import 'package:my_todo/component/refresh.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/add/add_post_page.dart';
+import 'package:my_todo/view/add/add_task_page.dart';
 import 'package:my_todo/view/post/component/profile.dart';
 import 'package:my_todo/view/post/detail/post_detail_controller.dart';
+import 'package:my_todo/view/post/detail/widgets/comment_card.dart';
+import 'package:my_todo/view/post/detail/widgets/reply_card.dart';
+import 'package:my_todo/view/post/snapshot/post_card.dart';
 
 class PostDetailPage extends StatefulWidget {
   const PostDetailPage({super.key});
@@ -201,87 +206,17 @@ class _PostDetailPageState extends State<PostDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _postHeader(),
+                _postBody(),
+                _postFoot(),
                 // ...controller.model.imageUri
                 //     .map((e) => Image.network(e))
                 //     .toList(),
                 // ImageDisplay(
                 //   images: imgList,
                 // ),
-                QuillEditor(
-                  focusNode: FocusNode(),
-                  scrollController: ScrollController(),
-                  controller: _controller,
-                  config: QuillEditorConfig(
-                    scrollable: false,
-                    placeholder: 'Start writing your notes...',
-                    padding: const EdgeInsets.all(16),
-                    embedBuilders: [
-                      ...FlutterQuillEmbeds.editorBuilders(
-                        imageEmbedConfig: QuillEditorImageEmbedConfig(
-                          imageProviderBuilder: (context, imageUrl) {
-                            // https://pub.dev/packages/flutter_quill_extensions#-image-assets
-                            if (imageUrl.startsWith('assets/')) {
-                              return AssetImage(imageUrl);
-                            }
-                            return null;
-                          },
-                        ),
-                        videoEmbedConfig: QuillEditorVideoEmbedConfig(
-                          customVideoBuilder: (videoUrl, readOnly) {
-                            // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
-                            return null;
-                          },
-                        ),
-                      ),
-                      TimeStampEmbedBuilder(),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.visibility_outlined,
-                          size: 16,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          "浏览${Mock.number(max: 1000)}次",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 5),
                 todoDivider(context),
-                EmptyContainer(
-                  icon: Icons.comment,
-                  desc: "try_send_comment".tr,
-                  what: "",
-                  render: true,
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: controller.comments.value.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      String key = controller.comments.value.keys.elementAt(
-                        index,
-                      );
-                      return commentCard(controller.comments.value[key]!);
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return todoDivider(context);
-                    },
-                  ),
-                ),
+                _postReply(),
               ],
             ),
           ),
@@ -292,53 +227,186 @@ class _PostDetailPageState extends State<PostDetailPage> {
 
   Widget _postHeader() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            userProfile(
-              isMale: controller.data.isMale,
-              id: controller.data.uid,
-            ),
-            const SizedBox(width: 10),
-            Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    // controller.data.username,
-                    Mock.username(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  RawChip(
-                    backgroundColor: Theme.of(context).primaryColorLight,
-                    materialTapTargetSize: MaterialTapTargetSize.padded,
-                    avatar: Icon(
-                      Icons.location_on,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    label: Text(
-                      "unknown".tr,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
+        userProfile(isMale: controller.data.isMale, id: controller.data.uid),
+        const SizedBox(width: 10),
+        Padding(
+          padding: EdgeInsets.only(top: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                // controller.data.username,
+                Mock.username(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+              RawChip(
+                backgroundColor: Theme.of(context).primaryColorLight,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                avatar: Icon(
+                  Icons.location_on,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                label: Text(
+                  "unknown".tr,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget replayCard(bool isParent, String parent, PostComment model) {
+  Widget _postBody() {
+    return QuillEditor(
+      focusNode: FocusNode(),
+      scrollController: ScrollController(),
+      controller: _controller,
+      config: QuillEditorConfig(
+        scrollable: false,
+        placeholder: 'Start writing your notes...',
+        padding: const EdgeInsets.all(16),
+        embedBuilders: [
+          ...FlutterQuillEmbeds.editorBuilders(
+            imageEmbedConfig: QuillEditorImageEmbedConfig(
+              imageProviderBuilder: (context, imageUrl) {
+                // https://pub.dev/packages/flutter_quill_extensions#-image-assets
+                if (imageUrl.startsWith('assets/')) {
+                  return AssetImage(imageUrl);
+                }
+                return null;
+              },
+            ),
+            videoEmbedConfig: QuillEditorVideoEmbedConfig(
+              customVideoBuilder: (videoUrl, readOnly) {
+                // To load YouTube videos https://github.com/singerdmx/flutter-quill/releases/tag/v10.8.0
+                return null;
+              },
+            ),
+          ),
+          TimeStampEmbedBuilder(),
+        ],
+      ),
+    );
+  }
+
+  Widget _postFoot() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.visibility_outlined, size: 16, color: Colors.grey),
+            SizedBox(width: 5),
+            Text(
+              "浏览${Mock.number(max: 1000)}次",
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+        Text(
+          DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
+          style: TextStyle(color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  Widget _postReply() {
+    return EmptyContainer(
+      icon: Icons.comment,
+      desc: "try_send_comment".tr,
+      what: "",
+      render: true,
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: controller.comments.value.length,
+        itemBuilder: (BuildContext context, int index) {
+          int key = controller.comments.value.keys.elementAt(index);
+          return CommentCard(
+            userProfile: TodoImage.userProfile(1),
+            username: Mock.username(),
+            createdAt: DateTime.now(),
+            more: () {},
+            like: (v) {},
+            chat: () {
+              showSheetBottom(
+                context,
+                title: "comment".tr,
+                childPadding: EdgeInsets.zero,
+                child: Expanded(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: CommentCard(
+                          userProfile: TodoImage.userProfile(1),
+                          username: Mock.username(),
+                          createdAt: DateTime.now(),
+                          like: (bool value) {},
+                          chat: () {},
+                          more: () {},
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                        color: ThemeProvider.contrastColor(
+                          context,
+                          light: CupertinoColors.lightBackgroundGray,
+                          dark: CupertinoColors.darkBackgroundGray,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (ctx, idx) {
+                            return Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: ReplyCard(
+                                senderBy: Mock.username(),
+                                userProfile: TodoImage.userProfile(1),
+                                replyBy: Mock.username(),
+                                createdAt: DateTime.now(),
+                                layer: 1,
+                                replyCallback: () {
+                                  
+                                },
+                              ),
+                            );
+                          },
+                          separatorBuilder: (ctx, idx) {
+                            return todoDivider(context);
+                          },
+                          itemCount: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+          return commentCard(controller.comments.value[key]!);
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return todoDivider(context);
+        },
+      ),
+    );
+  }
+
+  Widget replayCard(bool isParent, int parent, PostComment model) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -736,7 +804,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
           IconButton(
             onPressed: () {
               setState(() {
-                controller.freeCommentReply();
+                controller.clearCommentReply();
               });
             },
             icon: const Icon(Icons.close, size: 18),

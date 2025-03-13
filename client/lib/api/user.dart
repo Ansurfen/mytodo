@@ -9,6 +9,61 @@ import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/utils/picker.dart';
 
+Future userVerifyOTPRequest({required String email}) async {
+  return HTTP.post("/user/verify", data: {"email": email});
+}
+
+Future userRecoverRequest({
+  required String email,
+  required String pwd,
+  required String otp,
+}) async {
+  return HTTP.post(
+    "/user/recover",
+    data: {"email": email, "pwd": pwd, "otp": otp},
+  );
+}
+
+Future<String> userSignUpRequest({
+  required String email,
+  required String pwd,
+  required String username,
+  required String telephone,
+  required bool isMale,
+  required String otp,
+}) async {
+  return (await HTTP.post(
+    "/user/signup",
+    data: {
+      "email": email,
+      "pwd": pwd,
+      "username": username,
+      "telephone": telephone,
+      "is_male": isMale,
+      "otp": otp,
+    },
+  )).data["jwt"];
+}
+
+Future<String> userLoginRequest({
+  required String email,
+  required String pwd,
+}) async {
+  return (await HTTP.post(
+    "/user/login",
+    data: {"email": email, "pwd": pwd},
+  )).data["jwt"];
+}
+
+Future<User> userDetailRequest() async {
+  return User.fromJson(
+    (await HTTP.get(
+      "/user/detail",
+      options: Options(headers: {"Authorization": Guard.jwt}),
+    )).data["user"],
+  );
+}
+
 class UserSignRequest {
   String email;
   String password;

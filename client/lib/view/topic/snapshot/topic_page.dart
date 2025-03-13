@@ -427,7 +427,7 @@ class _CustomDialogState extends State<CustomDialog>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '这是一个可交互的弹窗',
+                  Mock.username(),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 20),

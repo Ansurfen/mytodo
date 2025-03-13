@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -8,8 +9,6 @@ import 'package:get/get.dart';
 import 'package:my_todo/api/user.dart';
 import 'package:my_todo/constants.dart';
 import 'package:my_todo/theme/color.dart';
-import 'package:my_todo/user.dart';
-import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/user/sign/login_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -33,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
       logoTag: Constants.logoTag,
       titleTag: Constants.titleTag,
       navigateBackAfterRecovery: true,
-      onConfirmRecover: _signupConfirm,
+      onConfirmRecover: _recoverConfirm,
       onConfirmSignup: _signupConfirm,
       loginAfterSignUp: true,
       termsOfService: [
@@ -52,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
           icon: Icon(FontAwesomeIcons.userLarge),
         ),
         UserFormField(
-          keyName: 'phone_number',
+          keyName: 'telephone',
           displayName: 'phone_number'.tr,
           userType: LoginUserType.phone,
           fieldValidator: (value) {
@@ -68,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
           },
         ),
         UserFormField(
-          keyName: 'is_male',
+          keyName: 'isMale',
           displayName: 'is_male'.tr,
           icon: Icon(FontAwesomeIcons.phone),
           userType: LoginUserType.checkbox,
@@ -131,19 +130,20 @@ class _LoginPageState extends State<LoginPage> {
         }
         return null;
       },
-      onLogin: (loginData) {
-        debugPrint('Login info');
-        debugPrint('Name: ${loginData.name}');
-        debugPrint('Password: ${loginData.password}');
-        return _loginUser(loginData);
-      },
+      onLogin: (loginData) => _loginUser(loginData),
       onSignup: (signupData) {
         debugPrint('Signup info');
         debugPrint('Name: ${signupData.name}');
         debugPrint('Password: ${signupData.password}');
-
         signupData.additionalSignupData?.forEach((key, value) {
-          debugPrint('$key: $value');
+          switch (key) {
+            case "username":
+              controller.username = value;
+            case "isMale":
+              controller.isMale = true;
+            case "telephone":
+              controller.telephone = value;
+          }
         });
         if (signupData.termsOfService.isNotEmpty) {
           debugPrint('Terms of service: ');
@@ -153,17 +153,13 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
         }
+        userVerifyOTPRequest(email: signupData.name!);
         return _signupUser(signupData);
       },
-      onSubmitAnimationCompleted: () {},
-      onRecoverPassword: (name) {
-        debugPrint('Recover password info');
-        debugPrint('Name: $name');
-        return _recoverPassword(name);
-        // Show new password dialog
-      },
+      onRecoverPassword: (name) => _recoverPassword(name),
       onResendCode: (data) {
         // showCountdownToast();
+        userVerifyOTPRequest(email: data.name!);
         return Future.delayed(const Duration(seconds: 5));
       },
       headerWidget: const IntroWidget(),
@@ -195,56 +191,97 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<String?> _loginUser(LoginData data) {
     return Future.delayed(loginTime).then((_) {
-      userSign(email: data.name, password: data.password)
-          .then((res) {
-            if (res.code != 200) {
-              return res.msg;
-            } else if (res.jwt.isEmpty) {
+      return userLoginRequest(email: data.name, pwd: data.password)
+          .then((jwt) {
+            if (jwt.isEmpty) {
               return "invalid jwt";
             }
-            Guard.jwt = "Bearer ${res.jwt}";
-            userGet(UserGetRequest())
-                .then((res) {
-                  Guard.setUser(res.user);
-                })
-                .onError((error, stackTrace) {
-                  showTipDialog(context, content: error.toString());
-                  return;
-                });
+            userDetailRequest().then((v) {
+              Guard.setUser(v);
+            });
+            Guard.logInAndGo(jwt);
+            return null;
           })
           .onError((error, stackTrace) {
-            showTipDialog(context, content: error.toString());
-            return error.toString();
+            if (error is DioException) {
+              if (error.response != null) {
+                switch (error.response?.statusCode) {
+                  case 400:
+                    return "请求错误，检查请求数据";
+                  case 401:
+                    return "未授权，请重新登录";
+                  case 404:
+                    return "用户不存在";
+                  case 409:
+                    return "资源冲突";
+                  case 500:
+                    return "服务器内部错误";
+                  default:
+                    print("其他错误: ${error.response?.statusCode}");
+                    return "未知错误，请稍后再试";
+                }
+              } else {
+                // 没有响应，可能是网络问题等
+                print("没有响应，可能是网络问题");
+                return "网络连接失败，请检查您的网络";
+              }
+            } else {
+              // 其他类型的错误（比如请求没有经过 Dio 处理）
+              print("未知错误: $error");
+              return "发生了未知错误";
+            }
           });
-      // if (!mockUsers.containsKey(data.name)) {
-      //   return 'User not exists';
-      // }
-      // if (mockUsers[data.name] != data.password) {
-      //   return 'Password does not match';
-      // }
-      return null;
     });
   }
 
   Future<String?> _signupUser(SignupData data) {
     return Future.delayed(loginTime).then((_) {
+      // Guard.logInAndGo("");
       return null;
     });
   }
 
   Future<String?> _recoverPassword(String name) {
     return Future.delayed(loginTime).then((_) {
-      if (!mockUsers.containsKey(name)) {
-        return 'User not exists';
-      }
+      userVerifyOTPRequest(email: name);
       return null;
     });
   }
 
-  Future<String?> _signupConfirm(String error, LoginData data) {
+  Future<String?> _recoverConfirm(String code, LoginData data) {
     return Future.delayed(loginTime).then((_) {
-      return null;
+      return userRecoverRequest(email: data.name, pwd: data.password, otp: code)
+          .then((v) {
+            if (false) {
+              return "";
+            }
+            return null;
+          })
+          .onError((error, stackTrace) {
+            return error.toString();
+          });
     });
+  }
+
+  Future<String?> _signupConfirm(String otp, LoginData data) {
+    return userSignUpRequest(
+          email: data.name,
+          pwd: data.password,
+          username: controller.username,
+          telephone: controller.telephone,
+          isMale: controller.isMale,
+          otp: otp,
+        )
+        .then((jwt) {
+          if (jwt.isEmpty) {
+            return "invalid jwt";
+          }
+          Guard.logInAndGo(jwt);
+          return null;
+        })
+        .onError((error, stackTrace) {
+          return error.toString();
+        });
   }
 }
 

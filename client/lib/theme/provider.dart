@@ -169,6 +169,19 @@ class TodoThemeData {
       selectionColor: ThemeProvider.style.light().withOpacity(0.5),
       selectionHandleColor: ThemeProvider.style.light(),
     ),
+    inputDecorationTheme: InputDecorationTheme(
+      prefixIconColor: Colors.grey,
+      suffixIconColor: Colors.grey,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      checkColor: WidgetStateProperty.all(Colors.white),
+      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Color(0xff132137);
+        }
+        return Colors.transparent;
+      }),
+    ),
     colorScheme: const ColorScheme(
       brightness: Brightness.light,
       primary: Colors.white,
@@ -198,6 +211,19 @@ class TodoThemeData {
     primaryColor: ThemeProvider.style.normal(),
     primaryColorDark: ThemeProvider.style.dark(),
     primaryColorLight: ThemeProvider.style.light(),
+    inputDecorationTheme: InputDecorationTheme(
+      prefixIconColor: Colors.grey,
+      suffixIconColor: Colors.grey,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      checkColor: WidgetStateProperty.all(Colors.white),
+      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Color(0xff132137); // 选中时的颜色
+        }
+        return Colors.transparent; // 未选中时透明
+      }),
+    ),
     colorScheme: const ColorScheme(
       brightness: Brightness.dark,
       primary: Color(0xFF090912),

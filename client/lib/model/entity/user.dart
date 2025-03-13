@@ -19,7 +19,7 @@ class User {
   @JsonKey(name: "telephone", defaultValue: "")
   String? telephone;
 
-  @JsonKey(name: "isMale", defaultValue: true)
+  @JsonKey(name: "is_male", defaultValue: true)
   bool isMale = true;
 
   User(this.id, this.name, this.email, {this.telephone});

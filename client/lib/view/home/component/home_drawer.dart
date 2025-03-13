@@ -57,17 +57,17 @@ class _HomeDrawerState extends State<HomeDrawer> {
       ),
       DrawerList(
         index: DrawerIndex.share,
-        labelName: 'Rate the app',
+        labelName: 'rate_the_app'.tr,
         icon: const Icon(Icons.share),
       ),
       DrawerList(
         index: DrawerIndex.about,
-        labelName: 'About Us',
+        labelName: 'about_us'.tr,
         icon: const Icon(Icons.info),
       ),
       DrawerList(
         index: DrawerIndex.log,
-        labelName: 'Logger',
+        labelName: 'logger'.tr,
         icon: const Icon(Icons.edit_note),
       ),
     ];
@@ -100,13 +100,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   width: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: const Color(0xFF3A5160).withOpacity(0.6),
-                        offset: const Offset(2.0, 4.0),
-                        blurRadius: 8,
-                      ),
-                    ],
+                    color: Theme.of(context).primaryColorLight,
                   ),
                   child: GestureDetector(
                     onTap: RouterProvider.viewUserEdit,
@@ -145,7 +139,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
       Padding(
         padding: const EdgeInsets.only(top: 8, left: 4),
         child: Text(
-          'offline_mode'.tr,
+          'offline'.tr,
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: Theme.of(context).colorScheme.onPrimary,

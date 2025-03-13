@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"image/png"
 	"io"
+	"math/rand"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/middleware"
@@ -24,7 +26,7 @@ import (
 )
 
 func UserSign(ctx *gin.Context) {
-	var req api.UserSignRequest
+	var req api.UserLoginRequest
 	err := ctx.BindJSON(&req)
 	if err != nil {
 		log.WithError(err).Error("fail to parse json")
@@ -118,11 +120,256 @@ func UserSign(ctx *gin.Context) {
 }
 
 func UserLogin(ctx *gin.Context) {
+	var req api.UserLoginRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "fail to parse json"})
+		return
+	}
+	var user model.User
+	err = db.SQL().Table("user").Where("email = ?", req.Email).First(&user).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		if code, exists := errorCodeMap[err]; exists {
+			ctx.JSON(code, gin.H{
+				"msg": err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": "服务器内部错误",
+			})
+		}
+		return
+	}
+	if user.ID == 0 {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "user not found"})
+		return
+	}
+	if user.Password != MD5(req.Password) {
+		log.Error("password not match")
+		ctx.Abort()
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "password mismatches"})
+		return
+	}
+	var res api.UserSignResponse
+	val, err := db.Rdb().Get(context.TODO(), fmt.Sprintf("user_%d", user.ID)).Result()
+	if err != nil {
+		res.JWT, err = middleware.ReleaseToken(user.ID)
+		if err != nil {
+			log.WithError(err).Error("releasing token")
+			ctx.Abort()
+			return
+		}
+		err = db.Rdb().Set(context.TODO(), fmt.Sprintf("user_%d", user.ID), res.JWT, 7*24*time.Hour).Err()
+		if err != nil {
+			log.WithError(err).Error("setting cache")
+			ctx.Abort()
+			return
+		}
+	} else {
+		res.JWT = val
+	}
+	ctx.JSON(200, res)
+}
 
+var errorCodeMap = map[error]int{
+	gorm.ErrDuplicatedKey:  http.StatusConflict,   // 409 用户已存在
+	gorm.ErrInvalidData:    http.StatusBadRequest, // 400 请求数据无效
+	gorm.ErrRecordNotFound: http.StatusNotFound,   // 404 记录不存在
 }
 
 func UserSignUp(ctx *gin.Context) {
-	
+	var req api.UserSignUpRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		ctx.Abort()
+		log.WithError(err).Error("fail to parse json")
+		ctx.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	var user model.User
+	err = db.SQL().Table("user").Where("email = ?", req.Email).First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
+		return
+	}
+	if user.ID != 0 {
+		ctx.Abort()
+		ctx.JSON(http.StatusConflict, gin.H{"msg": "user already exists"})
+		return
+	}
+	key := fmt.Sprintf("otp_%s", req.Email)
+	expected, err := db.Rdb().Get(context.TODO(), key).Result()
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
+		return
+	}
+	if req.OTP != expected {
+		ctx.Abort()
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "invalid OTP"})
+		return
+	}
+	var res api.UserSignResponse
+
+	log.Debugf("creating new user")
+	user.Name = req.Username
+	user.Email = req.Email
+	user.Telephone.String = req.Telephone
+	user.Password = MD5(req.Password)
+	err = db.SQL().Table("user").Create(&user).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		if code, exists := errorCodeMap[err]; exists {
+			ctx.JSON(code, gin.H{
+				"message": err.Error(),
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": "服务器内部错误",
+			})
+		}
+		ctx.Abort()
+		return
+	}
+	gender := govatar.FEMALE
+	if req.IsMale {
+		gender = govatar.MALE
+	}
+	img, err := govatar.Generate(gender)
+	if err != nil {
+		log.WithError(err).Fatal("generating image")
+		ctx.Abort()
+		return
+	}
+
+	var buf bytes.Buffer
+	err = png.Encode(&buf, img)
+	if err != nil {
+		log.WithError(err).Fatal("generating image")
+		ctx.Abort()
+		return
+	}
+	_, err = db.OSS().PutObject(context.TODO(), "user", fmt.Sprintf("/profile/%d.png", user.ID), &buf, int64(buf.Len()), minio.PutObjectOptions{})
+	if err != nil {
+		log.WithError(err).Fatal("fail to upload image")
+		ctx.Abort()
+		return
+	}
+
+	res.JWT, err = middleware.ReleaseToken(user.ID)
+	if err != nil {
+		log.WithError(err).Error("releasing token")
+		ctx.Abort()
+		return
+	}
+	err = db.Rdb().Set(context.TODO(), fmt.Sprintf("user_%d", user.ID), res.JWT, 7*24*time.Hour).Err()
+	if err != nil {
+		log.WithError(err).Error("setting cache")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}
+
+func UserRecover(ctx *gin.Context) {
+	var req api.UserRecoverRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	var user model.User
+	err = db.SQL().Table("user").Where("email = ?", req.Email).First(&user).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
+		return
+	}
+	if user.ID == 0 {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "user not found"})
+		return
+	}
+	key := fmt.Sprintf("otp_%s", req.Email)
+	expected, err := db.Rdb().Get(context.TODO(), key).Result()
+	if err != nil {
+		ctx.Abort()
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
+		return
+	}
+	if req.OTP != expected {
+		ctx.Abort()
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "invalid OTP"})
+		return
+	}
+	user.Password = MD5(req.Password)
+	err = db.SQL().Table("user").Save(&user).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully recover password"})
+}
+
+const otpTTL = 5 * time.Minute
+
+func generateOTP() string {
+	return fmt.Sprintf("%06d", rand.Intn(1000000))
+}
+
+func UserVerifyOTP(ctx *gin.Context) {
+	var req api.UserVerifyOTPRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	// TODO 用户存在不必在发
+	key := fmt.Sprintf("otp_%s", req.Email)
+	existingOTP, err := db.Rdb().Get(context.TODO(), key).Result()
+	if err == nil {
+		ctx.JSON(200, api.UserVerifyOTPResponse{
+			OTP: existingOTP,
+		})
+		return
+	}
+	newOTP := generateOTP()
+	err = db.Rdb().Set(context.TODO(), key, newOTP, otpTTL).Err()
+	if err != nil {
+		ctx.JSON(200, api.UserVerifyOTPResponse{
+			OTP: "",
+		})
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(200, api.UserVerifyOTPResponse{
+		OTP: newOTP,
+	})
+}
+
+func UserDetail(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully to get user's detail", "user": gin.H{
+		"id":        u.ID,
+		"is_male":   u.IsMale,
+		"email":     u.Email,
+		"telephone": u.Telephone.String,
+		"name":      u.Name,
+		"about":     u.About,
+	}})
 }
 
 func UserGet(ctx *gin.Context) {
