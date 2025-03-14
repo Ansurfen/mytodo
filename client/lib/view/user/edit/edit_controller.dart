@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/user.dart';
 import 'package:my_todo/component/image.dart';
+import 'package:my_todo/model/entity/user.dart';
 import 'package:my_todo/router/home.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
@@ -15,7 +16,7 @@ import 'package:my_todo/utils/guard.dart';
 class EditController extends GetxController {
   Image? _profileImage;
   TFile? tFile;
-  TextEditingController userController = TextEditingController(
+  TextEditingController nameController = TextEditingController(
     text: Guard.u?.name,
   );
   TextEditingController emailController = TextEditingController(
@@ -47,52 +48,44 @@ class EditController extends GetxController {
     return res;
   }
 
-  Future Function() commit(BuildContext context) {
-    return () async {
-      if (!Guard.isLogin()) {
-        showCupertinoDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('tip'.tr),
-              content: Text('commit_not_login'.tr),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.of(context).pop();
-                    } else {
-                      RouterProvider.to(HomeRouter.nav);
-                    }
-                  },
-                  child: Text('confirm'.tr),
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }
-      userEdit(
-            UserEditRequest(
-              userController.text,
-              emailController.text,
-              telephone: telephoneController.text,
-              profile: tFile,
-            ),
-          )
-          .then((value) {
-            userGet(UserGetRequest())
-                .then((res) {
-                  Guard.setUser(res.user);
-                })
-                .onError((error, stackTrace) {
-                  print(error);
-                });
-          })
-          .onError((error, stackTrace) {
-            showTipDialog(context, content: error.toString());
+  void commit(BuildContext context) {
+    if (!Guard.isLogin()) {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('tip'.tr),
+            content: Text('commit_not_login'.tr),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.of(context).pop();
+                  } else {
+                    RouterProvider.to(HomeRouter.nav);
+                  }
+                },
+                child: Text('confirm'.tr),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+    User user = Guard.u!;
+    user.name = nameController.text;
+    user.telephone = telephoneController.text;
+    user.email = emailController.text;
+
+    userEditRequest(u: user, profile: tFile)
+        .then((v) {
+          userDetailRequest().then((v) {
+            Guard.setUser(v);
           });
-    };
+        })
+        .onError((error, stackTrace) {
+          showTipDialog(context, content: error.toString());
+        });
   }
 }

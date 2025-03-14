@@ -66,6 +66,7 @@ Map<String, String> get enUS => {
   "resend_code_success": "A new email has been sent.",
   "confirm_signup": "CONFIRM",
   "confirm_code_validator": "Confirmation code is empty",
+  "confirm_signup_success": "Account confirmed.",
 
   // post
   "untitled": "Untitled",
@@ -206,4 +207,31 @@ Map<String, String> get enUS => {
   "rate_the_app": "Rate the app",
   "about_us": "About Us",
   "logger": "Logger",
+
+  "cancel": "Cancel",
+  "flash_on": "Flash on",
+  "flash_off": "Flash off",
+
+  "add": "Add",
+  "edit": "Edit",
+
+  "language_enUS": "English",
+  "language_zhCN": "简体中文",
+
+  'network': 'Network',
+  'server': 'Server',
+  'server_address': 'Server address',
+  'server_set_tip':
+      'Sets a server address for network. '
+      'If not specified, application will '
+      'work in offline mode.',
+  'internal': 'Internal',
+  'logger_set_tip':
+      "If open, it'll collect user's usage status and error information, and upload to server automatically.",
+
+  // Guidance
+  "guide_1": "Tap to expand the drawer",
+  "guide_2": "Tap to change the application settings",
+  "guide_3": "Tap to create task, channel, post",
+  "guide_4": "Tap to view the notification message",
 };

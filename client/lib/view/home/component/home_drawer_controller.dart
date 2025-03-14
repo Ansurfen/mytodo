@@ -1,6 +1,8 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:my_todo/utils/guide.dart';
 import 'package:my_todo/view/home/component/home_drawer.dart';
@@ -208,13 +210,8 @@ class _DrawerUserControllerState extends State<DrawerUserController>
                                   // if you use your own menu view UI you add form initialization
                                   child: Showcase(
                                     key: Guide.one,
-                                    description: 'Tap to see menu options',
+                                    description: 'guide_1'.tr,
                                     onBarrierClick: () {
-                                      debugPrint('Barrier clicked');
-                                      debugPrint(
-                                        'Floating Action widget for first '
-                                        'showcase is now hidden',
-                                      );
                                       ShowCaseWidget.of(
                                         context,
                                       ).hideFloatingActionWidgetForKeys([

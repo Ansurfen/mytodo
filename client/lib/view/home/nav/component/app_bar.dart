@@ -82,7 +82,7 @@ Widget multiWidget(BuildContext context) {
         padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+          color: Theme.of(context).colorScheme.primary,
         ),
         offset: const Offset(0, 8),
       ),
@@ -106,10 +106,13 @@ class MenuItem {
 }
 
 abstract class MenuItems {
-  static const List<MenuItem> firstItems = [qr, share, settings];
+  static List<MenuItem> firstItems = [qr, share, settings];
   static const List<MenuItem> secondItems = [logout];
 
-  static const qr = MenuItem(text: 'scan_qr', icon: Icons.qr_code_scanner);
+  static MenuItem qr = MenuItem(
+    text: 'scan_qr'.tr,
+    icon: Icons.qr_code_rounded,
+  );
   static const share = MenuItem(text: 'Share', icon: Icons.share);
   static const settings = MenuItem(text: 'Settings', icon: Icons.settings);
   static const logout = MenuItem(text: 'Log Out', icon: Icons.logout);
@@ -134,27 +137,24 @@ abstract class MenuItems {
   }
 
   static Future<void> onChanged(BuildContext context, MenuItem item) async {
-    switch (item) {
-      case MenuItems.qr:
-        await openQRScanner(context).then((value) {
-          if (value.isNotEmpty) {
-            EasyLoading.showSuccess(value);
-          }
-        });
-        break;
-      case MenuItems.settings:
-        try {
-          await test(context);
-        } catch (e) {
-          if (e is MissingPluginException) {
-            showTipDialog(context, content: "请使用其他平台");
-          }
+    if (identical(item, MenuItems.qr)) {
+      await openQRScanner(context).then((value) {
+        if (value.isNotEmpty) {
+          EasyLoading.showSuccess(value);
         }
-        break;
-      case MenuItems.share:
-        break;
-      case MenuItems.logout:
-        break;
+      });
+    } else if (identical(item, MenuItems.settings)) {
+      try {
+        await test(context);
+      } catch (e) {
+        if (e is MissingPluginException) {
+          showTipDialog(context, content: "请使用其他平台");
+        }
+      }
+    } else if (identical(item, MenuItems.share)) {
+      // 处理分享逻辑
+    } else if (identical(item, MenuItems.logout)) {
+      // 处理退出逻辑
     }
   }
 }
@@ -164,9 +164,9 @@ Future<String> openQRScanner(BuildContext context) async {
   try {
     ScanOptions options = ScanOptions(
       strings: {
-        'cancel': 'scan_cancel'.tr,
-        'flash_on': 'scan_flash_on'.tr,
-        'flash_off': 'scan_flash_off'.tr,
+        'cancel': 'cancel'.tr,
+        'flash_on': 'flash_on'.tr,
+        'flash_off': 'flash_off'.tr,
       },
     );
     if (await grantPermission(context, Permission.camera)) {

@@ -57,6 +57,7 @@ Map<String, String> get zhCN => {
   "resend_code_success": "新邮件已发送",
   "confirm_signup": "确认",
   "confirm_code_validator": "确认码为空",
+  "confirm_signup_success": "账户已确认",
 
   // post
   "untitled": "无标题",
@@ -196,4 +197,32 @@ Map<String, String> get zhCN => {
   "rate_the_app": "分享APP",
   "about_us": "关于我们",
   "logger": "日志",
+
+  "cancel": "退出",
+  "flash_on": "打开闪光灯",
+  "flash_off": "关闭闪关灯",
+
+  "scan_qr": "扫描二维码",
+
+  "add": "添加",
+  "edit": "编辑",
+
+  "language_enUS": "English",
+  "language_zhCN": "简体中文",
+
+  "network": "网络",
+  "server": "服务器",
+  "server_address": "服务器地址",
+  'server_set_tip':
+      '设置服务器地址。 '
+      '如果未指定，应用将 '
+      '在离线模式下运行。',
+  "internal": "内部",
+  'logger_set_tip': "如果开启，将自动收集用户使用情况和错误信息，并自动上传到服务器。",
+
+  // Guidance
+  "guide_1": "点击展开抽屉",
+  "guide_2": "点击修改应用设置",
+  "guide_3": "点击创建任务、频道、发帖",
+  "guide_4": "点击查看通知信息",
 };

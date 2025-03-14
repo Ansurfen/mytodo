@@ -31,7 +31,9 @@ class _EditPageState extends State<EditPage> {
           style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         ),
         trailing: IconButton(
-          onPressed: () {},
+          onPressed: () {
+            controller.commit(context);
+          },
           icon: Icon(
             Icons.cloud_upload,
             color: Theme.of(context).colorScheme.onPrimary,
@@ -57,7 +59,7 @@ class _EditPageState extends State<EditPage> {
                           context,
                           title: "username".tr,
                           content: TextField(
-                            controller: controller.userController,
+                            controller: controller.nameController,
                           ),
                           onConfirm: () {
                             setState(() {
@@ -67,7 +69,7 @@ class _EditPageState extends State<EditPage> {
                           onCancel: () => Get.back(),
                         );
                       },
-                      value: Text(controller.userController.text),
+                      value: Text(controller.nameController.text),
                     ),
                     // TODO
                     SettingsTile.navigation(title: Text("about".tr)),

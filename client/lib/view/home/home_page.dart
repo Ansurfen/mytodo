@@ -55,7 +55,6 @@ class _HomePageState extends State<HomePage> {
               }
             },
             blurValue: 1,
-            hideFloatingActionWidgetForShowcase: [],
             globalFloatingActionWidget:
                 (showcaseContext) => FloatingActionWidget(
                   left: 16,

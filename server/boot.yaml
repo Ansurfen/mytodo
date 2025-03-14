@@ -4,33 +4,33 @@
 sql:
   charset: utf8
   database: mytodo
-  host: 192.168.0.101
+  host: 192.168.0.105
   port: 3306
   username: root
   password: 123456
 mongo:
-  host: 192.168.0.101
+  host: 192.168.0.105
   port: 27017
   username: root
   password: 123456
   database: mytodo
 redis:
-  host: 192.168.0.101
+  host: 192.168.0.105
   port: 6379
 mq:
-  host: 192.168.0.101
+  host: 192.168.0.105
   port: 5672
   username: root
   password: 123456
 minio:
-  host: 192.168.0.101
+  host: 192.168.0.105
   port: 9000
   id: root
   secret: root123456
   secure: false
 es:
   addresses:
-    - http://192.168.0.101:9200
+    - http://192.168.0.105:9200
 log:
   level: info
   filename: todo.log
@@ -50,7 +50,7 @@ captcha:
 etcd:
   dialTimeout: 5
   endpoints:
-    - 192.168.0.101:2379
+    - 192.168.0.105:2379
 starter:
   mode: release
   sw:

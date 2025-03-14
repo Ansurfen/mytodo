@@ -10,6 +10,7 @@ import 'package:my_todo/view/home/feedback/feedback_page.dart';
 import 'package:my_todo/view/home/mine/mine_page.dart';
 import 'package:my_todo/view/home/log/log_controller.dart';
 import 'package:my_todo/view/home/log/log_page.dart';
+import 'package:my_todo/view/page_not_found/page_not_found.dart';
 
 import 'package:my_todo/view/task/snapshot/task_controller.dart';
 import 'package:my_todo/view/home/nav/component/bottom_bar_controller.dart';
@@ -24,26 +25,25 @@ class TodoDrawerController extends GetxController {
 
   Widget currentSubPage() {
     if (drawerIndex == null) {
-      return const Text("error");
-    } else {
-      switch (drawerIndex) {
-        case DrawerIndex.nav:
-          Get.lazyPut(() => NavigatorController());
-          Get.lazyPut(() => BottomBarController());
-          Get.lazyPut(() => TaskController());
-          return const NavigatorPage();
-        case DrawerIndex.feedback:
-          return const FeedbackPage();
-        case DrawerIndex.invite:
-          return const MePage();
-        case DrawerIndex.about:
-          return const AboutPage();
-        case DrawerIndex.log:
-          Get.lazyPut(() => LogController());
-          return const LogPage();
-        default:
-          return const Text("error");
-      }
+      return PageNotFound();
+    }
+    switch (drawerIndex) {
+      case DrawerIndex.nav:
+        Get.lazyPut(() => NavigatorController());
+        Get.lazyPut(() => BottomBarController());
+        Get.lazyPut(() => TaskController());
+        return const NavigatorPage();
+      case DrawerIndex.feedback:
+        return const FeedbackPage();
+      case DrawerIndex.invite:
+        return const MePage();
+      case DrawerIndex.about:
+        return const AboutPage();
+      case DrawerIndex.log:
+        Get.lazyPut(() => LogController());
+        return const LogPage();
+      default:
+        return PageNotFound();
     }
   }
 }

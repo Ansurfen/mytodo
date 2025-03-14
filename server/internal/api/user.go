@@ -1,6 +1,9 @@
 package api
 
-import "mytodo/internal/model"
+import (
+	"mime/multipart"
+	"mytodo/internal/model"
+)
 
 type UserSignUpRequest struct {
 	Email     string `json:"email"`
@@ -40,6 +43,15 @@ type UserGetResponse struct {
 
 type UserOnlineResponse struct {
 	Users []string `json:"users"`
+}
+
+type UserEditRequest struct {
+	Profile   *multipart.FileHeader `form:"profile"`
+	Name      string                `form:"name"`
+	Telephone string                `form:"telephone"`
+	About     string                `form:"about"`
+	Email     string                `form:"email"`
+	IsMale    string                `form:"is_male"`
 }
 
 type FriendNewRequest struct {

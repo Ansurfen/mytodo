@@ -1,6 +1,7 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/user.dart';
 import 'package:my_todo/component/drawer/reactive_text.dart';
@@ -202,7 +203,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
           Divider(height: 1, color: const Color(0xFF3A5160).withOpacity(0.6)),
           ReactiveText(
             text: "GitHub",
-            icon: Icons.abc,
+            icon: FontAwesomeIcons.github,
             onTap: () async {
               await urlPicker(context, "https://github.com/Ansurfen");
             },

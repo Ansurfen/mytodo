@@ -117,6 +117,7 @@ class _LoginPageState extends State<LoginPage> {
         resendCodeButton: 'resend_code'.tr,
         confirmSignupButton: 'confirm_signup'.tr,
         confirmationCodeValidationError: 'confirm_code_validator'.tr,
+        confirmSignupSuccess: 'confirm_signup_success'.tr,
       ),
       userValidator: (value) {
         if (value != null && !EmailValidator.validate(value)) {
@@ -140,7 +141,9 @@ class _LoginPageState extends State<LoginPage> {
             case "username":
               controller.username = value;
             case "isMale":
-              controller.isMale = true;
+              if (value.isNotEmpty) {
+                controller.isMale = true;
+              }
             case "telephone":
               controller.telephone = value;
           }
@@ -196,9 +199,6 @@ class _LoginPageState extends State<LoginPage> {
             if (jwt.isEmpty) {
               return "invalid jwt";
             }
-            userDetailRequest().then((v) {
-              Guard.setUser(v);
-            });
             Guard.logInAndGo(jwt);
             return null;
           })

@@ -8,6 +8,8 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
+import 'package:my_todo/api/user.dart';
+import 'package:my_todo/config.dart';
 import 'package:my_todo/i18n/i18n.dart';
 import 'package:my_todo/model/entity/user.dart';
 import 'package:my_todo/router/home.dart';
@@ -102,7 +104,7 @@ class Guard {
     if (s != null) {
       _server = s;
     } else {
-      _server = "http://localhost:8080";
+      _server = TodoConfig.baseUri;
     }
     final dir = await getApplicationCacheDirectory();
     late File file;
@@ -153,6 +155,9 @@ class Guard {
 
   static void logInAndGo(String jwt) {
     Guard.logIn(jwt);
+    userDetailRequest().then((v) {
+      Guard.setUser(v);
+    });
     RouterProvider.offNamed(HomeRouter.nav);
   }
 
@@ -182,13 +187,13 @@ class Guard {
 
   static void setLanguage(String locale) {
     switch (locale) {
-      case 'language.zhCN':
+      case 'language_zhCN':
         _setLocale('zh', 'CN');
         language = locale;
         Get.updateLocale(const Locale('zh'));
       default:
         _setLocale('en', 'US');
-        language = 'language.enUS';
+        language = 'language_enUS';
         Get.updateLocale(const Locale('en'));
     }
   }

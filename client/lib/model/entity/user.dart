@@ -8,13 +8,13 @@ part 'user.g.dart';
 @JsonSerializable()
 class User {
   @JsonKey(name: "id")
-  late final int id;
+  int id;
 
   @JsonKey(name: "name")
-  late final String name;
+  String name;
 
   @JsonKey(name: "email")
-  late final String email;
+  String email;
 
   @JsonKey(name: "telephone", defaultValue: "")
   String? telephone;

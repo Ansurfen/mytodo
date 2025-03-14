@@ -11,7 +11,7 @@ typedef Language = String;
 
 class SettingController extends GetxController {
   late bool isDark;
-  final List<Language> languages = ['language.enUS', 'language.zhCN'];
+  final List<Language> languages = ['language_enUS', 'language_zhCN'];
 
   String? selectedLanguage;
   late String style;

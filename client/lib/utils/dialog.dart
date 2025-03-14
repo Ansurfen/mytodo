@@ -161,7 +161,7 @@ void showError(String msg,
 
 void showException(Exception e,
     {EasyLoadingMaskType maskType = EasyLoadingMaskType.none}) {
-  EasyLoading.showError(e.tr, maskType: maskType, dismissOnTap: true);
+  EasyLoading.showError(e.toString(), maskType: maskType, dismissOnTap: true);
 }
 
 void showLoading({EasyLoadingMaskType maskType = EasyLoadingMaskType.clear}) {

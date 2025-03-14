@@ -52,10 +52,6 @@ class RouterProvider {
   }
 
   static String initialRoute() {
-    // return UserRouter.edit.name;
-    // return OtherRouter.statistic.name;
-    // return MapRouter.locate.name;
-    return UserRouter.sign.name;
     if (Guard.isLogin() || Guard.isOffline()) {
       return HomeRouter.nav.name;
     }

@@ -219,10 +219,17 @@ func UserSignUp(ctx *gin.Context) {
 	var res api.UserSignResponse
 
 	log.Debugf("creating new user")
+	if len(req.Username) == 0 {
+		req.Username = gofakeit.Username()
+	}
 	user.Name = req.Username
 	user.Email = req.Email
-	user.Telephone.String = req.Telephone
+	user.Telephone = model.NullString{
+		Valid:  true,
+		String: req.Telephone,
+	}
 	user.Password = MD5(req.Password)
+	user.IsMale = req.IsMale
 	err = db.SQL().Table("user").Create(&user).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
@@ -422,6 +429,59 @@ func UserOnline(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(200, api.UserOnlineResponse{Users: keys})
+}
+
+func UserEdit(ctx *gin.Context) {
+	var req api.UserEditRequest
+	err := ctx.Bind(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse formData")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	if req.IsMale == "1" {
+		u.IsMale = true
+	} else {
+		u.IsMale = false
+	}
+	u.Email = req.Email
+	u.Name = req.Name
+	u.Telephone = model.NullString{
+		Valid:  true,
+		String: req.Telephone,
+	}
+	if req.Profile != nil {
+		data, err := req.Profile.Open()
+		if err != nil {
+			log.WithError(err).Error("fail to open file")
+			ctx.Abort()
+			return
+		}
+		defer data.Close()
+		buf := new(bytes.Buffer)
+		_, err = io.Copy(buf, data)
+		if err != nil {
+			log.WithError(err).Error("fail to copy file")
+			ctx.Abort()
+			return
+		}
+		_, err = db.OSS().PutObject(context.TODO(), "user", fmt.Sprintf("/profile/%d.png", u.ID), buf, int64(buf.Len()), minio.PutObjectOptions{})
+		if err != nil {
+			log.WithError(err).Error("fail to upload file")
+			ctx.Abort()
+			return
+		}
+	}
+	err = db.SQL().Table("user").Save(&u).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit user"})
 }
 
 func FriendNew(ctx *gin.Context) {

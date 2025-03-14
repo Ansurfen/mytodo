@@ -133,8 +133,8 @@ class _BottomBarViewState extends State<BottomBarView> {
               ),
               child: Showcase(
                 key: Guide.three,
-                title: "Add",
-                description: "Tap to add task, post",
+                title: "add".tr,
+                description: "guide_3".tr,
                 tooltipBackgroundColor: Theme.of(context).primaryColor,
                 textColor: Colors.white,
                 floatingActionWidget: FloatingActionWidget(

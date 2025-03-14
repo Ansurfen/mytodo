@@ -72,7 +72,7 @@ class _TaskPageState extends State<TaskPage>
         actions: [
           Showcase(
             key: Guide.four,
-            description: 'Tap to notification',
+            description: 'guide_4'.tr,
             tooltipActionConfig: const TooltipActionConfig(
               alignment: MainAxisAlignment.spaceBetween,
               actionGap: 16,
@@ -103,7 +103,7 @@ class _TaskPageState extends State<TaskPage>
           ),
           Showcase(
             key: Guide.two,
-            description: 'Tap to settings',
+            description: 'guide_2'.tr,
             disposeOnTap: true,
             onTargetClick: () {
               RouterProvider.viewSetting()?.then(

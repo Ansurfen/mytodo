@@ -155,6 +155,26 @@ Future<UserEditResponse> userEdit(UserEditRequest req) async {
   );
 }
 
+Future userEditRequest({required User u, TFile? profile}) async {
+  FormData formData = FormData();
+  formData.fields.addAll(
+    {
+      "name": u.name,
+      "email": u.email,
+      "telephone": u.telephone ?? "",
+      "is_male": u.isMale ? "1" : "0",
+    }.entries,
+  );
+  if (profile != null) {
+    formData.files.add(MapEntry("profile", await profile.m));
+  }
+  return await HTTP.post(
+    "/user/edit",
+    data: formData,
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
 Image userProfile(int id) {
   return Image.network("${Guard.server}/user/profile/$id");
 }
