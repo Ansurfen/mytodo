@@ -12,6 +12,7 @@ func InstallTopicRoute(e *gin.Engine) {
 	{
 		topicRouter.POST("/new", middleware.Auth, handler.TopicNew)
 		topicRouter.GET("/get", middleware.Auth, handler.TopicGet)
+		topicRouter.GET("/getSelectable", middleware.Auth, handler.TopicGetSelectable)
 		topicRouter.POST("/join", middleware.Auth, handler.TopicJoin)
 		topicRouter.POST("/exit", middleware.Auth, handler.TopicExit)
 		topicRouter.POST("/edit", middleware.Auth, handler.TopicEdit)

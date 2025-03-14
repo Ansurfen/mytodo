@@ -135,6 +135,7 @@ Map<String, String> get zhCN => {
   "plant_other": "其他",
   "food": "食物",
 
+  "condition": "条件",
   "condition_click": "点击事件",
   "condition_qr": "扫描二维码",
   "condition_locale": "定位",
@@ -225,4 +226,8 @@ Map<String, String> get zhCN => {
   "guide_2": "点击修改应用设置",
   "guide_3": "点击创建任务、频道、发帖",
   "guide_4": "点击查看通知信息",
+
+  "lat_lng_rds": "经度，纬度，半径",
+
+  "enable": "启用",
 };

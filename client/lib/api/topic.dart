@@ -15,21 +15,21 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'topic.g.dart';
 
-Future topicNew({
-  required bool isPublic,
+Future topicNewRequest({
   required String name,
-  required List<String> tags,
   required String description,
+  required bool isPublic,
+  required List<String> tags,
 }) async {
-  return await HTTP.post(
-    '/topic/new',
-    options: Options(headers: {"Authorization": "Bearer ${Guard.jwt}"}),
+  return HTTP.post(
+    "/topic/new",
     data: {
-      "is_public": isPublic,
       "name": name,
-      "tags": tags,
       "description": description,
+      "is_public": isPublic,
+      "tags": tags,
     },
+    options: Options(headers: {"Authorization": Guard.jwt}),
   );
 }
 
@@ -54,6 +54,23 @@ class GetTopicResponse extends BaseResponse {
   }
 }
 
+Future topicGetRequest() async {
+  return HTTP.get(
+    "/topic/get",
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future<List<Topic>> topicGetSelectableRequest() async {
+  return ((await HTTP.get(
+            "/topic/getSelectable",
+            options: Options(headers: {"Authorization": Guard.jwt}),
+          )).data["topic"]
+          as List)
+      .map((e) => Topic.fromJson(e))
+      .toList();
+}
+
 Future<GetTopicResponse> getTopic(GetTopicRequest req) async {
   if (Guard.isOffline()) {
     return GetTopicResponse(
@@ -64,7 +81,7 @@ Future<GetTopicResponse> getTopic(GetTopicRequest req) async {
               DateTime.timestamp(),
               DateTime.timestamp(),
               e.name,
-              e.desc,
+              e.description,
               "",
               "",
             ),

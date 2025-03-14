@@ -145,6 +145,7 @@ Map<String, String> get enUS => {
   "plant_other": "other",
   "food": "food",
 
+  "condition": "Condition",
   "condition_click": "Click",
   "condition_qr": "Scan QR",
   "condition_locale": "Locale",
@@ -234,4 +235,8 @@ Map<String, String> get enUS => {
   "guide_2": "Tap to change the application settings",
   "guide_3": "Tap to create task, channel, post",
   "guide_4": "Tap to view the notification message",
+
+  "lat_lng_rds": "Latitude, longitude, and radius",
+
+  "enable": "Enable",
 };

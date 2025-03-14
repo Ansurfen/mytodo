@@ -10,7 +10,7 @@ class Guide {
       enableGuide = true;
     }
 
-    if (enableGuide || true) {
+    if (enableGuide) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) =>
             ShowCaseWidget.of(context).startShowCase([one, two, three, four]),

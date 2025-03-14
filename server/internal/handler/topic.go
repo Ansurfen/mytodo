@@ -9,6 +9,7 @@ import (
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
+	"net/http"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
@@ -123,6 +124,44 @@ func TopicGet(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
 		"msg":  "successfully gets topics",
 		"data": topics,
+	})
+}
+
+func TopicGetSelectable(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var topicJoins []model.TopicJoin
+	err := db.SQL().Table("topic_join").Where("user_id = ?", u.ID).Find(&topicJoins).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	var topics []model.Topic
+	for _, join := range topicJoins {
+		var policy model.TopicPolicy
+		err = db.SQL().Table("topic_policy").Where("user_id = ? AND topic_id = ?", u.ID, join.TopicId).First(&policy).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		if policy.Role.GE(model.TopicRoleAdmin) {
+			var topic model.Topic
+			err = db.SQL().Table("topic").Where("id = ?", join.TopicId).First(&topic).Error
+			if err != nil {
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+			topics = append(topics, topic)
+		}
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"topic": topics,
 	})
 }
 

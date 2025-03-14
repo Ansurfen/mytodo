@@ -6,19 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:my_todo/abc/utils.dart';
-import 'package:my_todo/api/topic.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/component/container/bubble_container.dart';
-import 'package:my_todo/component/button/shadow_button.dart';
-import 'package:my_todo/hook/topic.dart';
 import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/view/add/add_controller.dart';
 import 'package:my_todo/view/add/add_task_page.dart';
-import 'package:my_todo/view/add/component/form.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:badges/badges.dart' as badges;
 
@@ -31,15 +26,10 @@ class AddTopicPage extends StatefulWidget {
 
 class _AddTopicPageState extends State<AddTopicPage>
     with AutomaticKeepAliveClientMixin {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController descController = TextEditingController();
-
   final Rx<int> _selectedIndex = 0.obs;
+  AddController controller = Get.find<AddController>();
 
   Rx<String> profile = "".obs;
-
-  bool isPublic = false;
-  RxList<String> tags = <String>[].obs;
 
   @override
   void initState() {
@@ -62,291 +52,234 @@ class _AddTopicPageState extends State<AddTopicPage>
       _buildGridView(foods),
     ];
 
-    return Column(
-      children: [
-        Container(height: 20),
-        InkWell(
-          child: Obx(
-            () => CircleAvatar(
-              radius: 40,
-              backgroundColor: Theme.of(context).primaryColorLight,
-              backgroundImage: null, // Remove backgroundImage
-              child: SvgPicture.asset(
-                profile.value,
-                width: 100, // Ensure it's large enough to avoid blurriness
-                height: 100, // Same as above
-                fit: BoxFit.contain, // Keep the aspect ratio intact
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(height: 20),
+          InkWell(
+            child: Obx(
+              () => CircleAvatar(
+                radius: 40,
+                backgroundColor: Theme.of(context).primaryColorLight,
+                backgroundImage: null, // Remove backgroundImage
+                child: SvgPicture.asset(
+                  profile.value,
+                  width: 100, // Ensure it's large enough to avoid blurriness
+                  height: 100, // Same as above
+                  fit: BoxFit.contain, // Keep the aspect ratio intact
+                ),
               ),
             ),
-          ),
-          onTap: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              constraints: BoxConstraints(
-                minWidth: double.infinity,
-                minHeight: MediaQuery.sizeOf(context).height - 180,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                constraints: BoxConstraints(
+                  minWidth: double.infinity,
+                  minHeight: MediaQuery.sizeOf(context).height - 180,
                 ),
-              ),
-              builder: (BuildContext context) {
-                return Container(
-                  height: MediaQuery.of(context).size.height / 2,
-                  clipBehavior: Clip.antiAlias,
-                  constraints: BoxConstraints(
-                    minWidth: double.infinity,
-                    minHeight: MediaQuery.sizeOf(context).height - 180,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
-                  decoration: BoxDecoration(
-                    color: ThemeProvider.contrastColor(
-                      context,
-                      light: HexColor.fromInt(0xf5f5f5),
-                      dark: HexColor.fromInt(0x1c1c1e),
+                ),
+                builder: (BuildContext context) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height / 2,
+                    clipBehavior: Clip.antiAlias,
+                    constraints: BoxConstraints(
+                      minWidth: double.infinity,
+                      minHeight: MediaQuery.sizeOf(context).height - 180,
                     ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10.0),
-                      topRight: Radius.circular(10.0),
+                    decoration: BoxDecoration(
+                      color: ThemeProvider.contrastColor(
+                        context,
+                        light: HexColor.fromInt(0xf5f5f5),
+                        dark: HexColor.fromInt(0x1c1c1e),
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10.0),
+                        topRight: Radius.circular(10.0),
+                      ),
                     ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                Get.back();
-                              },
-                              icon: Icon(
-                                Icons.close,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                            Text(
-                              "select_icon".tr,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                Obx(
-                                  () => RoundedButtonRow(
-                                    labels: [
-                                      "animal_amphibian".tr,
-                                      "animal_bird".tr,
-                                      "animal_bug".tr,
-                                      "animal_mammal".tr,
-                                      "animal_marine".tr,
-                                      "animal_reptile".tr,
-                                      "plant_flower".tr,
-                                      "plant_other".tr,
-                                      "food".tr,
-                                    ],
-                                    onTap: (index) {
-                                      Guard.log.i(index);
-                                      _selectedIndex.value = index;
-                                    },
-                                    selectedIndex: _selectedIndex.value,
-                                  ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                icon: Icon(
+                                  Icons.close,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
-                              ],
+                              ),
+                              Text(
+                                "select_icon".tr,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  Obx(
+                                    () => RoundedButtonRow(
+                                      labels: [
+                                        "animal_amphibian".tr,
+                                        "animal_bird".tr,
+                                        "animal_bug".tr,
+                                        "animal_mammal".tr,
+                                        "animal_marine".tr,
+                                        "animal_reptile".tr,
+                                        "plant_flower".tr,
+                                        "plant_other".tr,
+                                        "food".tr,
+                                      ],
+                                      onTap: (index) {
+                                        Guard.log.i(index);
+                                        _selectedIndex.value = index;
+                                      },
+                                      selectedIndex: _selectedIndex.value,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: ThemeProvider.contrastColor(
-                                context,
-                                light: Colors.white,
-                                dark: CupertinoColors.darkBackgroundGray,
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: ThemeProvider.contrastColor(
+                                  context,
+                                  light: Colors.white,
+                                  dark: CupertinoColors.darkBackgroundGray,
+                                ),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(20),
+                                ),
                               ),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(20),
+                              child: Obx(
+                                () => candidates[_selectedIndex.value],
                               ),
                             ),
-                            child: Obx(() => candidates[_selectedIndex.value]),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          SettingsList(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            applicationType: ApplicationType.cupertino,
+            platform: DevicePlatform.iOS,
+            sections: [
+              SettingsSection(
+                tiles: [
+                  SettingsTile.switchTile(
+                    leading: Icon(Icons.visibility),
+                    activeSwitchColor: Theme.of(context).primaryColor,
+                    initialValue: controller.topicIsPublic,
+                    onToggle: (v) {
+                      setState(() {
+                        controller.topicIsPublic = v;
+                      });
+                    },
+                    title: Text("topic_is_public".tr),
+                  ),
+                  SettingsTile.navigation(
+                    onPressed: (context) {
+                      showTextDialog(
+                        context,
+                        title: "name",
+                        content: TextField(controller: controller.topicName),
+                        onConfirm: () {
+                          setState(() {
+                            Get.back();
+                          });
+                        },
+                        onCancel: () => Get.back(),
+                      );
+                    },
+                    title: Text('name'.tr),
+                    leading: Icon(Icons.drive_file_rename_outline_outlined),
+                    value: Text(controller.topicName.text),
+                  ),
+                  SettingsTile.navigation(
+                    onPressed: (context) => showTagsPicker(context),
+                    title: Text("topic_tag".tr),
+                    leading: Icon(FontAwesomeIcons.tag),
+                    trailing: Obx(
+                      () =>
+                          controller.topicTags.isNotEmpty
+                              ? badges.Badge(
+                                badgeContent: Text(
+                                  controller.topicTags.length.toString(),
+                                ),
+                                badgeStyle: badges.BadgeStyle(
+                                  badgeColor:
+                                      Theme.of(context).primaryColorLight,
+                                ),
+                                badgeAnimation:
+                                    badges.BadgeAnimation.rotation(),
+                              )
+                              : Container(),
                     ),
                   ),
-                );
-              },
-            );
-          },
-        ),
-        SettingsList(
-          shrinkWrap: true,
-          applicationType: ApplicationType.cupertino,
-          platform: DevicePlatform.iOS,
-          sections: [
-            SettingsSection(
-              tiles: [
-                SettingsTile.switchTile(
-                  leading: Icon(Icons.visibility),
-                  activeSwitchColor: Theme.of(context).primaryColor,
-                  initialValue: isPublic,
-                  onToggle: (v) {
-                    setState(() {
-                      isPublic = v;
-                    });
-                  },
-                  title: Text("topic_is_public".tr),
-                ),
-                SettingsTile.navigation(
-                  onPressed: (context) {
-                    showTextDialog(
+                ],
+              ),
+            ],
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text("描述", style: TextStyle(color: Colors.grey)),
+                SizedBox(height: 10),
+                TextField(
+                  controller: controller.topicDesc,
+                  minLines: 5,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: 'just_say_something'.tr,
+                    hintStyle: TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: ThemeProvider.contrastColor(
                       context,
-                      title: "name",
-                      content: TextField(controller: nameController),
-                      onConfirm: () {
-                        setState(() {
-                          Get.back();
-                        });
-                      },
-                      onCancel: () => Get.back(),
-                    );
-                  },
-                  title: Text('name'.tr),
-                  leading: Icon(Icons.drive_file_rename_outline_outlined),
-                  value: Text(nameController.text),
-                ),
-                SettingsTile.navigation(
-                  onPressed: (context) => showTagsPicker(context),
-                  title: Text("topic_tag".tr),
-                  leading: Icon(FontAwesomeIcons.tag),
-                  trailing: Obx(
-                    () =>
-                        tags.isNotEmpty
-                            ? badges.Badge(
-                              badgeContent: Text(tags.length.toString()),
-                              badgeStyle: badges.BadgeStyle(
-                                badgeColor: Theme.of(context).primaryColorLight,
-                              ),
-                              badgeAnimation: badges.BadgeAnimation.rotation(),
-                            )
-                            : Container(),
+                      light: Colors.white,
+                      dark: CupertinoColors.darkBackgroundGray,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide:
+                          BorderSide.none, // Remove focused border color
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text("描述", style: TextStyle(color: Colors.grey)),
-              SizedBox(height: 10),
-              TextField(
-                controller: descController,
-                minLines: 5,
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: 'just_say_something'.tr,
-                  hintStyle: TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: ThemeProvider.contrastColor(
-                    context,
-                    light: Colors.white,
-                    dark: CupertinoColors.darkBackgroundGray,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none, // Remove focused border color
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      child: Column(
-        children: [
-          FormHeader(icon: Icons.drive_file_rename_outline, name: "name".tr),
-          const SizedBox(height: 5),
-          BubbleTextFormField(
-            maxLines: 1,
-            hintText: "name".tr,
-            onChanged: (v) {
-              nameController.text = v;
-            },
-          ),
-          const SizedBox(height: 10),
-          FormHeader(icon: Icons.description, name: "description".tr),
-          const SizedBox(height: 5),
-          BubbleTextFormField(
-            minLines: 6,
-            hintText: "desc".tr,
-            onChanged: (v) {
-              descController.text = v;
-            },
-          ),
-          const SizedBox(height: 30),
-          ShadowButton(
-            text: "create".tr,
-            size: const Size(200, 40),
-            textStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-            onTap: () async {
-              if (descController.text.isNotEmpty &&
-                  nameController.text.isNotEmpty) {
-                createTopic(
-                      CreateTopicRequest(
-                        nameController.text,
-                        descController.text,
-                      ),
-                    )
-                    .then((res) {
-                      TopicHook.updateSnapshot(
-                        GetTopicDto(
-                          0,
-                          DateTime.timestamp(),
-                          DateTime.timestamp(),
-                          nameController.text,
-                          descController.text,
-                          "",
-                          "",
-                        ),
-                      );
-                      showCopyableTipDialog(
-                        context,
-                        content: "${"topic_created".tr} ${res.inviteCode}",
-                      ).then((value) {
-                        Get.back();
-                      });
-                    })
-                    .onError((error, stackTrace) {});
-              }
-            },
           ),
         ],
       ),
@@ -429,7 +362,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                     showSnack(context, "The tag's name is empty!");
                     return;
                   }
-                  tags.add(tagController.text);
+                  controller.topicTags.add(tagController.text);
                   tagController.clear();
                   Get.back();
                 },
@@ -456,8 +389,8 @@ class _AddTopicPageState extends State<AddTopicPage>
           Container(height: 8),
           Obx(() {
             List<Widget> widgets = [];
-            for (var i = 0; i < tags.length; i++) {
-              String v = tags[i];
+            for (var i = 0; i < controller.topicTags.length; i++) {
+              String v = controller.topicTags[i];
               widgets.add(
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -477,7 +410,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                       SizedBox(width: 4),
                       GestureDetector(
                         onTap: () {
-                          tags.removeAt(i);
+                          controller.topicTags.removeAt(i);
                         },
                         child: Icon(
                           Icons.close,

@@ -11,6 +11,7 @@ import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
+import 'package:my_todo/view/add/add_controller.dart';
 import 'package:my_todo/view/add/popular_filter_list.dart';
 import 'package:my_todo/view/map/select/place.dart';
 import 'package:settings_ui/settings_ui.dart';
@@ -220,7 +221,7 @@ class _AddTaskPageState extends State<AddTaskPage>
   final DateTimePickerType pickerType = DateTimePickerType.datetime;
 
   final Rx<int> _selectedIndex = 0.obs;
-
+  AddController addController = Get.find<AddController>();
   Rx<String> profile = "".obs;
   RxList<LocaleItem> localeItems = <LocaleItem>[].obs;
 
@@ -403,6 +404,7 @@ class _AddTaskPageState extends State<AddTaskPage>
           ),
           SettingsList(
             shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             applicationType: ApplicationType.cupertino,
             platform: DevicePlatform.iOS,
             sections: [
@@ -411,33 +413,68 @@ class _AddTaskPageState extends State<AddTaskPage>
                 tiles: [
                   SettingsTile.navigation(
                     onPressed: (context) {
-                      showCupertinoModalPopup<void>(
-                        context: context,
-                        builder:
-                            (context) => CupertinoActionSheet(
-                              title: Text(
-                                'topic'.tr,
-                                style: const TextStyle(fontSize: 20),
+                      if (addController.topics.isEmpty) {
+                        showTipDialog(
+                          context,
+                          content: "topic_not_found".tr,
+                          onPressed: () {
+                            addController.switchToTab(1);
+                            Get.back();
+                          },
+                        );
+                      } else {
+                        showCupertinoModalPopup<void>(
+                          context: context,
+                          builder:
+                              (context) => CupertinoActionSheet(
+                                title: Text(
+                                  'topic'.tr,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                                message: Column(
+                                  children:
+                                      addController.topics
+                                          .map(
+                                            (e) => Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                  e.name,
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                ColorfulRadio(
+                                                  value: e.name,
+                                                  groupValue:
+                                                      addController
+                                                          .selectedTopic
+                                                          .value,
+                                                  onChanged: (v) {
+                                                    addController
+                                                        .selectedTopic
+                                                        .value = v!;
+                                                    Get.back();
+                                                  },
+                                                  backgroundColor:
+                                                      Theme.of(
+                                                        context,
+                                                      ).primaryColor,
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                          .toList(),
+                                ),
                               ),
-                              message: Column(
-                                children: [
-                                  ColorfulRadio(
-                                    value: Mock.username(),
-                                    groupValue: Mock.username(),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    onChanged: (v) {
-                                      Get.back();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                      );
+                        );
+                      }
                     },
                     title: Text('topic'.tr),
                     leading: Icon(Icons.topic),
-                    value: Text("高三一班"),
+                    value: Obx(() => Text(addController.selectedTopic.value)),
                   ),
                   SettingsTile.navigation(
                     title: Text('name'.tr),
@@ -445,7 +482,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                     onPressed: (context) {
                       showTextDialog(
                         context,
-                        title: "name",
+                        title: "name".tr,
                         content: TextField(controller: nameController),
                         onConfirm: () {
                           setState(() {
@@ -552,33 +589,47 @@ class _AddTaskPageState extends State<AddTaskPage>
                 title: Text("condition".tr),
                 tiles: [
                   SettingsTile.switchTile(
-                    initialValue: false,
-                    onToggle: (v) {},
+                    initialValue: addController.taskCondClick,
+                    onToggle: (v) {
+                      setState(() {
+                        addController.taskCondClick = v;
+                      });
+                    },
+                    activeSwitchColor: Theme.of(context).primaryColor,
                     leading: Icon(Icons.ads_click),
-                    title: Text("click"),
+                    title: Text("condition_click".tr),
                   ),
                   SettingsTile.switchTile(
-                    initialValue: false,
-                    onToggle: (v) {},
+                    initialValue: addController.taskCondQR,
+                    onToggle: (v) {
+                      setState(() {
+                        addController.taskCondQR = v;
+                      });
+                    },
+                    activeSwitchColor: Theme.of(context).primaryColor,
                     leading: Icon(Icons.qr_code),
-                    title: Text("Scan QR"),
+                    title: Text("condition_qr".tr),
                   ),
                   SettingsTile.navigation(
                     onPressed: (context) {
                       showSheetBottom(
                         context,
-                        title: "file upload",
+                        title: "condition_file".tr,
                         child: Column(
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("启用"),
-                                CupertinoSwitch(
-                                  value: false,
-                                  onChanged: (bool value) {
-                                    setState(() {});
-                                  },
+                                Text("enable".tr),
+                                Obx(
+                                  () => CupertinoSwitch(
+                                    activeTrackColor:
+                                        Theme.of(context).primaryColor,
+                                    value: addController.taskCondFile.value,
+                                    onChanged: (bool v) {
+                                      addController.taskCondFile.value = v;
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
@@ -587,24 +638,28 @@ class _AddTaskPageState extends State<AddTaskPage>
                       );
                     },
                     leading: Icon(Icons.drive_folder_upload),
-                    title: Text("file upload"),
+                    title: Text("condition_file".tr),
                   ),
                   SettingsTile.navigation(
                     onPressed: (context) {
                       showSheetBottom(
                         context,
-                        title: "text submit",
+                        title: "condition_text".tr,
                         child: Column(
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("启用"),
-                                CupertinoSwitch(
-                                  value: false,
-                                  onChanged: (bool value) {
-                                    setState(() {});
-                                  },
+                                Text("enable".tr),
+                                Obx(
+                                  () => CupertinoSwitch(
+                                    activeTrackColor:
+                                        Theme.of(context).primaryColor,
+                                    value: addController.taskCondText.value,
+                                    onChanged: (bool v) {
+                                      addController.taskCondText.value = v;
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
@@ -614,13 +669,13 @@ class _AddTaskPageState extends State<AddTaskPage>
                       );
                     },
                     leading: Icon(Icons.abc),
-                    title: Text("text submit"),
+                    title: Text("condition_text".tr),
                   ),
                   SettingsTile(
                     onPressed: (ctx) {
                       showSheetBottom(
                         ctx,
-                        title: "locale".tr,
+                        title: "condition_locale".tr,
                         right: Row(
                           children: [
                             IconButton(
@@ -658,7 +713,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "经度，纬度，半径",
+                              "lat_lng_rds".tr,
                               style: TextStyle(color: Colors.grey),
                             ),
                             Container(height: 8),
@@ -697,7 +752,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                       );
                     },
                     leading: Icon(Icons.location_on),
-                    title: Text("locale"),
+                    title: Text("condition_locale".tr),
                     trailing: Obx(
                       () =>
                           localeItems.isNotEmpty
@@ -762,6 +817,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                     ),
                   ),
                 ),
+                Container(height: 10),
               ],
             ),
           ),

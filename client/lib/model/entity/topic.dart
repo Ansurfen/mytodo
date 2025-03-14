@@ -11,16 +11,22 @@ class Topic {
   @JsonKey(name: "id", required: false)
   int? id;
 
-  @JsonKey(name: "user")
-  int user;
+  @JsonKey(name: "creator")
+  int creator;
 
   @JsonKey(name: "name")
   String name;
 
-  @JsonKey(name: "desc")
-  String desc;
+  @JsonKey(name: "description")
+  String description;
 
-  Topic(this.user, this.name, this.desc);
+  @JsonKey(name: "tags")
+  List<String>? tags;
+
+  // @JsonKey(name: "createdAt")
+  // DateTime 
+
+  Topic(this.creator, this.name, this.description, {this.tags});
 
   factory Topic.fromJson(JsonObject json) => _$TopicFromJson(json);
 

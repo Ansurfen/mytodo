@@ -433,12 +433,7 @@ class _CustomDialogState extends State<CustomDialog>
                 SizedBox(height: 20),
                 IconButton(
                   onPressed: () {
-                    topicNew(
-                      isPublic: false,
-                      name: "abc",
-                      tags: ["a", "b"],
-                      description: "aaaa",
-                    );
+                    
                   },
                   icon: Icon(Icons.abc),
                 ),

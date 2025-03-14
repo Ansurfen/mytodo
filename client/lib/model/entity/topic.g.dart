@@ -7,16 +7,16 @@ part of 'topic.dart';
 // **************************************************************************
 
 Topic _$TopicFromJson(Map<String, dynamic> json) => Topic(
-  (json['user'] as num).toInt(),
+  (json['creator'] as num).toInt(),
   json['name'] as String,
-  json['desc'] as String,
+  json['description'] as String,
 )..id = (json['id'] as num?)?.toInt();
 
 Map<String, dynamic> _$TopicToJson(Topic instance) => <String, dynamic>{
   'id': instance.id,
-  'user': instance.user,
+  'user': instance.creator,
   'name': instance.name,
-  'desc': instance.desc,
+  'description': instance.description,
 };
 
 TopicMember _$TopicMemberFromJson(Map<String, dynamic> json) =>

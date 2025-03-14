@@ -5,128 +5,85 @@ import 'dart:io' as io;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/api/task.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/model/entity/task.dart';
-import 'package:my_todo/view/add/popular_filter_list.dart';
+import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/view/map/select/place.dart';
 import 'package:path/path.dart' as path;
 
-class AddController extends GetxController {
+class AddController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   bool sync = false;
-  List<DropdownMenuItem<int>> topics = [];
-  int? selectedTopic;
+  List<Topic> topics = [];
+  Rx<String> selectedTopic = "".obs;
   late TabController tabController;
-  Rx<bool> activeLocale = Rx(false);
-  Rx<bool> activeFileUpload = Rx(false);
-  Rx<bool> activeContent = Rx(false);
-  bool activeImage = false;
-  bool activeHand = false;
-  bool activeTimer = false;
-  bool activeQR = false;
-  late List<TaskConditionModel> taskConditions;
+
   Rx<List<Place>> pos = Rx([]);
-  TextEditingController departureController = TextEditingController();
-  TextEditingController arrivalController = TextEditingController();
-  TextEditingController sendController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController descController = TextEditingController();
+
+  bool taskCondClick = false;
+  bool taskCondQR = false;
+  Rx<bool> taskCondFile = false.obs;
+  Rx<bool> taskCondText = false.obs;
+
+  TextEditingController topicName = TextEditingController();
+  TextEditingController topicDesc = TextEditingController();
+  RxList<String> topicTags = <String>[].obs;
+  bool topicIsPublic = false;
 
   _postController post = _postController();
 
   @override
   void onInit() {
     super.onInit();
-    taskConditions = [
-      TaskConditionModel(
-        text: "手动签到",
-        onTap: (v) {
-          activeHand = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "定时签到",
-        onTap: (v) {
-          activeTimer = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "位置定位",
-        onTap: (v) {
-          activeLocale.value = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "文件上传",
-        onTap: (v) {
-          activeFileUpload.value = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "图片上传",
-        onTap: (v) {
-          activeImage = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "文字内容",
-        onTap: (v) {
-          activeContent.value = v;
-        },
-      ),
-      TaskConditionModel(
-        text: "扫码签到",
-        onTap: (v) {
-          activeQR = v;
-        },
-      ),
-    ];
+    tabController = TabController(length: 3, vsync: this);
+
     Future.delayed(Duration.zero, () async {
-      GetTopicResponse res = await getTopic(GetTopicRequest());
-      for (var topic in res.topics) {
-        topics.add(DropdownMenuItem(value: topic.id, child: Text(topic.name)));
-      }
+      topicGetSelectableRequest().then((v) {
+        topics = v;
+      });
     });
   }
 
   void confirm() {
-    List<TaskCondition> conds = [];
-    for (var e in pos.value) {
-      conds.add(TaskCondition(TaskCondType.locale.index, "${e.lat},${e.lng}"));
+    // List<TaskCondition> conds = [];
+
+    // createTask(
+    //       CreateTaskRequest(
+    //         selectedTopic!,
+    //         nameController.text,
+    //         descController.text,
+    //         DateTime.parse(departureController.text),
+    //         DateTime.parse(arrivalController.text),
+    //         conds,
+    //       ),
+    //     )
+    //     .then((value) => EasyLoading.showSuccess("Creates task successfully."))
+    //     .onError((error, stackTrace) {});
+  }
+
+  void switchToTab(int index) {
+    tabController.animateTo(index);
+  }
+
+  void save() {
+    switch (tabController.index) {
+      case 0:
+      case 1:
+        topicNewRequest(
+          isPublic: topicIsPublic,
+          name: topicName.text,
+          tags: topicTags,
+          description: topicDesc.text,
+        ).then((v) {
+          topicIsPublic = false;
+          topicName.clear();
+          topicDesc.clear();
+          topicTags.clear();
+        });
+      case 2:
     }
-    if (activeTimer) {
-      conds.add(TaskCondition(TaskCondType.timer.index, ""));
-    }
-    if (activeHand) {
-      conds.add(TaskCondition(TaskCondType.hand.index, ""));
-    }
-    if (activeContent.value) {
-      conds.add(TaskCondition(TaskCondType.content.index, ""));
-    }
-    if (activeFileUpload.value) {
-      conds.add(TaskCondition(TaskCondType.file.index, ""));
-    }
-    if (activeImage) {
-      conds.add(TaskCondition(TaskCondType.image.index, ""));
-    }
-    if (activeQR) {
-      conds.add(TaskCondition(TaskCondType.qr.index, ""));
-    }
-    createTask(
-          CreateTaskRequest(
-            selectedTopic!,
-            nameController.text,
-            descController.text,
-            DateTime.parse(departureController.text),
-            DateTime.parse(arrivalController.text),
-            conds,
-          ),
-        )
-        .then((value) => EasyLoading.showSuccess("Creates task successfully."))
-        .onError((error, stackTrace) {});
   }
 }
 
