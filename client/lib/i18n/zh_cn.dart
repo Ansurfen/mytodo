@@ -230,4 +230,11 @@ Map<String, String> get zhCN => {
   "lat_lng_rds": "经度，纬度，半径",
 
   "enable": "启用",
+
+  "enter_title": "在此输入你的标题...",
+
+  "font": "字体",
+  "font_size": "字体大小",
+
+  "save": "保存",
 };

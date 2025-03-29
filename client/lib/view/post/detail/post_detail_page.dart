@@ -32,7 +32,6 @@ import 'package:my_todo/view/post/component/profile.dart';
 import 'package:my_todo/view/post/detail/post_detail_controller.dart';
 import 'package:my_todo/view/post/detail/widgets/comment_card.dart';
 import 'package:my_todo/view/post/detail/widgets/reply_card.dart';
-import 'package:my_todo/view/post/snapshot/post_card.dart';
 
 class PostDetailPage extends StatefulWidget {
   const PostDetailPage({super.key});

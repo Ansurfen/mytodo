@@ -227,10 +227,13 @@ class _AddTopicPageState extends State<AddTopicPage>
                               ? badges.Badge(
                                 badgeContent: Text(
                                   controller.topicTags.length.toString(),
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
                                 ),
                                 badgeStyle: badges.BadgeStyle(
-                                  badgeColor:
-                                      Theme.of(context).primaryColorLight,
+                                  badgeColor: Theme.of(context).primaryColor,
                                 ),
                                 badgeAnimation:
                                     badges.BadgeAnimation.rotation(),
@@ -395,7 +398,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColorLight,
+                    color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

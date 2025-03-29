@@ -1,23 +1,32 @@
 package handler
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
+	"net/http"
+	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
 )
 
-func PostSearch(ctx *gin.Context) {
-
-}
+func PostSearch(ctx *gin.Context) {}
 
 func PostNew(ctx *gin.Context) {
 	var req api.PostNewRequest
-	err := ctx.BindJSON(&req)
+	err := ctx.Bind(&req)
 	if err != nil {
 		log.WithError(err).Error("fail to parse json")
 		ctx.Abort()
@@ -29,9 +38,60 @@ func PostNew(ctx *gin.Context) {
 	}
 	post := model.Post{
 		Title:  req.Title,
-		Text:   req.Text,
 		UserId: u.ID,
 	}
+
+	err = json.Unmarshal([]byte(req.Text), &post.Text)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": ""})
+		return
+	}
+	files := form.File["files"]
+	var wg sync.WaitGroup
+	for i, f := range files {
+		wg.Add(1)
+		go func(f *multipart.FileHeader) {
+			defer wg.Done()
+			var buf []byte
+			filename := fmt.Sprintf("%s%s", uuid.New(), filepath.Base(f.Filename))
+			src, err := f.Open()
+			if err != nil {
+				ctx.JSON(400, gin.H{"error": "文件打开失败"})
+				return
+			}
+			defer src.Close()
+
+			buf, err = io.ReadAll(src)
+			if err != nil {
+				ctx.JSON(400, gin.H{"error": "文件读取失败"})
+				return
+			}
+			_, err = db.OSS().PutObject(
+				context.TODO(),
+				"post",
+				filename,
+				bytes.NewReader(buf),
+				int64(len(buf)),
+				minio.PutObjectOptions{},
+			)
+			if err != nil {
+				ctx.JSON(500, gin.H{"error": "文件上传失败"})
+				return
+			}
+			if v, ok := post.Text[req.Indexs[i]]["insert"].(map[string]any); ok {
+				v[req.Types[i]] = filename
+				post.Text[req.Indexs[i]]["insert"] = v
+			}
+		}(f)
+	}
+	wg.Wait()
 	err = db.SQL().Table("post").Create(&post).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")

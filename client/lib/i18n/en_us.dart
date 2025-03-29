@@ -239,4 +239,11 @@ Map<String, String> get enUS => {
   "lat_lng_rds": "Latitude, longitude, and radius",
 
   "enable": "Enable",
+
+  "enter_title": "Enter your title here...",
+
+  "font": "Font",
+  "font_size": "Font size",
+
+  "save": "Save",
 };

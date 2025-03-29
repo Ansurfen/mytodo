@@ -44,7 +44,7 @@ class _AddPostPageState extends State<AddPostPage> {
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
-              hintText: 'Enter your title here...',
+              hintText: 'enter_title'.tr,
               filled: false,
               contentPadding: EdgeInsets.symmetric(vertical: 8.0),
             ),
@@ -54,79 +54,11 @@ class _AddPostPageState extends State<AddPostPage> {
             IconButton(
               icon: const Icon(Icons.output),
               tooltip: 'Print Delta JSON to log',
-              onPressed: () async {
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(
-                //     content: Text(
-                //       'The JSON Delta has been printed to the console.',
-                //     ),
-                //   ),
-                // );
-                // HTTP.post("/post/new", data: {
-                //   "text": jsonEncode(_controller.document.toDelta().toJson())
-                // });
-                debugPrint(addController.post.textEditingController.text);
-                debugPrint(
-                  jsonEncode(
-                    addController.post.controller.document.toDelta().toJson(),
-                  ),
-                );
-                var delta = addController.post.controller.document.toDelta();
-                List<dio.MultipartFile> files = [];
-                for (var op in delta.toList()) {
-                  if (op.isInsert) {
-                    if (op.data is String) {
-                      print("文本: ${op.data}");
-                    } else if (op.data is Map) {
-                      Map<String, dynamic> data =
-                          op.data as Map<String, dynamic>;
-                      if (data.containsKey("image")) {
-                        String path = data["image"];
-                        // final filename = uuid.v1();
-                        dio.MultipartFile? file = await pathToMultipartFile(
-                          path,
-                          "image",
-                        );
-                        if (file != null) {
-                          files.add(file);
-                        }
-                        // data["image"] = filename;
-                      } else if (data.containsKey("video")) {
-                        String path = data["video"];
-                        dio.MultipartFile? file = await pathToMultipartFile(
-                          path,
-                          "video",
-                        );
-                        if (file != null) {
-                          files.add(file);
-                        }
-                      }
-                    }
-                  }
-                }
-                print(files);
-              },
+              onPressed: () => addController.post.create(),
             ),
           ],
         ),
       ),
-      // appBar: AppBar(
-      //   title: Text('Flutter Quill Example'),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.output),
-      //       tooltip: 'Print Delta JSON to log',
-      //       onPressed: () {
-      //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      //             content:
-      //                 Text('The JSON Delta has been printed to the console.')));
-      //         HTTP.post("/post/new", data: {
-      //           "text": jsonEncode(_controller.document.toDelta().toJson())
-      //         });
-      //       },
-      //     ),
-      //   ],
-      // ),
       body: SafeArea(
         child: Column(
           children: [
@@ -166,6 +98,12 @@ class _AddPostPageState extends State<AddPostPage> {
                     ),
                   ],
                   buttonOptions: QuillSimpleToolbarButtonOptions(
+                    fontFamily: QuillToolbarFontFamilyButtonOptions(
+                      defaultDisplayText: "font".tr,
+                    ),
+                    fontSize: QuillToolbarFontSizeButtonOptions(
+                      defaultDisplayText: "font_size".tr,
+                    ),
                     base: QuillToolbarBaseButtonOptions(
                       afterButtonPressed: () {
                         final isDesktop = {

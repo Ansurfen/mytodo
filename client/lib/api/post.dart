@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:my_todo/api/response.dart';
@@ -7,6 +9,40 @@ import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/utils/picker.dart';
+
+Future postNewRequest({
+  required String title,
+  required List<Map<String, dynamic>> text,
+  required List<String> files,
+  required List<int> indexs,
+  required List<String> types,
+}) async {
+  List<MultipartFile> multipartFiles = [];
+  for (var file in files) {
+    multipartFiles.add(
+      await MultipartFile.fromFile(
+        Uri.parse(file).toFilePath(),
+        filename: file.split("/").last,
+      ),
+    );
+  }
+  FormData formData = FormData.fromMap({
+    'title': title,
+    'text': jsonEncode(text),
+    'files': multipartFiles,
+    'indexs': indexs,
+    'types': types,
+  });
+  return await HTTP.post(
+    '/post/new',
+    data: formData,
+    options: Options(
+      headers: {'Authorization': Guard.jwt},
+      sendTimeout: const Duration(minutes: 5),
+      receiveTimeout: const Duration(minutes: 5),
+    ),
+  );
+}
 
 class GetPostRequest {
   int page;

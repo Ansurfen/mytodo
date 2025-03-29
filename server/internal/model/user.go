@@ -20,7 +20,7 @@ type User struct {
 	// Password is the user's hashed password.
 	Password string `json:"password" gorm:"column:password;type:text;"`
 
-	About string `json:"about"`
+	About string `json:"about" gorm:"column:about;type:text;"`
 }
 
 func (User) TableName() string {

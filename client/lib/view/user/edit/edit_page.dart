@@ -211,7 +211,7 @@ class _EditPageState extends State<EditPage> {
                                                 color:
                                                     Theme.of(
                                                       context,
-                                                    ).colorScheme.onPrimary,
+                                                    ).colorScheme.primary,
                                                 fontSize: 16,
                                               ),
                                             ),

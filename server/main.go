@@ -56,6 +56,17 @@ func init() {
 			log.WithError(err).Fatal("fail to create bucket")
 		}
 	}
+
+	exist, err = db.OSS().BucketExists(context.TODO(), "post")
+	if err != nil {
+		log.WithError(err).Fatal("verifying bucket")
+	}
+	if !exist {
+		err = db.OSS().MakeBucket(context.TODO(), "post", minio.MakeBucketOptions{})
+		if err != nil {
+			log.WithError(err).Fatal("fail to create bucket")
+		}
+	}
 	db.SQL().AutoMigrate(
 		model.User{},
 		model.UserRelation{},
@@ -83,6 +94,7 @@ func main() {
 	routes.InstallTopicRoute(r)
 	routes.InstallNotificationRoute(r)
 	routes.InstallTaskRoute(r)
+	routes.InstallPostRoute(r)
 	jsonData := `[
 		{ 
 			"insert": { "image": "kScreenshot2" },

@@ -7,8 +7,6 @@ type Post struct {
 	UserId uint                                   `json:"user_id"`
 	Title  string                                 `json:"title"`
 	Text   datatypes.JSONSlice[datatypes.JSONMap] `json:"text" gorm:"type:json"`
-
-	ExtractedText string `gorm:"type:text;generated always as (json_unquote(json_extract(text, '$[*].insert'))) stored"`
 }
 
 func (Post) TableName() string {

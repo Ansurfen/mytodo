@@ -1,9 +1,14 @@
 package api
 
-import "mytodo/internal/model"
+import (
+	"mytodo/internal/model"
+)
 
 type PostNewRequest struct {
-	model.Post
+	Title  string   `form:"title"`
+	Text   string   `form:"text"`
+	Indexs []int    `form:"indexs"`
+	Types  []string `form:"types"`
 }
 
 type PostEditRequest struct {

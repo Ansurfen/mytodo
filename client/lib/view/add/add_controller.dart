@@ -2,13 +2,12 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'dart:io' as io;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/api/post.dart';
 import 'package:my_todo/api/topic.dart';
-import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/view/map/select/place.dart';
 import 'package:path/path.dart' as path;
@@ -121,4 +120,37 @@ class _postController {
   final TextEditingController textEditingController = TextEditingController(
     text: "untitled".tr,
   );
+
+  Future<void> create() async {
+    var delta = controller.document.toDelta();
+    List<String> files = [];
+    List<int> indexs = [];
+    List<String> types = [];
+    int index = 0;
+    for (var op in delta.toList()) {
+      if (op.isInsert) {
+        if (op.data is String) {
+        } else if (op.data is Map) {
+          Map<String, dynamic> data = op.data as Map<String, dynamic>;
+          if (data.containsKey("image")) {
+            files.add(data["image"]);
+            indexs.add(index);
+            types.add("image");
+          } else if (data.containsKey("video")) {
+            files.add(data["video"]);
+            indexs.add(index);
+            types.add("video");
+          }
+        }
+      }
+      index++;
+    }
+    return postNewRequest(
+      title: textEditingController.text,
+      text: delta.toJson(),
+      files: files,
+      indexs: indexs,
+      types: types,
+    );
+  }
 }

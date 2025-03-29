@@ -8,12 +8,12 @@ import (
 
 type Topic struct {
 	Model
-	Creator     uint                        `json:"creator"`
-	Name        string                      `json:"name"`
-	Description string                      `json:"description"`
-	IsPublic    bool                        `json:"is_public"`
-	Tags        datatypes.JSONSlice[string] `json:"tags" gorm:"type:json"`
-	InviteCode  string                      `json:"invite_code"`
+	Creator     uint                        `json:"creator" gorm:"column:creator"`
+	Name        string                      `json:"name" gorm:"column:name"`
+	Description string                      `json:"description" gorm:"column:description"`
+	IsPublic    bool                        `json:"is_public" gorm:"is_public"`
+	Tags        datatypes.JSONSlice[string] `json:"tags" gorm:"column:tags;type:json"`
+	InviteCode  string                      `json:"invite_code" gorm:"invite_code"`
 }
 
 func (Topic) TableName() string {
@@ -63,12 +63,12 @@ const (
 
 type Task struct {
 	Model
-	TopicId     uint            `json:"topic_id"`
-	Creator     uint            `json:"creator"`
-	Name        string          `json:"name"`
-	Description string          `json:"description"`
-	StartAt     time.Time       `json:"start_at"`
-	EndAt       time.Time       `json:"end_at"`
+	TopicId     uint            `json:"topic_id" gorm:"column:topic_id"`
+	Creator     uint            `json:"creator" gorm:"column:creator"`
+	Name        string          `json:"name" gorm:"column:name"`
+	Description string          `json:"description" gorm:"column:description"`
+	StartAt     time.Time       `json:"start_at" gorm:"column:start_at"`
+	EndAt       time.Time       `json:"end_at" gorm:"end_at"`
 	Conditions  []TaskCondition `json:"conditions,omitempty" gorm:"-"`
 }
 
@@ -79,8 +79,8 @@ func (Task) TableName() string {
 type TaskCondition struct {
 	Model
 	TaskId uint              `json:"task_id"`
-	Type   TaskType          `json:"type" gorm:"type:tinyint;default:0"`
-	Param  datatypes.JSONMap `json:"param" gorm:"type:json"`
+	Type   TaskType          `json:"type" gorm:"column:type;type:tinyint;default:0"`
+	Param  datatypes.JSONMap `json:"param" gorm:"column:param;type:json"`
 }
 
 func (TaskCondition) TableName() string {
@@ -104,7 +104,7 @@ type TaskCommit struct {
 	TaskId      uint              `json:"task_id"  gorm:"column:task_id;uniqueIndex:tid_uid_cid_idx"`
 	UserId      uint              `json:"user_id" gorm:"column:user_id;uniqueIndex:tid_uid_cid_idx"`
 	ConditionId uint              `json:"cond_id" gorm:"column:cond_id;uniqueIndex:tid_uid_cid_idx"`
-	Argument    datatypes.JSONMap `json:"argument"  gorm:"type:json"`
+	Argument    datatypes.JSONMap `json:"argument"  gorm:"column:argument;type:json"`
 }
 
 func (TaskCommit) TableName() string {
