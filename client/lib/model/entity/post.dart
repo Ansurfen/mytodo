@@ -5,36 +5,56 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:my_todo/utils/json.dart';
 import 'package:my_todo/utils/time.dart';
 
-import 'image.dart';
-
 part 'post.g.dart';
 
 @JsonSerializable()
 class Post {
   @JsonKey(name: "id", required: false)
-  int? id;
+  int id;
 
-  @JsonKey(name: "uid")
+  @JsonKey(name: "user_id")
   int uid;
 
-  @JsonKey(name: "content")
-  String content;
+  @JsonKey(name: "username", defaultValue: "")
+  String username;
 
-  @JsonKey(name: "created_at", fromJson: dateTimeString2Int)
-  int createAt;
+  @JsonKey(name: "is_male", defaultValue: false)
+  bool isMale;
 
-  @JsonKey(name: "deleted_at", defaultValue: 0)
-  int deleteAt;
+  @JsonKey(name: "title")
+  String title;
 
-  @JsonKey(
-    name: "image",
-    defaultValue: null,
-    required: false,
-    fromJson: MImage.imagesFromJson,
-  )
-  List<MImage>? images;
+  @JsonKey(name: "text")
+  List text;
 
-  Post(this.uid, this.content, this.createAt, this.deleteAt, this.images);
+  @JsonKey(name: "createdAt", fromJson: string2DateTime)
+  DateTime createAt;
+
+  @JsonKey(name: "like_count", defaultValue: 0)
+  int likeCount;
+
+  @JsonKey(name: "comment_count", defaultValue: 0)
+  int commentCount;
+
+  @JsonKey(name: "visit_count", defaultValue: 0)
+  int visitCount;
+
+  @JsonKey(name: "is_favorite", defaultValue: false)
+  bool isFavorite;
+
+  Post(
+    this.id,
+    this.uid,
+    this.username,
+    this.isMale,
+    this.title,
+    this.text,
+    this.createAt,
+    this.likeCount,
+    this.commentCount,
+    this.visitCount,
+    this.isFavorite,
+  );
 
   factory Post.fromMap(JsonObject json) => _$PostFromJson(json);
 

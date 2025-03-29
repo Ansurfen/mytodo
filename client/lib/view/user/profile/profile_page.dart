@@ -7,6 +7,7 @@ import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/model/vo/post.dart';
 import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
@@ -127,17 +128,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, idx) {
                   return PostCard(
-                    model: PostDetailModel(
-                      0,
-                      0,
+                    model: Post(
+                      1,
+                      1,
                       Mock.username(),
-                      false,
-                      DateTime.now(),
+                      Mock.boolean(),
                       "",
                       [],
-                      0,
-                      0,
-                      false,
+                      Mock.dateTime(),
+                      Mock.number(),
+                      Mock.number(),
+                      Mock.number(),
+                      Mock.boolean(),
                     ),
                     more: () {},
                   );

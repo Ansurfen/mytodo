@@ -7,20 +7,31 @@ part of 'post.dart';
 // **************************************************************************
 
 Post _$PostFromJson(Map<String, dynamic> json) => Post(
-  (json['uid'] as num).toInt(),
-  json['content'] as String,
-  dateTimeString2Int(json['created_at'] as String),
-  (json['deleted_at'] as num?)?.toInt() ?? 0,
-  MImage.imagesFromJson(json['image'] as List?),
-)..id = (json['id'] as num?)?.toInt();
+  (json['id'] as num).toInt(),
+  (json['user_id'] as num).toInt(),
+  json['username'] as String? ?? '',
+  json['is_male'] as bool? ?? false,
+  json['title'] as String,
+  json['text'] as List<dynamic>,
+  string2DateTime(json['createdAt'] as String),
+  (json['like_count'] as num?)?.toInt() ?? 0,
+  (json['comment_count'] as num?)?.toInt() ?? 0,
+  (json['visit_count'] as num?)?.toInt() ?? 0,
+  json['is_favorite'] as bool? ?? false,
+);
 
 Map<String, dynamic> _$PostToJson(Post instance) => <String, dynamic>{
   'id': instance.id,
-  'uid': instance.uid,
-  'content': instance.content,
-  'created_at': instance.createAt,
-  'deleted_at': instance.deleteAt,
-  'image': instance.images,
+  'user_id': instance.uid,
+  'username': instance.username,
+  'is_male': instance.isMale,
+  'title': instance.title,
+  'text': instance.text,
+  'createdAt': instance.createAt.toIso8601String(),
+  'like_count': instance.likeCount,
+  'comment_count': instance.commentCount,
+  'visit_count': instance.visitCount,
+  'is_favorite': instance.isFavorite,
 };
 
 PostComment _$PostCommentFromJson(Map<String, dynamic> json) => PostComment(

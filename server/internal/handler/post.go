@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
@@ -181,6 +182,15 @@ func PostDel(ctx *gin.Context) {
 func PostGet(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	if post, ok := hasPermissionToReadPost(ctx, uint(id)); ok {
+		u, ok := getUser(ctx)
+		if !ok {
+			return
+		}
+		db.SQL().Table("post_visit").Create(&model.PostVisit{
+			UserId: u.ID,
+			PostId: post.ID,
+		})
+
 		var comments []model.PostComment
 		err := db.SQL().Table("post_comment").Where("post_id = ?", post.ID).Find(&comments).Error
 		if err != nil {
@@ -203,6 +213,42 @@ func PostGet(ctx *gin.Context) {
 			"like_count": likeCount,
 		})
 	}
+}
+
+func PostMe(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	offset := (page - 1) * limit
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	createdAtStr := ctx.DefaultQuery("created_at", "2000-01-01T00:00:00Z")
+	createdAt, err := time.Parse(time.RFC3339, createdAtStr)
+	if err != nil {
+		ctx.JSON(400, gin.H{"error": "invalid created_at format"})
+		return
+	}
+
+	var posts []postSnapshot
+	err = db.SQL().Table("post").
+		Select("post.*, "+
+			"COALESCE((SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id), 0) AS like_count, "+
+			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count, "+
+			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count").
+		Where("post.user_id = ? AND post.created_at >= ?", u.ID, createdAt).
+		Limit(limit).
+		Offset(offset).
+		Find(&posts).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg":  "",
+		"data": posts,
+	})
 }
 
 func PostSnapshot(ctx *gin.Context) {
@@ -235,7 +281,8 @@ func PostSnapshot(ctx *gin.Context) {
 	err = db.SQL().Table("post").
 		Select("post.*, "+
 			"COALESCE((SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id), 0) AS like_count, "+
-			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count").
+			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count"+
+			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count").
 		Where("post.user_id IN ?", friendIds).
 		Limit(limit).
 		Offset(offset).
@@ -245,7 +292,7 @@ func PostSnapshot(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"msg":  "",
 		"data": posts,
 	})
@@ -255,6 +302,7 @@ type postSnapshot struct {
 	model.Post
 	LikeCount    int64 `json:"like_count"`
 	CommentCount int64 `json:"comment_count"`
+	VisitCount   int64 `json:"visit_count"`
 }
 
 func hasPermissionToReadPost(ctx *gin.Context, postId uint) (post model.Post, ok bool) {

@@ -10,7 +10,7 @@ GetPostDto _$GetPostDtoFromJson(Map<String, dynamic> json) => GetPostDto(
   (json['id'] as num?)?.toInt() ?? 0,
   (json['uid'] as num?)?.toInt() ?? 0,
   json['username'] as String? ?? '',
-  json['isMale'] as bool? ?? true,
+  json['isMale'] as bool? ?? false,
   string2DateTime(json['created_at'] as String),
   json['content'] as String? ?? '',
   json['image'] == null ? [] : MImage.imagesFromJson(json['image'] as List?),

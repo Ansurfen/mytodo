@@ -23,8 +23,7 @@ class PostDao {
     List<Post> communities = [];
     Rows rows = await DBProvider.db.query(tableName);
     for (Row row in rows) {
-      communities.add(Post(row["id"] as int, row["content"] as String,
-          row["created_at"] as int, row["deleted_at"] as int, []));
+
     }
     return communities;
   }

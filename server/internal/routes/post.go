@@ -14,6 +14,7 @@ func InstallPostRoute(e *gin.Engine) {
 		postRouter.POST("/new", middleware.Auth, handler.PostNew)
 		postRouter.POST("/edit", middleware.Auth, handler.PostEdit)
 		postRouter.POST("/del", middleware.Auth, handler.PostDel)
+		postRouter.GET("/me", middleware.Auth, handler.PostMe)
 		postRouter.GET("/get/:id", middleware.Auth, handler.PostGet)
 		postRouter.GET("/snapshot", middleware.Auth)
 		postRouter.POST("/like", middleware.Auth, handler.PostLike)

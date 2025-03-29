@@ -44,6 +44,17 @@ Future postNewRequest({
   );
 }
 
+Future postMeRequest({
+  int page = 1,
+  int limit = 10,
+  String createdAt = "2000-01-01T00:00:00Z",
+}) async {
+  return (await HTTP.get(
+    '/post/me?page=$page&limit=$limit&created_at=$createdAt',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data;
+}
+
 class GetPostRequest {
   int page;
   int count;
@@ -66,25 +77,25 @@ class GetPostResponse extends BaseResponse {
 
 Future<GetPostResponse> getPost(GetPostRequest req) async {
   if (Guard.isOffline()) {
-    await PostDao.findMany();
-    return GetPostResponse(
-      (await PostDao.findMany())
-          .map(
-            (e) => GetPostDto(
-              e.id ?? 0,
-              e.uid,
-              "",
-              true,
-              DateTime.fromMicrosecondsSinceEpoch(e.createAt),
-              e.content,
-              [],
-              0,
-              0,
-              false,
-            ),
-          )
-          .toList(),
-    );
+    // await PostDao.findMany();
+    // return GetPostResponse(
+    //   (await PostDao.findMany())
+    //       .map(
+    //         (e) => GetPostDto(
+    //           e.id ?? 0,
+    //           e.uid,
+    //           "",
+    //           true,
+    //           DateTime.fromMicrosecondsSinceEpoch(e.createAt),
+    //           e.title,
+    //           [],
+    //           0,
+    //           0,
+    //           false,
+    //         ),
+    //       )
+    //       .toList(),
+    // );
   }
   return GetPostResponse.fromResponse(
     await HTTP.get(
@@ -125,29 +136,6 @@ class CreatePostResponse extends BaseResponse {
   CreatePostResponse() : super({});
 
   CreatePostResponse.fromResponse(Response res) : super(res.data);
-}
-
-Future<CreatePostResponse> createPost(CreatePostRequest req) async {
-  // if (Guard.isOffline()) {
-  //   int now = DateTime.now().microsecondsSinceEpoch;
-  //   Post c = Post(Guard.user, req.content, now, 0);
-  //   await PostDao.create(c);
-  //   Guard.eventBus.fire(c);
-  //   return CreatePostResponse();
-  // }
-  if (Guard.isOffline()) {
-    int now = DateTime.now().microsecondsSinceEpoch;
-    PostDao.create(Post(Guard.user, req.content, now, 0, []));
-    return CreatePostResponse();
-  }
-
-  return CreatePostResponse.fromResponse(
-    await HTTP.post(
-      "/post/add",
-      data: await req.toFormData(),
-      options: Options(headers: {"x-token": Guard.jwt}),
-    ),
-  );
 }
 
 class GetPostCommentRequest {

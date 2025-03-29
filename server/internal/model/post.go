@@ -23,6 +23,16 @@ func (PostLike) TableName() string {
 	return "post_like"
 }
 
+type PostVisit struct {
+	Model
+	PostId uint `json:"post_id"`
+	UserId uint `json:"user_id"`
+}
+
+func (PostVisit) TableName() string {
+	return "post_visit"
+}
+
 type PostComment struct {
 	Model
 	UserId  uint   `json:"user_id"`

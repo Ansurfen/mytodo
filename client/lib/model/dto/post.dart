@@ -18,7 +18,7 @@ class GetPostDto {
   @JsonKey(name: "username", defaultValue: "")
   String username;
 
-  @JsonKey(name: "isMale", defaultValue: true)
+  @JsonKey(name: "isMale", defaultValue: false)
   bool isMale;
 
   @JsonKey(name: "created_at", fromJson: string2DateTime)

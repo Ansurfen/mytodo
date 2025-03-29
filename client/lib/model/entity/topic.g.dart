@@ -10,13 +10,15 @@ Topic _$TopicFromJson(Map<String, dynamic> json) => Topic(
   (json['creator'] as num).toInt(),
   json['name'] as String,
   json['description'] as String,
+  tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
 )..id = (json['id'] as num?)?.toInt();
 
 Map<String, dynamic> _$TopicToJson(Topic instance) => <String, dynamic>{
   'id': instance.id,
-  'user': instance.creator,
+  'creator': instance.creator,
   'name': instance.name,
   'description': instance.description,
+  'tags': instance.tags,
 };
 
 TopicMember _$TopicMemberFromJson(Map<String, dynamic> json) =>

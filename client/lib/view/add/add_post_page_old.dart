@@ -149,8 +149,8 @@ class _AddPostPageState extends State<AddPostPage> {
             text: 'save_draft'.tr,
             onTap: () async {
               if (content.isNotEmpty) {
-                await createPost(
-                    CreatePostRequest(Guard.user, content, pickedImages));
+                // await createPost(
+                //     CreatePostRequest(Guard.user, content, pickedImages));
                 Get.back();
               }
             }),
@@ -158,8 +158,8 @@ class _AddPostPageState extends State<AddPostPage> {
             text: 'post'.tr,
             onTap: () async {
               if (content.isNotEmpty) {
-                await createPost(
-                    CreatePostRequest(Guard.user, content, pickedImages));
+                // await createPost(
+                //     CreatePostRequest(Guard.user, content, pickedImages));
                 Get.back();
               }
             })

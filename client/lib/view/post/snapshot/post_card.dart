@@ -1,25 +1,26 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
-import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/post/component/profile.dart';
 import 'package:my_todo/view/post/detail/post_detail_controller.dart';
-import 'package:my_todo/model/vo/post.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:get/get.dart';
-import 'images_shower.dart';
 
 class PostCard extends StatefulWidget {
-  final PostDetailModel model;
+  final Post model;
   final VoidCallback more;
 
   const PostCard({super.key, required this.model, required this.more});
@@ -91,12 +92,8 @@ class _PostCardState extends State<PostCard> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.model.content),
+                Text(encodeText(widget.model.text)),
                 const SizedBox(height: 10),
-                CareTemplateImageWidget(
-                  imageList: widget.model.imageUri,
-                  size: screenSize,
-                ),
               ],
             ),
           ),
@@ -116,7 +113,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       SizedBox(width: 5),
                       Text(
-                        "浏览${Mock.number(max: 1000)}次",
+                        "浏览${widget.model.visitCount}次",
                         style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
@@ -148,7 +145,7 @@ class _PostCardState extends State<PostCard> {
                             ).then((res) {
                               if (res.success) {
                                 setState(() {
-                                  widget.model.favoriteCnt--;
+                                  widget.model.likeCount--;
                                   widget.model.isFavorite = false;
                                 });
                               }
@@ -159,7 +156,7 @@ class _PostCardState extends State<PostCard> {
                             ).then((res) {
                               if (res.success) {
                                 setState(() {
-                                  widget.model.favoriteCnt++;
+                                  widget.model.likeCount++;
                                   widget.model.isFavorite = true;
                                 });
                               }
@@ -167,7 +164,7 @@ class _PostCardState extends State<PostCard> {
                           }
                         },
                       ),
-                      Text("${widget.model.favoriteCnt}"),
+                      Text("${widget.model.likeCount}"),
                     ],
                   ),
                   Row(
@@ -181,7 +178,7 @@ class _PostCardState extends State<PostCard> {
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
-                      Text("${widget.model.commentCnt}"),
+                      Text("${widget.model.commentCount}"),
                     ],
                   ),
                   Row(
@@ -294,5 +291,26 @@ class _PostCardState extends State<PostCard> {
         ],
       ),
     );
+  }
+
+  String encodeText(List text) {
+    String ret = "";
+    var delta = Document.fromJson(text).toDelta();
+    for (var op in delta.toList()) {
+      if (op.isInsert) {
+        if (op.data is String) {
+          ret += (op.data as String).replaceAll(r'\n', '\n');
+        } else if (op.data is Map) {
+          Map<String, dynamic> data = op.data as Map<String, dynamic>;
+          if (data.containsKey("image")) {
+            ret += "[IMAGE]";
+          } else if (data.containsKey("video")) {
+            ret += "[VIDEO]";
+          }
+        }
+      }
+    }
+
+    return ret;
   }
 }

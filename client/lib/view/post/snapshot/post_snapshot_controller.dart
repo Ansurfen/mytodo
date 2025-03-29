@@ -18,7 +18,7 @@ import 'package:my_todo/utils/pagination.dart';
 
 class PostSnapshotController extends GetxController
     with GetTickerProviderStateMixin {
-  Rx<List<GetPostDto>> data = Rx([]);
+  Rx<List<Post>> data = Rx([]);
   late StreamSubscription<Post> _uploadPost;
   late TabController tabController;
   Pagination<GetPostDto> pagination = Pagination(index: 1);
@@ -27,53 +27,19 @@ class PostSnapshotController extends GetxController
   void onInit() {
     super.onInit();
     tabController = TabController(length: 2, vsync: this, initialIndex: 1);
+    tabController.addListener(() async {
+      if (tabController.index == 0 && tabController.indexIsChanging) {
+        var res = await postMeRequest();
+        for (var e in (res["data"] as List)) {
+          data.value.add(Post.fromMap(e)..username = Guard.userName());
+        }
+        data.refresh();
+      }
+    });
     if (Guard.isDevMode()) {
-      data.value.addAll([
-        GetPostDto(
-          1,
-          1,
-          Mock.username(),
-          true,
-          DateTime.now(),
-          Mock.text(),
-          [],
-          53,
-          10,
-          true,
-        ),
-        GetPostDto(
-          1,
-          1,
-          Mock.username(),
-          true,
-          DateTime.now(),
-          Mock.text(),
-          [],
-          53,
-          10,
-          true,
-        ),
-      ]);
     } else {
       Future.delayed(Duration.zero, fetch);
-      _uploadPost = PostHook.subscribeSnapshot(
-        onData: (post) {
-          data.value.add(
-            PostDetailModel(
-              0,
-              0,
-              Guard.userName(),
-              true,
-              DateTime.timestamp(),
-              post.content,
-              [],
-              0,
-              0,
-              false,
-            ),
-          );
-        },
-      );
+      _uploadPost = PostHook.subscribeSnapshot(onData: (post) {});
     }
   }
 

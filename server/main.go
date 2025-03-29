@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"mytodo/internal/conf"
 	"mytodo/internal/db"
@@ -13,7 +12,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
-	"gorm.io/datatypes"
 )
 
 var cfg conf.TodoConf
@@ -83,7 +81,11 @@ func init() {
 		model.Task{},
 		model.TaskCommit{},
 		model.TaskCondition{},
-		model.Post{})
+		model.Post{},
+		model.PostLike{},
+		model.PostVisit{},
+		model.PostComment{},
+		model.PostCommentLike{})
 }
 
 func main() {
@@ -95,33 +97,7 @@ func main() {
 	routes.InstallNotificationRoute(r)
 	routes.InstallTaskRoute(r)
 	routes.InstallPostRoute(r)
-	jsonData := `[
-		{ 
-			"insert": { "image": "kScreenshot2" },
-			"attributes": { "width": "100", "height": "100", "style": "width:500px; height:350px;" } 
-		},
-		{ "insert": "Flutter Quill" },
-		{ "insert": { "video": "https://www.youtube.com/watch?v=V4hgdKhIqtc" } },
-		{ "insert": "Rich text editor for Flutter" },
-		{ "insert": "Quill component for Flutter" },
-		{ "insert": { "link": "https://bulletjournal.us/home/index.html" } }
-	]`
 
-	var data []datatypes.JSONMap
-	if err := json.Unmarshal([]byte(jsonData), &data); err != nil {
-		panic(err)
-	}
-	db.SQL().Table("post").Create(&model.Post{
-		Title: "t1",
-		Text:  datatypes.JSONSlice[datatypes.JSONMap](data),
-	})
-	db.SQL().Table("post").Create(&model.Post{
-		Title: "t2",
-		Text:  datatypes.JSONSlice[datatypes.JSONMap](data),
-	})
-	var results []model.Post
-	db.SQL().Table("post").Where("MATCH(extracted_text) AGAINST(? IN NATURAL LANGUAGE MODE)", "Flutter").Find(&results)
-	fmt.Println(results)
 	r.POST("/upload", func(ctx *gin.Context) {
 		file, err := ctx.FormFile("file")
 		if err != nil {

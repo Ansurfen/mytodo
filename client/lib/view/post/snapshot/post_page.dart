@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -87,6 +86,7 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
   Rx<DateTime> startDate = DateTime.now().obs;
   Widget _me() {
     startDateController.text = DateFormat('MM/dd/yyyy').format(DateTime.now());
+
     return Column(
       children: [
         Padding(
@@ -291,9 +291,7 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
                         more: () {
                           controller.handlePost(context);
                         },
-                        model: PostDetailModel.fromDto(
-                          controller.data.value[index],
-                        ),
+                        model: controller.data.value[index],
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
@@ -305,6 +303,7 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
             ),
           ),
         ),
+        Container(height: 60),
       ],
     );
   }
@@ -362,9 +361,7 @@ class _PostSnapshotPageState extends State<PostSnapshotPage>
                         more: () {
                           controller.handlePost(context);
                         },
-                        model: PostDetailModel.fromDto(
-                          controller.data.value[index],
-                        ),
+                        model: controller.data.value[index],
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
