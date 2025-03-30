@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:my_todo/api/response.dart';
-import 'package:my_todo/model/dao/post.dart';
 import 'package:my_todo/model/dto/post.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/utils/guard.dart';
@@ -51,6 +50,21 @@ Future postMeRequest({
 }) async {
   return (await HTTP.get(
     '/post/me?page=$page&limit=$limit&created_at=$createdAt',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data;
+}
+
+Future<bool> postLikeRequest({required int postId}) async {
+  return (await HTTP.post(
+    '/post/like',
+    data: {"post_id": postId},
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
+}
+
+Future postGetRequest({required int postId}) async {
+  return (await HTTP.get(
+    '/post/get/$postId',
     options: Options(headers: {'Authorization': Guard.jwt}),
   )).data;
 }

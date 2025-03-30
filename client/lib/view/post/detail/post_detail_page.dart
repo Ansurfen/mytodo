@@ -1,8 +1,6 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
-import 'dart:convert';
-
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +17,6 @@ import 'package:my_todo/component/scaffold.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/post.dart';
-import 'package:my_todo/quill_delta_sample.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/image.dart';
@@ -42,7 +39,6 @@ class PostDetailPage extends StatefulWidget {
 
 class _PostDetailPageState extends State<PostDetailPage> {
   PostDetailController controller = Get.find<PostDetailController>();
-  final QuillController _controller = QuillController.basic();
 
   int replaySubID = 0;
   Widget todoDivider(BuildContext context) {
@@ -60,11 +56,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
       TextEditingController(),
       TextEditingController(),
     );
-    Future.delayed(Duration.zero, controller.fetchAll);
-    _controller.readOnly = true;
-    _controller.document = Document.fromJson(
-      jsonDecode(jsonEncode(kQuillDefaultSample)),
-    );
+    // Future.delayed(Duration.zero, controller.fetchAll);
   }
 
   @override
@@ -235,7 +227,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                // controller.data.username,
                 Mock.username(),
                 style: const TextStyle(
                   fontSize: 16,
@@ -268,7 +259,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
     return QuillEditor(
       focusNode: FocusNode(),
       scrollController: ScrollController(),
-      controller: _controller,
+      controller: controller.quillController,
       config: QuillEditorConfig(
         scrollable: false,
         placeholder: 'Start writing your notes...',
@@ -378,9 +369,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                 replyBy: Mock.username(),
                                 createdAt: DateTime.now(),
                                 layer: 1,
-                                replyCallback: () {
-                                  
-                                },
+                                replyCallback: () {},
                               ),
                             );
                           },

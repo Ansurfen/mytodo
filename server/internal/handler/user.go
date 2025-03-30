@@ -416,7 +416,7 @@ func UserProfile(ctx *gin.Context) {
 	_, err = io.Copy(ctx.Writer, obj)
 	if err != nil {
 		log.WithError(err).Error("writing image to response")
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while sending profile image"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Error while sending profile image"})
 		return
 	}
 }

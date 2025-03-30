@@ -246,4 +246,7 @@ Map<String, String> get enUS => {
   "font_size": "Font size",
 
   "save": "Save",
+
+  "post_image": "[Image]",
+  "post_video": "[Video]",
 };

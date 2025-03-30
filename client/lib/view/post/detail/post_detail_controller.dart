@@ -4,8 +4,10 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
+import 'package:my_todo/config.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/image.dart';
 import 'package:my_todo/model/entity/post.dart';
@@ -22,11 +24,34 @@ class PostDetailController extends GetxController {
   PostDetailModel data = PostDetailModel.empty();
   Rx<Map<int, PostComment>> comments = Rx({});
   bool showReply = false;
+  final QuillController quillController = QuillController.basic();
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
     id = int.parse(Get.parameters["id"]!);
+    quillController.readOnly = true;
+    var res = (await postGetRequest(postId: id)) as Map<String, dynamic>;
+
+    quillController.document = Document.fromJson(
+      (res["post"]["text"] as List).map((v) {
+        if (v is Map<String, dynamic> && v.containsKey("insert")) {
+          var insert = v["insert"];
+
+          if (insert is Map<String, dynamic>) {
+            if (insert.containsKey("image")) {
+              insert["image"] =
+                  "${TodoConfig.baseUri}/post/src/${insert["image"]}";
+            } else if (insert.containsKey("video")) {
+              insert["video"] =
+                  "${TodoConfig.baseUri}/post/src/${insert["video"]}";
+            }
+          }
+        }
+        return v;
+      }).toList(),
+    );
+
     comments.value[1] = PostComment(
       username: Mock.username(),
       createdAt: DateTime.now(),

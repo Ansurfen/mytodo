@@ -15,8 +15,8 @@ func (Post) TableName() string {
 
 type PostLike struct {
 	Model
-	PostId uint `json:"post_id" gorm:"column:post_id;uniqueIndex:pid_uid_idx"`
-	UserId uint `json:"user_id" gorm:"column:user_id;uniqueIndex:pid_uid_idx"`
+	PostId uint `json:"post_id" gorm:"column:post_id;"`
+	UserId uint `json:"user_id" gorm:"column:user_id;"`
 }
 
 func (PostLike) TableName() string {

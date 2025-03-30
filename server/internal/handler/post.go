@@ -235,7 +235,8 @@ func PostMe(ctx *gin.Context) {
 		Select("post.*, "+
 			"COALESCE((SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id), 0) AS like_count, "+
 			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count, "+
-			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count").
+			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count, "+
+			"EXISTS(SELECT 1 FROM post_like WHERE post_like.post_id = post.id AND post_like.user_id = ? AND post_like.deleted_at IS NULL) AS is_favorite", u.ID).
 		Where("post.user_id = ? AND post.created_at >= ?", u.ID, createdAt).
 		Limit(limit).
 		Offset(offset).
@@ -249,6 +250,30 @@ func PostMe(ctx *gin.Context) {
 		"msg":  "",
 		"data": posts,
 	})
+}
+
+func PostSource(ctx *gin.Context) {
+	file := ctx.Param("file")
+
+	obj, err := db.OSS().GetObject(context.TODO(), "post", file, minio.GetObjectOptions{})
+	if err != nil {
+		log.WithError(err).Debug("")
+	}
+	defer obj.Close()
+
+	if filepath.Base(file) == ".mp4" {
+		ctx.Header("Content-Type", "video/mp4")
+	} else {
+		ctx.Header("Content-Type", "image/png")
+	}
+	ctx.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s", file))
+
+	_, err = io.Copy(ctx.Writer, obj)
+	if err != nil {
+		log.WithError(err).Error("writing source to response")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Error while sending profile image"})
+		return
+	}
 }
 
 func PostSnapshot(ctx *gin.Context) {
@@ -281,7 +306,7 @@ func PostSnapshot(ctx *gin.Context) {
 	err = db.SQL().Table("post").
 		Select("post.*, "+
 			"COALESCE((SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id), 0) AS like_count, "+
-			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count"+
+			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count, "+
 			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count").
 		Where("post.user_id IN ?", friendIds).
 		Limit(limit).
@@ -303,6 +328,7 @@ type postSnapshot struct {
 	LikeCount    int64 `json:"like_count"`
 	CommentCount int64 `json:"comment_count"`
 	VisitCount   int64 `json:"visit_count"`
+	IsFavorite   bool  `json:"is_favorite"`
 }
 
 func hasPermissionToReadPost(ctx *gin.Context, postId uint) (post model.Post, ok bool) {
@@ -351,7 +377,7 @@ func PostLike(ctx *gin.Context) {
 	// Get the current user from the context
 	u, ok := getUser(ctx)
 	if !ok {
-		ctx.JSON(403, gin.H{"error": "User not authenticated"})
+		ctx.JSON(403, gin.H{"msg": "User not authenticated"})
 		return
 	}
 
@@ -364,17 +390,18 @@ func PostLike(ctx *gin.Context) {
 	if err == nil {
 		// If an existing like is found, the user has already liked this post
 		// ctx.JSON(400, gin.H{"error": "You have already liked this post"})
-		err = db.SQL().Delete(&existingLike).Error
+		err = db.SQL().Table("post_like").Delete(&existingLike).Error
 		if err != nil {
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": "successfully delete like", "data": false})
 		return
 	} else if err != gorm.ErrRecordNotFound {
 		// If an error other than "record not found" occurred
 		log.WithError(err).Error("Error checking for existing like")
-		ctx.JSON(500, gin.H{"error": "Failed to check like status"})
+		ctx.JSON(500, gin.H{"msg": "Failed to check like status"})
 		return
 	}
 
@@ -387,12 +414,11 @@ func PostLike(ctx *gin.Context) {
 	err = db.SQL().Table("post_like").Create(&newLike).Error
 	if err != nil {
 		log.WithError(err).Error("Failed to create like")
-		ctx.JSON(500, gin.H{"error": "Failed to like the post"})
+		ctx.JSON(500, gin.H{"msg": "Failed to like the post"})
 		return
 	}
 
-	// Return success response
-	ctx.JSON(200, gin.H{"message": "Post liked successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Post liked successfully", "data": true})
 }
 
 func PostCommentGet(ctx *gin.Context) {

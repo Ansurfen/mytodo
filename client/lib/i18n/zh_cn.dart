@@ -237,4 +237,7 @@ Map<String, String> get zhCN => {
   "font_size": "字体大小",
 
   "save": "保存",
+
+  "post_image": "[图片]",
+  "post_video": "[视频]",
 };

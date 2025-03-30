@@ -1,8 +1,6 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -12,7 +10,6 @@ import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/router/provider.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/post/component/profile.dart';
 import 'package:my_todo/view/post/detail/post_detail_controller.dart';
@@ -32,7 +29,7 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
+    String text = encodeText(widget.model.text);
     return Padding(
       padding: const EdgeInsets.only(top: 5, left: 15, right: 15),
       child: Column(
@@ -91,10 +88,7 @@ class _PostCardState extends State<PostCard> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(encodeText(widget.model.text)),
-                const SizedBox(height: 10),
-              ],
+              children: [Text(text), const SizedBox(height: 10)],
             ),
           ),
           const SizedBox(height: 15),
@@ -139,29 +133,17 @@ class _PostCardState extends State<PostCard> {
                         context,
                         selected: widget.model.isFavorite,
                         onChange: (v) {
-                          if (widget.model.isFavorite) {
-                            postUnFavorite(
-                              PostUnFavoriteRequest(id: widget.model.id),
-                            ).then((res) {
-                              if (res.success) {
-                                setState(() {
-                                  widget.model.likeCount--;
-                                  widget.model.isFavorite = false;
-                                });
+                          postLikeRequest(postId: widget.model.id).then((v) {
+                            setState(() {
+                              if (v) {
+                                widget.model.likeCount++;
+                                widget.model.isFavorite = true;
+                              } else {
+                                widget.model.likeCount--;
+                                widget.model.isFavorite = false;
                               }
                             });
-                          } else {
-                            postFavorite(
-                              PostFavoriteRequest(id: widget.model.id),
-                            ).then((res) {
-                              if (res.success) {
-                                setState(() {
-                                  widget.model.likeCount++;
-                                  widget.model.isFavorite = true;
-                                });
-                              }
-                            });
-                          }
+                          });
                         },
                       ),
                       Text("${widget.model.likeCount}"),
@@ -184,14 +166,7 @@ class _PostCardState extends State<PostCard> {
                   Row(
                     children: [
                       IconButton(
-                        onPressed: () {
-                          TodoShare.shareUri(
-                            context,
-                            Uri.parse(
-                              "${Guard.server}/post?id=${widget.model.id}",
-                            ),
-                          );
-                        },
+                        onPressed: () => TodoShare.share(text),
                         icon: Icon(
                           FontAwesomeIcons.share,
                           color: Theme.of(context).colorScheme.onPrimary,
@@ -303,9 +278,9 @@ class _PostCardState extends State<PostCard> {
         } else if (op.data is Map) {
           Map<String, dynamic> data = op.data as Map<String, dynamic>;
           if (data.containsKey("image")) {
-            ret += "[IMAGE]";
+            ret += "post_image".tr;
           } else if (data.containsKey("video")) {
-            ret += "[VIDEO]";
+            ret += "post_video".tr;
           }
         }
       }

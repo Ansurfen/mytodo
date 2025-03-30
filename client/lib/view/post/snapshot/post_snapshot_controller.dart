@@ -8,10 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/hook/post.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/post.dart';
 import 'package:my_todo/model/entity/post.dart';
-import 'package:my_todo/model/vo/post.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
@@ -50,16 +48,12 @@ class PostSnapshotController extends GetxController
   }
 
   Future fetch() async {
-    return getPost(GetPostRequest(pagination.index(), pagination.getLimit()))
-        .then((res) {
-          // data.value = res.data;
-          // data.refresh();
-          pagination.setData(res.data);
-          pagination.refresh();
-        })
-        .catchError((err) {
-          showError(err);
-        });
+    data.value.clear();
+    var res = await postMeRequest();
+    for (var e in (res["data"] as List)) {
+      data.value.add(Post.fromMap(e)..username = Guard.userName());
+    }
+    data.refresh();
   }
 
   void handlePost(BuildContext context) {
