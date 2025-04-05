@@ -9,9 +9,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/topic.dart';
+import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/router/topic.dart';
-import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/clipboard.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/topic/snapshot/topic_page.dart';
@@ -103,16 +103,9 @@ class _TopicItemState extends State<TopicItem> {
 }
 
 class TopicCard extends StatefulWidget {
-  const TopicCard({
-    super.key,
-    required this.title,
-    required this.msg,
-    required this.model,
-  });
+  const TopicCard({super.key, required this.model});
 
-  final GetTopicDto model;
-  final String title;
-  final String msg;
+  final Topic model;
 
   @override
   State<TopicCard> createState() => _TopicCardState();
@@ -152,7 +145,7 @@ class _TopicCardState extends State<TopicCard>
         // ),
       ),
       title: Text(
-        widget.title,
+        widget.model.name,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 16,
@@ -162,7 +155,7 @@ class _TopicCardState extends State<TopicCard>
       subtitle: Column(
         children: [
           Text(
-            widget.msg,
+            widget.model.description,
             maxLines: 3,
             style: TextStyle(
               color: isLight ? Colors.black26 : Colors.grey,
@@ -171,13 +164,7 @@ class _TopicCardState extends State<TopicCard>
             ),
           ),
           Container(height: 5),
-          tags(
-            context,
-            List.generate(Mock.number(max: 5), (idx) {
-              return Mock.username();
-            }),
-            limit: 22,
-          ),
+          tags(context, widget.model.tags ?? [], limit: 22),
         ],
       ),
       children: [
@@ -221,8 +208,7 @@ class _TopicCardState extends State<TopicCard>
                 ).then(
                   (value) => Get.snackbar(
                     "clipboard".tr,
-                    "Topic's invite code is copied on clipboard.",
-                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    "topic_invite_code_copied".tr,
                   ),
                 );
                 await TodoClipboard.set(widget.model.inviteCode);

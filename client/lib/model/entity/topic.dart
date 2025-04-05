@@ -8,8 +8,11 @@ part 'topic.g.dart';
 
 @JsonSerializable()
 class Topic {
+  @JsonKey(name: "icon")
+  String icon;
+
   @JsonKey(name: "id", required: false)
-  int? id;
+  int id;
 
   @JsonKey(name: "creator")
   int creator;
@@ -20,13 +23,24 @@ class Topic {
   @JsonKey(name: "description")
   String description;
 
-  @JsonKey(name: "tags")
+  @JsonKey(name: "tags", defaultValue: [])
   List<String>? tags;
 
-  // @JsonKey(name: "createdAt")
-  // DateTime 
+  @JsonKey(name: "invite_code")
+  String inviteCode;
 
-  Topic(this.creator, this.name, this.description, {this.tags});
+  // @JsonKey(name: "createdAt")
+  // DateTime
+
+  Topic(
+    this.icon,
+    this.id,
+    this.creator,
+    this.name,
+    this.description,
+    this.tags,
+    this.inviteCode,
+  );
 
   factory Topic.fromJson(JsonObject json) => _$TopicFromJson(json);
 

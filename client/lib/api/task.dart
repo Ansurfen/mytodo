@@ -15,66 +15,36 @@ import 'package:my_todo/utils/picker.dart';
 
 part 'task.g.dart';
 
-@JsonSerializable()
-class CreateTaskRequest {
-  @JsonKey(name: "topic")
-  int topic;
-
-  @JsonKey(name: "name")
-  String name;
-
-  @JsonKey(name: "desc")
-  String desc;
-
-  // String cron;
-
-  @JsonKey(name: "departure")
-  DateTime departure;
-
-  @JsonKey(name: "arrival")
-  DateTime arrival;
-
-  @JsonKey(name: "conds", fromJson: TaskCondition.conditionsFromJson)
-  List<TaskCondition> conds;
-
-  CreateTaskRequest(
-    this.topic,
-    this.name,
-    this.desc,
-    this.departure,
-    this.arrival,
-    this.conds,
+Future taskNewRequest({
+  required int id,
+  required String icon,
+  required String name,
+  required String description,
+  required DateTime startAt,
+  required DateTime endAt,
+  required List<TaskCondition> conditions,
+}) async {
+  return HTTP.post(
+    '/task/new',
+    data: {
+      "topic_id": id,
+      "icon": icon,
+      "name": name,
+      "description": description,
+      "start_at": startAt.toIso8601String(),
+      "end_at": endAt.toIso8601String(),
+      "conditions": conditions,
+    },
+    options: Options(headers: {"Authorization": Guard.jwt}),
   );
-
-  Map<String, Object?> toJson() => _$CreateTaskRequestToJson(this);
 }
 
-class CreateTaskResponse extends BaseResponse {
-  CreateTaskResponse() : super({});
-
-  CreateTaskResponse.fromResponse(Response res) : super(res.data);
-}
-
-Future<CreateTaskResponse> createTask(CreateTaskRequest req) async {
-  if (Guard.isOffline()) {
-    TaskDao.create(
-      Task(
-        req.name,
-        req.desc,
-        DateTime.now().microsecondsSinceEpoch,
-        DateTime.now().microsecondsSinceEpoch,
-        user: Guard.user,
-      ),
-    );
-    return CreateTaskResponse();
-  }
-  return CreateTaskResponse.fromResponse(
-    await HTTP.post(
-      "/task/add",
-      data: jsonEncode(req),
-      options: Options(headers: {"x-token": Guard.jwt}),
-    ),
-  );
+Future<List> topicGetRequest({required int page, required int limit}) async {
+  return (await HTTP.get(
+        '/task/get',
+        options: Options(headers: {"Authorization": Guard.jwt}),
+      )).data["data"]
+      as List;
 }
 
 class GetTaskRequest {
@@ -100,33 +70,6 @@ class GetTaskResponse extends BaseResponse {
   String toString() {
     return "${super.toString()}, ${tasks.toString()}";
   }
-}
-
-Future<GetTaskResponse> getTask(GetTaskRequest req) async {
-  if (Guard.isOffline()) {
-    List<GetTaskDto> tasks = [];
-    (await TaskDao.findMany()).map(
-      (e) => tasks.add(
-        GetTaskDto(
-          e.id!,
-          "",
-          e.name,
-          e.desc,
-          DateTime.fromMicrosecondsSinceEpoch(e.startAt),
-          DateTime.fromMicrosecondsSinceEpoch(e.endAt),
-          [],
-        ),
-      ),
-    );
-    return GetTaskResponse(tasks);
-  }
-  return GetTaskResponse.fromResponse(
-    await HTTP.post(
-      "/task/get",
-      queryParams: {'page': req.page, 'limit': req.limit},
-      options: Options(headers: {"x-token": Guard.jwt}),
-    ),
-  );
 }
 
 class InfoTaskRequest {

@@ -35,6 +35,7 @@ func TopicNew(ctx *gin.Context) {
 	}
 	tx := db.SQL().Begin()
 	topic := model.Topic{
+		Icon:        req.Icon,
 		Creator:     u.ID,
 		Name:        req.Name,
 		Description: req.Description,

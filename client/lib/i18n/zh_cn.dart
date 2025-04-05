@@ -240,4 +240,7 @@ Map<String, String> get zhCN => {
 
   "post_image": "[图片]",
   "post_video": "[视频]",
+
+  "topic_invite_code_copied": "频道的邀请码已经复制到剪贴板。",
+  "desc": "描述",
 };

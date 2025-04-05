@@ -7,6 +7,7 @@ import (
 
 type TaskNewRequest struct {
 	TopicId     uint         `json:"topic_id"`
+	Icon        string       `json:"icon"`
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
 	StartAt     iso8601.Time `json:"start_at"`

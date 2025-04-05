@@ -5,6 +5,7 @@ import (
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
+	"net/http"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -27,6 +28,7 @@ func TaskNew(ctx *gin.Context) {
 	tx := db.SQL().Begin()
 	task := model.Task{
 		TopicId:     req.TopicId,
+		Icon:        req.Icon,
 		Creator:     u.ID,
 		Name:        req.Name,
 		Description: req.Description,
@@ -43,15 +45,26 @@ func TaskNew(ctx *gin.Context) {
 	for _, cond := range req.Conditions {
 		switch cond.Type {
 		case "click":
-
+			conds = append(conds, model.TaskCondition{
+				Type:   model.TaskTypeClick,
+				TaskId: task.ID,
+			})
 		case "locate":
 			conds = append(conds, model.TaskCondition{
 				Type:   model.TaskTypeLocate,
 				Param:  cond.Param,
 				TaskId: task.ID,
 			})
-		case "image":
+		case "file":
+			conds = append(conds, model.TaskCondition{
+				Type:   model.TaskTypeFile,
+				TaskId: task.ID,
+			})
 		case "text":
+			conds = append(conds, model.TaskCondition{
+				Type:   model.TaskTypeText,
+				TaskId: task.ID,
+			})
 		}
 	}
 	err = tx.Table("task_condition").CreateInBatches(&conds, len(conds)).Error
@@ -348,7 +361,7 @@ func TaskGet(ctx *gin.Context) {
 			Conds:  taskConds,
 		})
 	}
-	ctx.JSON(200, detailedTasks)
+	ctx.JSON(http.StatusOK, gin.H{"data": detailedTasks})
 }
 
 type taskCond struct {

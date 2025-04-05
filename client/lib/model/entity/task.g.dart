@@ -29,9 +29,3 @@ Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
   'departure': instance.startAt,
   'arrival': instance.endAt,
 };
-
-TaskCondition _$TaskConditionFromJson(Map<String, dynamic> json) =>
-    TaskCondition((json['type'] as num).toInt(), json['param'] as String);
-
-Map<String, dynamic> _$TaskConditionToJson(TaskCondition instance) =>
-    <String, dynamic>{'type': instance.type, 'param': instance.param};

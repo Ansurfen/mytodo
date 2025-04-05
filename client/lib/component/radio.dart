@@ -4,10 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_todo/theme/checkbox.dart';
 
-class ColorfulRadio extends StatelessWidget {
-  final String value;
-  final String groupValue;
-  final void Function(String? value)? onChanged;
+class ColorfulRadio<T> extends StatelessWidget {
+  final T value;
+  final T groupValue;
+  final void Function(T? value)? onChanged;
   final Color backgroundColor;
 
   const ColorfulRadio(

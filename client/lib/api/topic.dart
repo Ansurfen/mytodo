@@ -16,6 +16,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'topic.g.dart';
 
 Future topicNewRequest({
+  required String icon,
   required String name,
   required String description,
   required bool isPublic,
@@ -24,6 +25,7 @@ Future topicNewRequest({
   return HTTP.post(
     "/topic/new",
     data: {
+      "icon": icon,
       "name": name,
       "description": description,
       "is_public": isPublic,
@@ -54,11 +56,12 @@ class GetTopicResponse extends BaseResponse {
   }
 }
 
-Future topicGetRequest() async {
-  return HTTP.get(
-    "/topic/get",
-    options: Options(headers: {"Authorization": Guard.jwt}),
-  );
+Future<List> topicGetRequest() async {
+  return (await HTTP.get(
+        "/topic/get",
+        options: Options(headers: {"Authorization": Guard.jwt}),
+      )).data["data"]
+      as List;
 }
 
 Future<List<Topic>> topicGetSelectableRequest() async {
@@ -118,30 +121,6 @@ class CreateTopicResponse extends BaseResponse {
   CreateTopicResponse.fromResponse(Response res)
     : inviteCode = res.data["data"]["invite_code"],
       super(res.data);
-}
-
-Future<CreateTopicResponse> createTopic(CreateTopicRequest req) async {
-  if (Guard.isOffline()) {
-    var res = await TopicDao.findOne(
-      where: "user = ? and name = ?",
-      whereArgs: [Guard.user, req.name],
-    );
-    if (res == null) {
-      Topic t = Topic(Guard.user, req.name, req.desc);
-      await TopicDao.create(t);
-      Guard.eventBus.fire(t);
-    } else {
-      print("你已经创建了");
-    }
-    return CreateTopicResponse();
-  }
-  return CreateTopicResponse.fromResponse(
-    await HTTP.post(
-      '/topic/add',
-      data: jsonEncode(req),
-      options: Options(headers: {"x-token": Guard.jwt}),
-    ),
-  );
 }
 
 @JsonSerializable()

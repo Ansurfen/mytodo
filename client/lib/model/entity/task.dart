@@ -37,23 +37,16 @@ class Task {
   }
 }
 
-@JsonSerializable()
 class TaskCondition {
-  @JsonKey(name: "type")
-  int type;
+  String type;
 
-  @JsonKey(name: "param")
-  String param;
+  Map<String, dynamic> param;
 
-  TaskCondition(this.type, this.param);
+  TaskCondition({required this.type, required this.param});
 
-  factory TaskCondition.fromJson(Map<String, Object?> json) =>
-      _$TaskConditionFromJson(json);
-
-  Map<String, Object?> toJson() => _$TaskConditionToJson(this);
-
-  static conditionsFromJson(List conds) =>
-      conds.map((e) => TaskCondition.fromJson(e)).toList();
+  Map<String, dynamic> toJson() {
+    return {'type': type, 'param': param};
+  }
 }
 
 enum TaskCondType { hand, timer, locale, file, image, content, qr }

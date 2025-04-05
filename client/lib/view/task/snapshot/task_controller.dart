@@ -9,6 +9,7 @@ import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/utils/debounce.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
+import 'package:my_todo/view/task/snapshot/task_card.dart';
 
 class TaskController extends GetxController with GetTickerProviderStateMixin {
   late final AnimationController animationController;
@@ -64,17 +65,29 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
     return _fetch();
   }
 
-  Future _fetch() {
-    if (Guard.isDevMode()) {
-      return Future.delayed(const Duration(seconds: 0));
-    }
-    return getTask(GetTaskRequest(pagination.index(), pagination.getLimit()))
-        .then((res) {
-          for (var task in res.tasks) {
-            tasks.value[task.id] = task;
-          }
-        })
-        .onError((error, stackTrace) {});
+  Future _fetch() async {
+    return topicGetRequest(
+      page: pagination.index(),
+      limit: pagination.getLimit(),
+    ).then((v) {
+      final models = <TaskCardModel>[];
+      for (var e in v) {
+        final conds = <TaskCardCondModel>[];
+        (e["conds"] as List).forEach((elem) {
+          conds.add(TaskCardCondModel(elem["want"]["type"], elem["valid"]));
+        });
+        models.add(
+          TaskCardModel(
+            (e['id'] as num).toInt(),
+            e['icon'] as String,
+            e['name'] as String,
+            e['description'] as String,
+            conds,
+          ),
+        );
+      }
+      Guard.log.i(models[0].cond);
+    });
   }
 
   Future<bool> _getData() async {

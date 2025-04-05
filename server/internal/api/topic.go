@@ -1,6 +1,7 @@
 package api
 
 type TopicNewRequest struct {
+	Icon        string   `json:"icon"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	IsPublic    bool     `json:"is_public"`

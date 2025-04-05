@@ -8,6 +8,7 @@ import (
 
 type Topic struct {
 	Model
+	Icon        string                      `json:"icon" gorm:"column:icon"`
 	Creator     uint                        `json:"creator" gorm:"column:creator"`
 	Name        string                      `json:"name" gorm:"column:name"`
 	Description string                      `json:"description" gorm:"column:description"`
@@ -64,6 +65,7 @@ const (
 type Task struct {
 	Model
 	TopicId     uint            `json:"topic_id" gorm:"column:topic_id"`
+	Icon        string          `json:"icon"`
 	Creator     uint            `json:"creator" gorm:"column:creator"`
 	Name        string          `json:"name" gorm:"column:name"`
 	Description string          `json:"description" gorm:"column:description"`

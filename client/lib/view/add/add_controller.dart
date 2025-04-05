@@ -2,36 +2,50 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'dart:io' as io;
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
+import 'package:my_todo/api/task.dart';
 import 'package:my_todo/api/topic.dart';
+import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/model/entity/topic.dart';
-import 'package:my_todo/view/map/select/place.dart';
+import 'package:my_todo/view/add/add_task_page.dart';
 import 'package:path/path.dart' as path;
 
 class AddController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  bool sync = false;
-  List<Topic> topics = [];
-  Rx<String> selectedTopic = "".obs;
   late TabController tabController;
 
-  Rx<List<Place>> pos = Rx([]);
+  _postController post = _postController();
 
-  bool taskCondClick = false;
-  bool taskCondQR = false;
-  Rx<bool> taskCondFile = false.obs;
-  Rx<bool> taskCondText = false.obs;
-
+  // topic
+  Rx<String> topicIcon = "".obs;
   TextEditingController topicName = TextEditingController();
   TextEditingController topicDesc = TextEditingController();
   RxList<String> topicTags = <String>[].obs;
   bool topicIsPublic = false;
 
-  _postController post = _postController();
+  // task
+  List<Topic> topics = [];
+  Rx<int> selectedTopicID = (-1).obs;
+  Rx<String> taskIcon = "".obs;
+  TextEditingController taskName = TextEditingController();
+  TextEditingController taskDesc = TextEditingController();
+  bool taskCondClick = false;
+  bool taskCondQR = false;
+  Rx<bool> taskCondFile = false.obs;
+  Rx<bool> taskCondText = false.obs;
+  final BoardMultiDateTimeController boardMultiDateTimeController =
+      BoardMultiDateTimeController();
+  final ValueNotifier<DateTime> taskStart = ValueNotifier(DateTime.now());
+  final ValueNotifier<DateTime> taskEnd = ValueNotifier(
+    DateTime.now().add(const Duration(days: 7)),
+  );
+  RxList<LocaleItem> localeItems = <LocaleItem>[].obs;
 
   @override
   void onInit() {
@@ -43,23 +57,8 @@ class AddController extends GetxController
         topics = v;
       });
     });
-  }
-
-  void confirm() {
-    // List<TaskCondition> conds = [];
-
-    // createTask(
-    //       CreateTaskRequest(
-    //         selectedTopic!,
-    //         nameController.text,
-    //         descController.text,
-    //         DateTime.parse(departureController.text),
-    //         DateTime.parse(arrivalController.text),
-    //         conds,
-    //       ),
-    //     )
-    //     .then((value) => EasyLoading.showSuccess("Creates task successfully."))
-    //     .onError((error, stackTrace) {});
+    taskIcon.value = animalMammal[Mock.number(max: animalMammal.length - 1)];
+    topicIcon.value = animalMammal[Mock.number(max: animalMammal.length - 1)];
   }
 
   void switchToTab(int index) {
@@ -69,8 +68,51 @@ class AddController extends GetxController
   void save() {
     switch (tabController.index) {
       case 0:
+        List<TaskCondition> conditions = [];
+
+        if (taskCondClick) {
+          conditions.add(TaskCondition(type: "click", param: {}));
+        }
+
+        if (taskCondQR) {
+          conditions.add(TaskCondition(type: "qr", param: {}));
+        }
+
+        if (taskCondFile.value) {
+          conditions.add(TaskCondition(type: "file", param: {}));
+        }
+
+        if (taskCondText.value) {
+          conditions.add(TaskCondition(type: "text", param: {}));
+        }
+
+        if (localeItems.isNotEmpty) {
+          for (var e in localeItems) {
+            conditions.add(
+              TaskCondition(
+                type: "locate",
+                param: {
+                  "latitude": e.lat,
+                  "longitude": e.lng,
+                  "radius": e.radius,
+                },
+              ),
+            );
+          }
+        }
+
+        taskNewRequest(
+          id: topics[selectedTopicID.value].id,
+          icon: taskIcon.value,
+          name: taskName.text,
+          description: taskDesc.text,
+          startAt: taskStart.value,
+          endAt: taskEnd.value,
+          conditions: conditions,
+        );
       case 1:
         topicNewRequest(
+          icon: topicIcon.value,
           isPublic: topicIsPublic,
           name: topicName.text,
           tags: topicTags,
@@ -83,6 +125,9 @@ class AddController extends GetxController
         });
       case 2:
     }
+    Get.back();
+
+    Get.snackbar("success".tr, "success to create");
   }
 }
 

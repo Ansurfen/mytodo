@@ -11,7 +11,6 @@ import 'package:implicitly_animated_reorderable_list_2/implicitly_animated_reord
 import 'package:implicitly_animated_reorderable_list_2/transitions.dart';
 import 'package:material_floating_search_bar_2/material_floating_search_bar_2.dart';
 import 'package:my_todo/component/drawer/reactive_text.dart';
-import 'package:my_todo/utils/guard.dart';
 
 import 'package:my_todo/view/map/select/location_controller.dart';
 import 'package:my_todo/view/map/select/place.dart';
@@ -81,7 +80,7 @@ class _BottomDrawerState extends State<BottomDrawer> {
         width: double.infinity, // 让 Drawer 充满屏幕宽度
         height: MediaQuery.of(context).size.height * 0.4, // 限制高度
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.primary,
           borderRadius: BorderRadius.vertical(top: Radius.circular(15)), // 圆角
         ),
         child: Column(

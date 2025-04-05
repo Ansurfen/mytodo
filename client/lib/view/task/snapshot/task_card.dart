@@ -1,8 +1,8 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:json_annotation/json_annotation.dart';
 import 'dart:math';
-
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,24 +17,48 @@ import 'package:my_todo/router/topic.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/clipboard.dart';
+import 'package:my_todo/utils/json.dart';
 import 'package:my_todo/utils/share.dart';
 
-class TaskCardModel {
-  int? id;
-  String name;
-  String topic;
-  String desc;
-  DateTime startAt;
-  List<int> cond;
+part 'task_card.g.dart';
 
-  TaskCardModel(
-    this.name,
-    this.topic,
-    this.desc,
-    this.startAt,
-    this.cond, {
-    this.id,
-  });
+@JsonSerializable(createToJson: false)
+class TaskCardModel {
+  @JsonKey(name: "id")
+  int id;
+
+  @JsonKey(name: "icon")
+  String icon;
+
+  @JsonKey(name: "name")
+  String name;
+
+  @JsonKey(name: "description")
+  String description;
+
+  @JsonKey(name: "conds", fromJson: parseCondition)
+  List<TaskCardCondModel> cond;
+
+  TaskCardModel(this.id, this.icon, this.name, this.description, this.cond);
+
+  factory TaskCardModel.fromJson(JsonObject json) =>
+      _$TaskCardModelFromJson(json);
+}
+
+List<TaskCardCondModel> parseCondition(List<Map> data) {
+  final ret = <TaskCardCondModel>[];
+  for (var e in data) {
+    ret.add(TaskCardCondModel(e["want"]["type"], e["valid"]));
+  }
+  return ret;
+}
+
+class TaskCardCondModel {
+  int type;
+
+  bool finish;
+
+  TaskCardCondModel(this.type, this.finish);
 }
 
 class TaskCardOld extends StatelessWidget {

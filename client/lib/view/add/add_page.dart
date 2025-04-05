@@ -7,7 +7,6 @@ import 'package:my_todo/model/dao/topic.dart';
 import 'package:my_todo/view/add/add_controller.dart';
 import 'package:my_todo/view/add/add_post_page.dart';
 import 'package:my_todo/view/add/add_task_page.dart';
-import 'package:my_todo/view/add/text_option.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'add_topic_page.dart';
@@ -28,7 +27,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
     super.initState();
     Future.delayed(const Duration(seconds: 0), () async {
       for (var element in (await TopicDao.findMany())) {
-        topics[element.id!] = element.name;
+        topics[element.id] = element.name;
       }
       setState(() {});
     });

@@ -249,4 +249,8 @@ Map<String, String> get enUS => {
 
   "post_image": "[Image]",
   "post_video": "[Video]",
+
+  "topic_invite_code_copied":
+      "The invite code for the topic has been copied to the clipboard.",
+  "desc": "Description",
 };

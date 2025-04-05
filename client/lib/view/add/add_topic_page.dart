@@ -7,7 +7,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:my_todo/abc/utils.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
@@ -28,14 +27,6 @@ class _AddTopicPageState extends State<AddTopicPage>
     with AutomaticKeepAliveClientMixin {
   final Rx<int> _selectedIndex = 0.obs;
   AddController controller = Get.find<AddController>();
-
-  Rx<String> profile = "".obs;
-
-  @override
-  void initState() {
-    profile.value = animalMammal[Mock.number(max: animalMammal.length - 1)];
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +54,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                 backgroundColor: Theme.of(context).primaryColorLight,
                 backgroundImage: null, // Remove backgroundImage
                 child: SvgPicture.asset(
-                  profile.value,
+                  controller.topicIcon.value,
                   width: 100, // Ensure it's large enough to avoid blurriness
                   height: 100, // Same as above
                   fit: BoxFit.contain, // Keep the aspect ratio intact
@@ -203,7 +194,7 @@ class _AddTopicPageState extends State<AddTopicPage>
                     onPressed: (context) {
                       showTextDialog(
                         context,
-                        title: "name",
+                        title: "name".tr,
                         content: TextField(controller: controller.topicName),
                         onConfirm: () {
                           setState(() {
@@ -251,7 +242,7 @@ class _AddTopicPageState extends State<AddTopicPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text("描述", style: TextStyle(color: Colors.grey)),
+                Text("desc".tr, style: TextStyle(color: Colors.grey)),
                 SizedBox(height: 10),
                 TextField(
                   controller: controller.topicDesc,
@@ -306,7 +297,7 @@ class _AddTopicPageState extends State<AddTopicPage>
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () {
-            profile.value = icons[index];
+            controller.topicIcon.value = icons[index];
             Get.back();
           },
           child: SvgPicture.asset(icons[index], width: 30, height: 30),

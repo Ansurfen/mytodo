@@ -5,7 +5,6 @@ import 'package:badges/badges.dart' as badges;
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/component/radio.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
@@ -211,30 +210,12 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage>
     with AutomaticKeepAliveClientMixin {
-  TextEditingController startController = TextEditingController();
-  final BoardMultiDateTimeController controller =
-      BoardMultiDateTimeController();
-  final ValueNotifier<DateTime> start = ValueNotifier(DateTime.now());
-  final ValueNotifier<DateTime> end = ValueNotifier(
-    DateTime.now().add(const Duration(days: 7)),
-  );
-  final DateTimePickerType pickerType = DateTimePickerType.datetime;
+  AddController controller = Get.find<AddController>();
 
   final Rx<int> _selectedIndex = 0.obs;
-  AddController addController = Get.find<AddController>();
-  Rx<String> profile = "".obs;
-  RxList<LocaleItem> localeItems = <LocaleItem>[].obs;
 
   @override
   bool get wantKeepAlive => true;
-
-  final TextEditingController nameController = TextEditingController();
-
-  @override
-  void initState() {
-    profile.value = animalMammal[Mock.number(max: animalMammal.length - 1)];
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +243,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                 backgroundColor: Theme.of(context).primaryColorLight,
                 backgroundImage: null, // Remove backgroundImage
                 child: SvgPicture.asset(
-                  profile.value,
+                  controller.taskIcon.value,
                   width: 100, // Ensure it's large enough to avoid blurriness
                   height: 100, // Same as above
                   fit: BoxFit.contain, // Keep the aspect ratio intact
@@ -413,12 +394,12 @@ class _AddTaskPageState extends State<AddTaskPage>
                 tiles: [
                   SettingsTile.navigation(
                     onPressed: (context) {
-                      if (addController.topics.isEmpty) {
+                      if (controller.topics.isEmpty) {
                         showTipDialog(
                           context,
                           content: "topic_not_found".tr,
                           onPressed: () {
-                            addController.switchToTab(1);
+                            controller.switchToTab(1);
                             Get.back();
                           },
                         );
@@ -433,28 +414,35 @@ class _AddTaskPageState extends State<AddTaskPage>
                                 ),
                                 message: Column(
                                   children:
-                                      addController.topics
-                                          .map(
-                                            (e) => Row(
+                                      (() {
+                                        List<Widget> res = <Widget>[];
+                                        for (
+                                          var i = 0;
+                                          i < controller.topics.length;
+                                          i++
+                                        ) {
+                                          final topic = controller.topics[i];
+                                          res.add(
+                                            Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
                                                 Text(
-                                                  e.name,
+                                                  topic.name,
                                                   style: const TextStyle(
                                                     fontSize: 18,
                                                   ),
                                                 ),
-                                                ColorfulRadio(
-                                                  value: e.name,
+                                                ColorfulRadio<int>(
+                                                  value: i,
                                                   groupValue:
-                                                      addController
-                                                          .selectedTopic
+                                                      controller
+                                                          .selectedTopicID
                                                           .value,
                                                   onChanged: (v) {
-                                                    addController
-                                                        .selectedTopic
+                                                    controller
+                                                        .selectedTopicID
                                                         .value = v!;
                                                     Get.back();
                                                   },
@@ -465,8 +453,10 @@ class _AddTaskPageState extends State<AddTaskPage>
                                                 ),
                                               ],
                                             ),
-                                          )
-                                          .toList(),
+                                          );
+                                        }
+                                        return res;
+                                      })(),
                                 ),
                               ),
                         );
@@ -474,7 +464,15 @@ class _AddTaskPageState extends State<AddTaskPage>
                     },
                     title: Text('topic'.tr),
                     leading: Icon(Icons.topic),
-                    value: Obx(() => Text(addController.selectedTopic.value)),
+                    value: Obx(
+                      () => Text(
+                        controller.selectedTopicID.value == -1
+                            ? ""
+                            : controller
+                                .topics[controller.selectedTopicID.value]
+                                .name,
+                      ),
+                    ),
                   ),
                   SettingsTile.navigation(
                     title: Text('name'.tr),
@@ -483,7 +481,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                       showTextDialog(
                         context,
                         title: "name".tr,
-                        content: TextField(controller: nameController),
+                        content: TextField(controller: controller.taskName),
                         onConfirm: () {
                           setState(() {
                             Get.back();
@@ -492,17 +490,17 @@ class _AddTaskPageState extends State<AddTaskPage>
                         onCancel: () => Get.back(),
                       );
                     },
-                    value: Text(nameController.text),
+                    value: Text(controller.taskName.text),
                   ),
                   SettingsTile.navigation(
                     onPressed: (ctx) async {
                       final result = await showBoardDateTimeMultiPicker(
                         context: context,
-                        controller: controller,
-                        pickerType: pickerType,
+                        controller: controller.boardMultiDateTimeController,
+                        pickerType: DateTimePickerType.datetime,
                         // minimumDate: DateTime.now().add(const Duration(days: 1)),
-                        startDate: start.value,
-                        endDate: end.value,
+                        startDate: controller.taskStart.value,
+                        endDate: controller.taskEnd.value,
                         options: const BoardDateTimeOptions(
                           languages: BoardPickerLanguages.en(),
                           startDayOfWeek: DateTime.sunday,
@@ -537,11 +535,13 @@ class _AddTaskPageState extends State<AddTaskPage>
                         // },
                       );
                       if (result != null) {
-                        start.value = result.start;
-                        end.value = result.end;
+                        controller.taskStart.value = result.start;
+                        controller.taskEnd.value = result.end;
                       }
                       setState(() {});
-                      print('result: ${start.value} - ${end.value}');
+                      print(
+                        'result: ${controller.taskStart.value} - ${controller.taskEnd.value}',
+                      );
                     },
                     title: Text('schedule'.tr),
                     leading: Icon(Icons.calendar_month),
@@ -550,7 +550,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         ValueListenableBuilder(
-                          valueListenable: start,
+                          valueListenable: controller.taskStart,
                           builder: (context, data, _) {
                             return Text(
                               BoardDateFormat('yyyy/MM/dd HH:mm').format(data),
@@ -566,7 +566,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                         ),
                         const SizedBox(height: 4),
                         ValueListenableBuilder(
-                          valueListenable: end,
+                          valueListenable: controller.taskEnd,
                           builder: (context, data, _) {
                             return Text(
                               '~ ${BoardDateFormat('yyyy/MM/dd HH:mm').format(data)}',
@@ -589,10 +589,10 @@ class _AddTaskPageState extends State<AddTaskPage>
                 title: Text("condition".tr),
                 tiles: [
                   SettingsTile.switchTile(
-                    initialValue: addController.taskCondClick,
+                    initialValue: controller.taskCondClick,
                     onToggle: (v) {
                       setState(() {
-                        addController.taskCondClick = v;
+                        controller.taskCondClick = v;
                       });
                     },
                     activeSwitchColor: Theme.of(context).primaryColor,
@@ -600,10 +600,10 @@ class _AddTaskPageState extends State<AddTaskPage>
                     title: Text("condition_click".tr),
                   ),
                   SettingsTile.switchTile(
-                    initialValue: addController.taskCondQR,
+                    initialValue: controller.taskCondQR,
                     onToggle: (v) {
                       setState(() {
-                        addController.taskCondQR = v;
+                        controller.taskCondQR = v;
                       });
                     },
                     activeSwitchColor: Theme.of(context).primaryColor,
@@ -625,9 +625,9 @@ class _AddTaskPageState extends State<AddTaskPage>
                                   () => CupertinoSwitch(
                                     activeTrackColor:
                                         Theme.of(context).primaryColor,
-                                    value: addController.taskCondFile.value,
+                                    value: controller.taskCondFile.value,
                                     onChanged: (bool v) {
-                                      addController.taskCondFile.value = v;
+                                      controller.taskCondFile.value = v;
                                     },
                                   ),
                                 ),
@@ -655,9 +655,9 @@ class _AddTaskPageState extends State<AddTaskPage>
                                   () => CupertinoSwitch(
                                     activeTrackColor:
                                         Theme.of(context).primaryColor,
-                                    value: addController.taskCondText.value,
+                                    value: controller.taskCondText.value,
                                     onChanged: (bool v) {
-                                      addController.taskCondText.value = v;
+                                      controller.taskCondText.value = v;
                                     },
                                   ),
                                 ),
@@ -683,7 +683,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                                 localeEditor(
                                   context,
                                   cb: (v) {
-                                    localeItems.add(v);
+                                    controller.localeItems.add(v);
                                   },
                                 );
                               },
@@ -697,7 +697,7 @@ class _AddTaskPageState extends State<AddTaskPage>
                                 for (var v
                                     in (await RouterProvider.toMapSelect()
                                         as List<Place>)) {
-                                  localeItems.add(
+                                  controller.localeItems.add(
                                     LocaleItem(lng: v.lng, lat: v.lat),
                                   );
                                 }
@@ -720,22 +720,22 @@ class _AddTaskPageState extends State<AddTaskPage>
                             Obx(
                               () => ListView.separated(
                                 shrinkWrap: true,
-                                itemCount: localeItems.length,
+                                itemCount: controller.localeItems.length,
                                 itemBuilder: (ctx, idx) {
                                   return localeBar(
                                     ctx,
-                                    localeItems[idx],
+                                    controller.localeItems[idx],
                                     edit: () {
                                       localeEditor(
                                         ctx,
                                         cb: (v) {
-                                          localeItems[idx] = v;
+                                          controller.localeItems[idx] = v;
                                         },
-                                        item: localeItems[idx],
+                                        item: controller.localeItems[idx],
                                       );
                                     },
                                     remove: () {
-                                      localeItems.removeAt(idx);
+                                      controller.localeItems.removeAt(idx);
                                     },
                                   );
                                 },
@@ -755,10 +755,10 @@ class _AddTaskPageState extends State<AddTaskPage>
                     title: Text("condition_locale".tr),
                     trailing: Obx(
                       () =>
-                          localeItems.isNotEmpty
+                          controller.localeItems.isNotEmpty
                               ? badges.Badge(
                                 badgeContent: Text(
-                                  localeItems.length.toString(),
+                                  controller.localeItems.length.toString(),
                                 ),
                                 badgeStyle: badges.BadgeStyle(
                                   badgeColor:
@@ -782,10 +782,11 @@ class _AddTaskPageState extends State<AddTaskPage>
               children: [
                 Padding(
                   padding: EdgeInsets.only(left: 15),
-                  child: Text("描述", style: TextStyle(color: Colors.grey)),
+                  child: Text("desc".tr, style: TextStyle(color: Colors.grey)),
                 ),
                 SizedBox(height: 10),
                 TextField(
+                  controller: controller.taskDesc,
                   minLines: 5,
                   maxLines: null,
                   decoration: InputDecoration(
@@ -840,7 +841,7 @@ class _AddTaskPageState extends State<AddTaskPage>
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () {
-            profile.value = icons[index];
+            controller.taskIcon.value = icons[index];
             Get.back();
           },
           child: SvgPicture.asset(icons[index], width: 30, height: 30),

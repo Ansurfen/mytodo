@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_picker_plus/picker.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/i18n/exception.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/utils/clipboard.dart';
 

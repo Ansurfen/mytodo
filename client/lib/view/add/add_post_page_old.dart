@@ -3,11 +3,9 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/button/shadow_button.dart';
 import 'package:my_todo/theme/color.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/picker.dart';
 import 'package:my_todo/view/add/file_area.dart';
 

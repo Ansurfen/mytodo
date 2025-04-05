@@ -3,10 +3,8 @@
 // license that can be found in the LICENSE file.
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_todo/component/image.dart';
-import 'package:my_todo/theme/provider.dart';
 
 Random random = Random();
 List names = [

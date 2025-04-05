@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/model/dto/topic.dart';
+import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/home.dart';
 import 'package:my_todo/router/map.dart';
@@ -138,7 +138,7 @@ class RouterProvider {
     to(TopicRouter.invite);
   }
 
-  static void viewTopicDetail(int id, GetTopicDto model) {
+  static void viewTopicDetail(int id, Topic model) {
     to(TopicRouter.detail, query: "?id=$id", arguments: model);
   }
 
