@@ -619,9 +619,15 @@ func FriendGet(ctx *gin.Context) {
 		topicCnt   int64
 		postCnt    int64
 		commentCnt int64
+		online     bool
 	)
 
-	err := db.SQL().Table("user").Where("user_id", friendId).First(&friend).Error
+	_, _, err := db.Rdb().Scan(context.TODO(), 100, fmt.Sprintf("*user_%d*", friendId), 1).Result()
+	if err == nil {
+		online = true
+	}
+
+	err = db.SQL().Table("user").Where("id", friendId).First(&friend).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
@@ -634,7 +640,7 @@ func FriendGet(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	err = db.SQL().Table("topic").Where("user_id = ?", friendId).Count(&topicCnt).Error
+	err = db.SQL().Table("topic_join").Where("user_id = ?", friendId).Count(&topicCnt).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
@@ -646,24 +652,28 @@ func FriendGet(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	err = db.SQL().Table("comment").Where("user_id = ?", friendId).Count(&commentCnt).Error
-	if err != nil {
-		log.WithError(err).Error("running sql")
-		ctx.Abort()
-		return
-	}
+	// err = db.SQL().Table("comment").Where("user_id = ?", friendId).Count(&commentCnt).Error
+	// if err != nil {
+	// 	log.WithError(err).Error("running sql")
+	// 	ctx.Abort()
+	// 	return
+	// }
 	data := map[string]any{
-		"user":          friend,
-		"page":          1,
-		"page_size":     10,
-		"follower":      follower,
-		"topic_count":   topicCnt,
-		"post_count":    postCnt,
-		"comment_count": commentCnt,
+		"id":             friend.ID,
+		"name":           friend.Name,
+		"description":    friend.About,
+		"is_male":        friend.IsMale,
+		"is_online":      online,
+		"page":           1,
+		"page_size":      10,
+		"follower_count": follower,
+		"topic_count":    topicCnt,
+		"post_count":     postCnt,
+		"comment_count":  commentCnt,
 	}
 	var relation model.UserRelation
 	err = db.SQL().Table("user_relation").Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)", u.ID, friendId, friendId, u.ID).First(&relation).Error
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return

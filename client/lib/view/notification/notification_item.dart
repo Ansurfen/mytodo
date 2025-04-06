@@ -4,7 +4,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/api/notify.dart';
+import 'package:my_todo/api/notification.dart';
 import 'package:my_todo/api/user.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/notify.dart';

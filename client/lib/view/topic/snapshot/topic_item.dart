@@ -118,11 +118,6 @@ class _TopicCardState extends State<TopicCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4.0)),
-      ),
-    );
     bool isLight = Theme.of(context).brightness == Brightness.light;
     var key = widget.key as ValueKey<ExpansionTileCardState>;
     return ExpansionTileCard(
@@ -187,7 +182,6 @@ class _TopicCardState extends State<TopicCard>
         OverflowBar(
           alignment: MainAxisAlignment.spaceAround,
           children: [
-            // TODO
             IconButton(
               onPressed: () {
                 RouterProvider.viewTopicDetail(widget.model.id, widget.model);

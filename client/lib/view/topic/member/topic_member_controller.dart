@@ -4,7 +4,6 @@
 import 'package:get/get.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/model/entity/topic.dart';
-import 'package:my_todo/utils/guard.dart';
 
 class TopicMemberController extends GetxController {
   late int id;
@@ -14,13 +13,11 @@ class TopicMemberController extends GetxController {
   void onInit() {
     super.onInit();
     id = int.parse(Get.parameters["id"]!);
-    if (Guard.isDevMode()) {
-      members.value.add(TopicMember(id: 1, name: "abc"));
-    } else {
-      getSubscribedMember(GetSubscribedMemberRequest(id: id)).then((res) {
-        members.value = res.members;
-        members.refresh();
-      });
-    }
+    topicMemberGetRequest(id: id).then((v) {
+      for (var e in v) {
+        members.value.add(TopicMember.fromJson(e));
+      }
+      members.refresh();
+    });
   }
 }

@@ -7,14 +7,10 @@ import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/model/dto/topic.dart';
-import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/router/topic.dart';
-import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/clipboard.dart';
 import 'package:my_todo/utils/json.dart';
@@ -59,78 +55,6 @@ class TaskCardCondModel {
   bool finish;
 
   TaskCardCondModel(this.type, this.finish);
-}
-
-class TaskCardOld extends StatelessWidget {
-  final GetTaskDto model;
-
-  const TaskCardOld({super.key, required this.model});
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> icons = [];
-    for (var i = 0; i < model.conds.length; i++) {
-      if (model.conds[i] == TaskCondType.qr.index) {
-        icons.add(
-          Icon(Icons.crop_free, color: Theme.of(context).colorScheme.onPrimary),
-        );
-      } else if (model.conds[i] == TaskCondType.hand.index) {
-        icons.add(
-          Icon(Icons.handshake, color: Theme.of(context).colorScheme.onPrimary),
-        );
-      } else if (model.conds[i] == TaskCondType.locale.index) {
-        icons.add(
-          Icon(
-            Icons.location_on,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-        );
-      }
-      if (i + 1 != model.conds.length) {
-        icons.add(const SizedBox(width: 5));
-      }
-    }
-    return GestureDetector(
-      onTap: () {
-        RouterProvider.toTaskDetail(model.id, []);
-      },
-      child: Card(
-        color: ThemeProvider.contrastColor(
-          context,
-          light: HexColor.fromInt(0xfafafa),
-          dark: HexColor.fromInt(0x1c1c1e),
-        ),
-        shadowColor: Colors.black,
-        elevation: 2,
-        borderOnForeground: false,
-        child: Container(
-          height: 120,
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(model.name, style: const TextStyle(fontSize: 18)),
-                      Text(model.topic, style: const TextStyle(fontSize: 12)),
-                    ],
-                  ),
-                  Text(
-                    DateFormat("yyyy/MM/dd HH:mm:ss").format(model.departure),
-                  ),
-                ],
-              ),
-              Row(children: [...icons]),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class TopicItem extends StatefulWidget {

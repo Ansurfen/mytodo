@@ -64,6 +64,13 @@ Future<User> userDetailRequest() async {
   );
 }
 
+Future userFriendGet({required int friend}) async {
+  return (await HTTP.get(
+    '/user/friend/get/$friend',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
+}
+
 class UserSignRequest {
   String email;
   String password;

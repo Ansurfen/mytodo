@@ -26,8 +26,17 @@ Map<String, dynamic> _$TopicToJson(Topic instance) => <String, dynamic>{
   'invite_code': instance.inviteCode,
 };
 
-TopicMember _$TopicMemberFromJson(Map<String, dynamic> json) =>
-    TopicMember(id: (json['id'] as num).toInt(), name: json['name'] as String);
+TopicMember _$TopicMemberFromJson(Map<String, dynamic> json) => TopicMember(
+  (json['id'] as num).toInt(),
+  json['name'] as String,
+  json['is_male'] as bool,
+  (json['role'] as num?)?.toInt() ?? 0,
+);
 
 Map<String, dynamic> _$TopicMemberToJson(TopicMember instance) =>
-    <String, dynamic>{'id': instance.id, 'name': instance.name};
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'is_male': instance.isMale,
+      'role': instance.role,
+    };

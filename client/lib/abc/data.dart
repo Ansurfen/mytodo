@@ -155,7 +155,7 @@ List<Event> generateRandomEvents(int count, {int columnIndex = 0}) {
 
 List<Event> fullDayEvents = [
   Event(
-    title: "Holiday",
+    title: "Holiday2",
     color: Colors.grey.pastel,
     textColor: Colors.grey.onPastel,
     startTime: _now.withoutTime,

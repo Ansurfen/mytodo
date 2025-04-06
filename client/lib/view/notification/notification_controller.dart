@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/animation.dart';
 import 'package:get/get.dart';
-import 'package:my_todo/api/notify.dart';
+import 'package:my_todo/api/notification.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/notify.dart';
 import 'package:my_todo/utils/guard.dart';

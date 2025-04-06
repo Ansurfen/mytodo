@@ -253,4 +253,6 @@ Map<String, String> get enUS => {
   "topic_invite_code_copied":
       "The invite code for the topic has been copied to the clipboard.",
   "desc": "Description",
+
+  "member": "Member",
 };

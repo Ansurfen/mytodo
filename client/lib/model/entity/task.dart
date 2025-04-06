@@ -2,13 +2,14 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:json_annotation/json_annotation.dart';
+import 'package:my_todo/utils/time.dart';
 
 part 'task.g.dart';
 
 @JsonSerializable()
 class Task {
   @JsonKey(name: "id", defaultValue: 0, required: false)
-  int? id;
+  int id;
 
   @JsonKey(name: "user", defaultValue: 0, required: false)
   int? user;
@@ -16,25 +17,27 @@ class Task {
   @JsonKey(name: "name", defaultValue: "", required: true)
   String name;
 
-  @JsonKey(name: "desc", defaultValue: "", required: true)
-  String desc;
+  @JsonKey(name: "description", defaultValue: "", required: true)
+  String description;
 
-  @JsonKey(name: "departure", defaultValue: 0, required: true)
-  int startAt;
+  @JsonKey(name: "start_at", fromJson: string2DateTime, required: true)
+  DateTime startAt;
 
-  @JsonKey(name: "arrival", defaultValue: 0, required: true)
-  int endAt;
+  @JsonKey(name: "end_at", fromJson: string2DateTime, required: true)
+  DateTime endAt;
 
-  Task(this.name, this.desc, this.startAt, this.endAt, {this.id, this.user});
+  Task(
+    this.id,
+    this.name,
+    this.description,
+    this.startAt,
+    this.endAt, {
+    this.user,
+  });
 
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
   Map<String, dynamic> toJson() => _$TaskToJson(this);
-
-  @override
-  String toString() {
-    return """{"id": $id, "name": "$name", "desc": "$desc", "startAt": $startAt, "endAt": $endAt}""";
-  }
 }
 
 class TaskCondition {

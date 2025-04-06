@@ -1,6 +1,5 @@
 import 'package:my_todo/theme/provider.dart';
 
-import 'data.dart';
 import 'extension.dart';
 import 'utils.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,12 @@ import 'package:random_avatar/random_avatar.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class EventsPlannerMultiColumnSchedulerView extends StatefulWidget {
-  const EventsPlannerMultiColumnSchedulerView({super.key});
+  const EventsPlannerMultiColumnSchedulerView({
+    super.key,
+    required this.controller,
+  });
+
+  final EventsController controller;
 
   @override
   State<EventsPlannerMultiColumnSchedulerView> createState() =>
@@ -22,15 +26,11 @@ class _EventsPlannerMultiColumnSchedulerViewState
   late double heightPerMinute;
   late double initialVerticalScrollOffset;
   late DateTime selectedDay;
-  var controller =
-      EventsController()..updateCalendarData((calendarData) {
-        calendarData.addEvents(multiColumnEvents);
-      });
 
   @override
   void initState() {
     super.initState();
-    selectedDay = controller.focusedDay;
+    selectedDay = widget.controller.focusedDay;
     heightPerMinute = 1.0;
     initialVerticalScrollOffset = heightPerMinute * 7 * 60;
   }
@@ -46,7 +46,7 @@ class _EventsPlannerMultiColumnSchedulerViewState
         Expanded(
           child: EventsPlanner(
             key: oneDayViewKey,
-            controller: controller,
+            controller: widget.controller,
             daysShowed: 1,
             heightPerMinute: heightPerMinute,
             initialVerticalScrollOffset: initialVerticalScrollOffset,
@@ -56,7 +56,7 @@ class _EventsPlannerMultiColumnSchedulerViewState
             dayParam: DayParam(
               dayEventBuilder:
                   (event, height, width, heightPerMinute) =>
-                      EventWidget(controller, event, height, width),
+                      EventWidget(widget.controller, event, height, width),
               onSlotTap:
                   (columnIndex, exactDateTime, roundDateTime) =>
                       showSnack(context, "Slot Tap column = ${columnIndex}"),
@@ -132,7 +132,7 @@ class _EventsPlannerMultiColumnSchedulerViewState
         setState(() {
           this.selectedDay = selectedDay;
         });
-        controller.updateFocusedDay(selectedDay);
+        widget.controller.updateFocusedDay(selectedDay);
         oneDayViewKey.currentState?.jumpToDate(selectedDay);
       },
       headerVisible: false,
@@ -277,12 +277,6 @@ class EventWidget extends StatelessWidget {
   }
 
   String getSlotHourText(DateTime start, DateTime end) {
-    return start.hour.toString().padLeft(2, '0') +
-        ":" +
-        start.hour.toString().padLeft(2, '0') +
-        " - " +
-        end.hour.toString().padLeft(2, '0') +
-        ":" +
-        end.hour.toString().padLeft(2, '0');
+    return "${start.hour.toString().padLeft(2, '0')}:${start.hour.toString().padLeft(2, '0')} - ${end.hour.toString().padLeft(2, '0')}:${end.hour.toString().padLeft(2, '0')}";
   }
 }

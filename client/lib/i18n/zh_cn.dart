@@ -243,4 +243,6 @@ Map<String, String> get zhCN => {
 
   "topic_invite_code_copied": "频道的邀请码已经复制到剪贴板。",
   "desc": "描述",
+
+  "member": "成员",
 };

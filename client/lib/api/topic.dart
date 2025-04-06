@@ -74,6 +74,24 @@ Future<List<Topic>> topicGetSelectableRequest() async {
       .toList();
 }
 
+Future<List> topicCalendarRequest({required int id}) async {
+  return (await HTTP.post(
+        '/topic/calendar',
+        data: {'topic_id': id},
+        options: Options(headers: {"Authorization": Guard.jwt}),
+      )).data["data"]
+      as List;
+}
+
+Future topicMemberGetRequest({required int id}) async {
+  return (await HTTP.post(
+        '/topic/member/get',
+        data: {'topic_id': id},
+        options: Options(headers: {"Authorization": Guard.jwt}),
+      )).data["data"]
+      as List;
+}
+
 Future<GetTopicResponse> getTopic(GetTopicRequest req) async {
   if (Guard.isOffline()) {
     return GetTopicResponse(

@@ -35,14 +35,15 @@ class EventsPlannerDraggableEventsView extends StatelessWidget {
         daysHeaderVisibility: daysShowed != 1,
         dayHeaderTextBuilder: (day) => DateFormat("E d").format(day),
       ),
-      fullDayParam: FullDayParam(
-        fullDayEventsBarHeight: 50,
-      ),
+      fullDayParam: FullDayParam(fullDayEventsBarHeight: 50),
     );
   }
 
   DefaultDayHeader getDayHeader(
-      DateTime day, bool isToday, BuildContext context) {
+    DateTime day,
+    bool isToday,
+    BuildContext context,
+  ) {
     return DefaultDayHeader(
       dayText: DateFormat("E d").format(day),
       isToday: isToday,
@@ -72,7 +73,7 @@ class EventsPlannerDraggableEventsView extends StatelessWidget {
         description: event.description,
         color: isDarkMode ? event.color.onPastel : event.color,
         textColor: isDarkMode ? event.textColor.pastel : event.textColor,
-        onTap: () => print("tap ${event.uniqueId}"),
+        onTap: () => print("tap  ${event.data}"),
       ),
     );
   }

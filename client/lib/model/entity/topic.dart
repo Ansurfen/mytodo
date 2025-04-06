@@ -55,7 +55,13 @@ class TopicMember {
   @JsonKey(name: "name")
   String name;
 
-  TopicMember({required this.id, required this.name});
+  @JsonKey(name: "is_male")
+  bool isMale;
+
+  @JsonKey(name: "role", defaultValue: 0)
+  int role;
+
+  TopicMember(this.id, this.name, this.isMale, this.role);
 
   factory TopicMember.fromJson(JsonObject json) => _$TopicMemberFromJson(json);
 

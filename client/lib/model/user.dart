@@ -1,5 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:my_todo/mock/provider.dart';
+import 'package:my_todo/utils/json.dart';
+
+part 'user.g.dart';
 
 @JsonSerializable()
 class UserProfile {
@@ -12,7 +15,7 @@ class UserProfile {
   @JsonKey(name: "description")
   String description;
 
-  @JsonKey(name: "isMale", defaultValue: true)
+  @JsonKey(name: "is_male", defaultValue: true)
   bool isMale;
 
   @JsonKey(name: "is_online", defaultValue: false)
@@ -50,6 +53,8 @@ class UserProfile {
       followerCount: Mock.number(),
     );
   }
+
+  static UserProfile fromJson(JsonObject json) => _$UserProfileFromJson(json);
 }
 
 class Chatsnapshot {

@@ -8,8 +8,6 @@ import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/post.dart';
-import 'package:my_todo/model/vo/post.dart';
-import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/post/snapshot/post_card.dart';
 import 'package:my_todo/view/user/profile/profile_controller.dart';

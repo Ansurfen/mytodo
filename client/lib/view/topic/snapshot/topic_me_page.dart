@@ -4,8 +4,6 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/component/container/empty_container.dart';
 import 'package:my_todo/component/refresh.dart';
-import 'package:my_todo/model/dto/topic.dart';
-import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/theme/animate.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
@@ -44,7 +42,7 @@ class _TopicMePageState extends State<TopicMePage> {
                 icon: Icons.rss_feed,
                 desc: "no_topic".tr,
                 what: "what_is_topic".tr,
-                render: controller.topics____.value.isNotEmpty,
+                render: controller.topics.isNotEmpty,
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(
                   top: MediaQuery.sizeOf(context).height * 0.35,

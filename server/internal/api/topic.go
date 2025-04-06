@@ -40,3 +40,7 @@ type TopicMemberInviteRequest struct {
 type TopicExitRequest struct {
 	TopicId uint `json:"topic_id"`
 }
+
+type TopicCalendarRequest struct {
+	TopicId uint `json:"topic_id"`
+}

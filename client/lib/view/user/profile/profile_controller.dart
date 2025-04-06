@@ -3,28 +3,19 @@
 // license that can be found in the LICENSE file.
 import 'package:get/get.dart';
 import 'package:my_todo/api/user.dart';
-import 'package:my_todo/model/entity/user.dart';
 import 'package:my_todo/model/user.dart';
-import 'package:my_todo/utils/guard.dart';
 
 class ProfileController extends GetxController {
   late int id;
   // late Rx<User> user;
-  late Rx<UserProfile> user;
+  Rx<UserProfile> user = UserProfile.random(0).obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     super.onInit();
     id = int.parse(Get.parameters["id"]!);
 
-    if (Guard.isDevMode()) {
-      user = UserProfile.random(id).obs;
-    } else {
-      //  user = User(id, "", "").obs;
-      // Future.delayed(Duration.zero, () {
-      //   userInfo(id).then((u) => user.value = u);
-      // });
-    }
+    user.value = UserProfile.fromJson(await userFriendGet(friend: id));
   }
 
   void follow() {}

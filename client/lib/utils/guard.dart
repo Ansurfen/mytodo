@@ -126,7 +126,7 @@ class Guard {
   }
 
   static bool isDevMode() {
-    return true;
+    return isOffline();
   }
 
   static bool isOffline() {

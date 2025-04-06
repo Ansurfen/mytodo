@@ -1,18 +1,14 @@
-import 'data.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_calendar_view/infinite_calendar_view.dart';
 import 'package:intl/intl.dart';
 
 class EventsPlannerMultiColumnView extends StatelessWidget {
-  const EventsPlannerMultiColumnView({super.key});
+  const EventsPlannerMultiColumnView({super.key, required this.controller});
+
+  final EventsController controller;
 
   @override
   Widget build(BuildContext context) {
-    var controller =
-        EventsController()..updateCalendarData((calendarData) {
-          calendarData.addEvents(reservationsEvents);
-        });
-
     var heightPerMinute = 1.0;
     var initialVerticalScrollOffset = heightPerMinute * 7 * 60;
 
@@ -60,12 +56,6 @@ class EventsPlannerMultiColumnView extends StatelessWidget {
   }
 
   String getSlotHourText(DateTime start, DateTime end) {
-    return start.hour.toString().padLeft(2, '0') +
-        ":" +
-        start.hour.toString().padLeft(2, '0') +
-        "\n" +
-        end.hour.toString().padLeft(2, '0') +
-        ":" +
-        end.hour.toString().padLeft(2, '0');
+    return "${start.hour.toString().padLeft(2, '0')}:${start.hour.toString().padLeft(2, '0')}\n${end.hour.toString().padLeft(2, '0')}:${end.hour.toString().padLeft(2, '0')}";
   }
 }

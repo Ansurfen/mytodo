@@ -15,7 +15,6 @@ import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/provider.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/topic/detail/topic_controller.dart';
 
 class TopicPage extends StatefulWidget {
@@ -196,11 +195,13 @@ class CalendarViewWidget extends StatelessWidget {
         daysShowed: 7,
         isDarkMode: darkMode,
       ),
-      CalendarView.multi_column2 => EventsPlannerMultiColumnView(
+      CalendarView.multiColumn2 => EventsPlannerMultiColumnView(
         key: UniqueKey(),
+        controller: controller,
       ),
-      CalendarView.multi_column1 => EventsPlannerMultiColumnSchedulerView(
+      CalendarView.multiColumn1 => EventsPlannerMultiColumnSchedulerView(
         key: UniqueKey(),
+        controller: controller,
       ),
       CalendarView.month => EventsMonthsView(controller: controller),
     };

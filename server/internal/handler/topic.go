@@ -442,6 +442,34 @@ func TopicExit(ctx *gin.Context) {
 	}
 }
 
+func TopicCalendar(ctx *gin.Context) {
+	var req api.TopicCalendarRequest
+	err := ctx.Bind(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	_, err = loadTopicPolicy(req.TopicId, u.ID)
+	if err != nil {
+		log.WithError(err).Error("fail to read policy")
+		ctx.Abort()
+		return
+	}
+	var tasks []model.Task
+	err = db.SQL().Table("task").Where("topic_id = ?", req.TopicId).Find(&tasks).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": tasks})
+}
+
 func loadTopicPolicy(tid, uid uint) (policy model.TopicPolicy, err error) {
 	err = db.SQL().Table("topic_policy").
 		Where("topic_id = ? AND user_id = ?", tid, uid).First(&policy).Error
