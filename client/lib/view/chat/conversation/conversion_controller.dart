@@ -26,6 +26,11 @@ class ConversionController extends getx.GetxController {
       otherUsers: [],
       currentUser: ChatUser(id: Guard.u!.id.toString(), name: Guard.u!.name),
     );
+    chatRead(
+      isTopic: chatsnapshot.isTopic,
+      id: chatsnapshot.id,
+      lastMessageId: chatsnapshot.lastMsgId,
+    );
   }
 
   @override

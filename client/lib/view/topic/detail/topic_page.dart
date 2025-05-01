@@ -75,6 +75,7 @@ class _TopicPageState extends State<TopicPage> {
               onPressed: () {
                 RouterProvider.viewChatConversation(
                   Chatsnapshot(
+                    icon: "",
                     unreaded: 0,
                     lastAt: DateTime.now(),
                     lastMsg: "",

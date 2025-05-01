@@ -71,6 +71,13 @@ Future userFriendGet({required int friend}) async {
   )).data["data"];
 }
 
+Future<List> userContactsRequest() async {
+  return (await HTTP.get(
+    "/user/contacts",
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
+}
+
 class UserSignRequest {
   String email;
   String password;

@@ -310,7 +310,8 @@ func ChatSnap(ctx *gin.Context) {
     u.name AS last_sender_name,
     lm.created_at,
     COUNT(mt.id) AS unread_count,
-    t.name AS topic_name  -- 这里加上了 topic 的 name 字段
+    t.name AS name,
+	t.icon AS icon
 FROM 
     topic_join tj
 LEFT JOIN message_topic_unread mtu
@@ -401,15 +402,12 @@ type messageSnap struct {
 	Online         bool      `json:"is_online"`
 	Name           string    `json:"name"`
 	Id             uint      `json:"id"`
+	Icon           string    `json:"icon"`
 	LastMessageId  uint      `json:"last_message_id"`
 	LastMessage    string    `json:"last_message"`
 	LastSenderName string    `json:"last_sender_name"`
 	CreatedAt      time.Time `json:"last_at"`
 	UnreadCount    uint      `json:"unreaded"`
-}
-
-func ChatTopicDel(ctx *gin.Context) {
-
 }
 
 func ChatTopicReaction(ctx *gin.Context) {
@@ -655,5 +653,97 @@ func ChatFriendImage(ctx *gin.Context) {
 		log.WithError(err).Error("writing image to response")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while sending profile image"})
 		return
+	}
+}
+
+func ChatTopicRead(ctx *gin.Context) {
+	var req api.ChatTopicReadRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var readed model.MessageTopicUnread
+	err = db.SQL().Table("message_topic_unread").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).First(&readed).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if err == nil {
+		if readed.LastReadMessageId < req.LastMessageId {
+			readed.LastReadMessageId = req.LastMessageId
+			err = db.SQL().Table("message_topic_unread").Save(&readed).Error
+			if err != nil {
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+		}
+	} else {
+		readed = model.MessageTopicUnread{
+			TopicId:           req.TopicId,
+			UserId:            u.ID,
+			LastReadMessageId: req.LastMessageId,
+		}
+		err = db.SQL().Table("message_topic_unread").Create(&readed).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+	}
+}
+
+func ChatFriendRead(ctx *gin.Context) {
+	var req api.ChatFriendReadRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var readed model.MessageFriendUnread
+	err = db.SQL().Table("message_friend_unread").Where("friend_id = ? AND user_id = ?", req.FriendId, u.ID).First(&readed).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if err == nil {
+		if readed.LastReadMessageId < req.LastMessageId {
+			readed.LastReadMessageId = req.LastMessageId
+			err = db.SQL().Table("message_friend_unread").Save(&readed).Error
+			if err != nil {
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+		}
+	} else {
+		readed = model.MessageFriendUnread{
+			FriendId:          req.FriendId,
+			UserId:            u.ID,
+			LastReadMessageId: req.LastMessageId,
+		}
+		err = db.SQL().Table("message_friend_unread").Create(&readed).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
 	}
 }

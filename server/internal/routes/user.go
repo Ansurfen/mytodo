@@ -20,6 +20,7 @@ func InstallUserRoute(e *gin.Engine) {
 		userRouter.GET("/profile/:id", handler.UserProfile)
 		userRouter.GET("/online", handler.UserOnline)
 		userRouter.POST("/edit", middleware.Auth, handler.UserEdit)
+		userRouter.GET("/contacts", middleware.Auth, handler.UserContacts)
 
 		friendRouter := userRouter.Group("/friend")
 		{

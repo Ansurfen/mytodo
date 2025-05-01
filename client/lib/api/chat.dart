@@ -232,3 +232,25 @@ Future chatFriendReaction({
     options: Options(headers: {'Authorization': Guard.jwt}),
   );
 }
+
+Future chatRead({
+  required bool isTopic,
+  required int id,
+  required int lastMessageId,
+}) async {
+  var url = "/chat/friend/read";
+  if (isTopic) {
+    url = "/chat/topic/read";
+  }
+  var data = {"last_message_id": lastMessageId};
+  if (isTopic) {
+    data["topic_id"] = id;
+  } else {
+    data["friend_id"] = id;
+  }
+  return await HTTP.post(
+    url,
+    data: data,
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  );
+}

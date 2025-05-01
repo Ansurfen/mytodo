@@ -492,6 +492,32 @@ func UserEdit(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit user"})
 }
 
+func UserContacts(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var contacts []contact
+	err := db.SQL().Raw(`SELECT u.id, u.name, u.about
+FROM user_relation ur
+JOIN user u ON u.id = ur.friend_id
+WHERE ur.user_id = %d;
+`, u.ID).Find(&contacts).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get contacts")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully get contacts", "data": contacts})
+}
+
+type contact struct {
+	Id    uint   `json:"id"`
+	Name  string `json:"name"`
+	About string `json:"about"`
+}
+
 func FriendNew(ctx *gin.Context) {
 	var req api.FriendNewRequest
 	err := ctx.BindJSON(&req)

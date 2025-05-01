@@ -10,12 +10,16 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:my_todo/api/chat.dart';
+import 'package:my_todo/api/user.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
+import 'package:my_todo/component/image.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/animate.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/utils/time.dart';
 import 'package:my_todo/view/chat/snapshot/chat_controller.dart';
@@ -33,19 +37,30 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage>
     with AutomaticKeepAliveClientMixin {
   ChatController controller = Get.find<ChatController>();
-  final List<ContactInfo> _contacts = [];
+  List<ContactInfo> contacts = [];
   RxList<ContactInfo> filteredItems = <ContactInfo>[].obs;
 
   @override
   void initState() {
     super.initState();
-    _contacts.addAll(
-      List.generate(Mock.number(min: 5), (idx) {
-        return ContactInfo(name: Mock.username(), about: Mock.text());
-      }),
-    );
-    _handleList(_contacts);
-    filteredItems.value = List.from(_contacts);
+    userContactsRequest().then((res) {
+      for (var user in res) {
+        contacts.add(
+          ContactInfo(
+            id: user["id"].toString(),
+            name: user["name"],
+            about: user["about"] ?? "",
+          ),
+        );
+      }
+      _handleList(contacts);
+      filteredItems.value = List.from(contacts);
+    });
+    // contacts.addAll(
+    //   List.generate(Mock.number(min: 5), (idx) {
+    //     return ContactInfo(name: Mock.username(), about: Mock.text());
+    //   }),
+    // );
   }
 
   void _handleList(List<ContactInfo> list) {
@@ -61,10 +76,10 @@ class _ChatPageState extends State<ChatPage>
       }
     }
     // A-Z sort.
-    SuspensionUtil.sortListBySuspensionTag(_contacts);
+    SuspensionUtil.sortListBySuspensionTag(contacts);
 
     // show sus tag.
-    SuspensionUtil.setShowSuspensionStatus(_contacts);
+    SuspensionUtil.setShowSuspensionStatus(contacts);
 
     setState(() {});
   }
@@ -139,7 +154,7 @@ class _ChatPageState extends State<ChatPage>
         Expanded(
           child: refreshContainer(
             context: context,
-            onRefresh: () {},
+            onRefresh: controller.refreshItems,
             onLoad: () {},
             child: FadeAnimatedBuilder(
               opacity: TodoAnimateStyle.fadeOutOpacity(
@@ -213,14 +228,20 @@ class _ChatPageState extends State<ChatPage>
                             // An action can be bigger than the others.
                             flex: 2,
                             onPressed: (BuildContext context) {
-                              chat.unreaded = 0;
-                              if (controller.pinnedItems.contains(chat)) {
-                                controller.pinnedItems[index] = chat;
-                              } else {
-                                controller.filteredSnapItems[index -
-                                        controller.pinnedItems.length] =
-                                    chat;
-                              }
+                              chatRead(
+                                isTopic: chat.isTopic,
+                                id: chat.id,
+                                lastMessageId: chat.lastMsgId,
+                              ).then((_) {
+                                chat.unreaded = 0;
+                                if (controller.pinnedItems.contains(chat)) {
+                                  controller.pinnedItems[index] = chat;
+                                } else {
+                                  controller.filteredSnapItems[index -
+                                          controller.pinnedItems.length] =
+                                      chat;
+                                }
+                              });
                             },
                             backgroundColor: const Color(0xFF7BC043),
                             foregroundColor: Colors.white,
@@ -262,6 +283,7 @@ class _ChatPageState extends State<ChatPage>
                                 ),
                                 padding: EdgeInsets.symmetric(horizontal: 10),
                                 child: ChatItem(
+                                  icon: chat.icon,
                                   uid: chat.id,
                                   name: chat.name,
                                   isOnline: chat.isOnline,
@@ -278,6 +300,7 @@ class _ChatPageState extends State<ChatPage>
                                 padding: EdgeInsets.symmetric(horizontal: 10),
                                 child: ChatItem(
                                   uid: chat.id,
+                                  icon: chat.icon,
                                   name: chat.name,
                                   isOnline: chat.isOnline,
                                   counter: chat.unreaded,
@@ -320,10 +343,10 @@ class _ChatPageState extends State<ChatPage>
             ),
             onChanged: (v) {
               if (v.isEmpty) {
-                filteredItems.value = List.from(_contacts);
+                filteredItems.value = List.from(contacts);
               } else {
                 filteredItems.clear();
-                for (var item in _contacts) {
+                for (var item in contacts) {
                   if (item.name.contains(v)) {
                     filteredItems.add(item);
                   }
@@ -411,6 +434,7 @@ class _ChatPageState extends State<ChatPage>
 
   Widget _buildListItem(ContactInfo model) {
     String susTag = model.getSuspensionTag();
+    var id = int.parse(model.id!);
     return Column(
       children: [
         Offstage(
@@ -419,8 +443,8 @@ class _ChatPageState extends State<ChatPage>
         ),
         ListTile(
           leading: CircleAvatar(
-            backgroundColor: Theme.of(context).primaryColorLight,
-            child: SvgPicture.asset("assets/images/flutter.svg"),
+            backgroundImage: TodoImage.userProfile(id),
+            radius: 25,
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,7 +455,7 @@ class _ChatPageState extends State<ChatPage>
             ],
           ),
           onTap: () {
-            RouterProvider.toUserProfile(1);
+            RouterProvider.toUserProfile(id);
           },
         ),
       ],

@@ -81,6 +81,9 @@ class Chatsnapshot {
   @JsonKey(name: "id")
   int id;
 
+  @JsonKey(name: "icon")
+  String icon;
+
   @JsonKey(name: "is_online", defaultValue: false)
   bool isOnline;
 
@@ -95,6 +98,7 @@ class Chatsnapshot {
     required this.lastMsgId,
     required this.name,
     required this.id,
+    required this.icon,
     required this.isOnline,
     required this.isTopic,
   });
@@ -112,6 +116,7 @@ class Chatsnapshot {
       isTopic: Mock.boolean(),
       lastSenderName: Mock.username(),
       lastMsgId: Mock.number(),
+      icon: "",
     );
   }
 

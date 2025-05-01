@@ -4,7 +4,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_todo/component/image.dart';
+import 'package:my_todo/utils/guard.dart';
 
 Random random = Random();
 List names = [
@@ -55,10 +57,12 @@ class ChatItem extends StatefulWidget {
   final bool isOnline;
   final int counter;
   final bool isTopic;
+  final String icon;
   final void Function()? onTap;
 
   const ChatItem({
     super.key,
+    required this.icon,
     required this.uid,
     required this.name,
     required this.time,
@@ -116,8 +120,8 @@ class _ChatItemState extends State<ChatItem> {
                   ],
                 )
                 : CircleAvatar(
-                  backgroundImage: TodoImage.userProfile(widget.uid),
                   radius: 25,
+                  child: SvgPicture.asset(widget.icon),
                 ),
         title: Text(
           widget.name,

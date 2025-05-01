@@ -17,10 +17,10 @@ func InstallChatRoute(e *gin.Engine) {
 			topicRouter.POST("/new", middleware.Auth, handler.ChatTopicNew)
 			topicRouter.POST("/upload", middleware.Auth, handler.ChatTopicUpload)
 			topicRouter.POST("/get", middleware.Auth, handler.ChatTopicGet)
-			topicRouter.POST("/del", middleware.Auth, handler.ChatTopicDel)
 			topicRouter.POST("/reaction", middleware.Auth, handler.ChatTopicReaction)
 			topicRouter.GET("/image/:filename", handler.ChatTopicImage)
 			topicRouter.GET("/audio/:filename")
+			topicRouter.POST("/read", middleware.Auth, handler.ChatTopicRead)
 		}
 		friendRouter := chatRouter.Group("/friend")
 		{
@@ -32,6 +32,7 @@ func InstallChatRoute(e *gin.Engine) {
 			friendRouter.POST("/reaction", middleware.Auth, handler.ChatFriendReaction)
 			friendRouter.GET("/image/:filename", handler.ChatFriendImage)
 			friendRouter.GET("/audio/:filename")
+			friendRouter.POST("/read", middleware.Auth, handler.ChatFriendRead)
 		}
 	}
 }

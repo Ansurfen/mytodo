@@ -23,6 +23,14 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
+    refreshItems();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      animationController.forward();
+    });
+  }
+
+  void refreshItems() {
+    allItems.clear();
     Future.delayed(Duration.zero, () {
       if (Guard.isDevMode()) {
         allItems = Chatsnapshot.randomList();
@@ -33,11 +41,8 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
             allItems.add(Chatsnapshot.fromJson(item));
           }
           updateFilteredList("");
-        });
+       });
       }
-    });
-    Future.delayed(const Duration(milliseconds: 100), () {
-      animationController.forward();
     });
   }
 

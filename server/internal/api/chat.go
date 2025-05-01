@@ -58,3 +58,13 @@ type ChatFriendUploadRequest struct {
 	ReplyTo   string                `form:"reply_to"`
 	ReplyType string                `form:"reply_type"`
 }
+
+type ChatTopicReadRequest struct {
+	TopicId       uint `json:"topic_id"`
+	LastMessageId uint `json:"last_message_id"`
+}
+
+type ChatFriendReadRequest struct {
+	FriendId      uint `json:"friend_id"`
+	LastMessageId uint `json:"last_message_id"`
+}

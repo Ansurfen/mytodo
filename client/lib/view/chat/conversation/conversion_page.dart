@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' as getx;
 import 'package:my_todo/api/chat.dart';
+import 'package:my_todo/component/image.dart';
 import 'package:my_todo/config.dart';
 import 'package:my_todo/data.dart';
 import 'package:my_todo/mock/provider.dart';
@@ -228,7 +229,18 @@ class _ConversionPageState extends State<ConversionPage> {
               CircleAvatar(
                 radius: 25,
                 backgroundColor: Theme.of(context).primaryColorLight,
-                child: SvgPicture.asset("assets/animal/bird/bird.svg"),
+                child:
+                    controller.chatsnapshot.isTopic
+                        ? CircleAvatar(
+                          radius: 25,
+                          child: SvgPicture.asset(controller.chatsnapshot.icon),
+                        )
+                        : CircleAvatar(
+                          backgroundImage: TodoImage.userProfile(
+                            controller.chatsnapshot.id,
+                          ),
+                          radius: 25,
+                        ),
               ),
               SizedBox(width: 10),
             ],

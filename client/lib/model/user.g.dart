@@ -37,6 +37,7 @@ Chatsnapshot _$ChatsnapshotFromJson(Map<String, dynamic> json) => Chatsnapshot(
   lastMsgId: (json['last_message_id'] as num).toInt(),
   name: json['name'] as String,
   id: (json['id'] as num).toInt(),
+  icon: json['icon'] as String,
   isOnline: json['is_online'] as bool? ?? false,
   isTopic: json['is_topic'] as bool? ?? false,
 );
@@ -50,6 +51,7 @@ Map<String, dynamic> _$ChatsnapshotToJson(Chatsnapshot instance) =>
       'last_message_id': instance.lastMsgId,
       'name': instance.name,
       'id': instance.id,
+      'icon': instance.icon,
       'is_online': instance.isOnline,
       'is_topic': instance.isTopic,
     };
