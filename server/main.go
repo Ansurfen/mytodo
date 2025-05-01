@@ -65,6 +65,17 @@ func init() {
 			log.WithError(err).Fatal("fail to create bucket")
 		}
 	}
+
+	exist, err = db.OSS().BucketExists(context.TODO(), "task")
+	if err != nil {
+		log.WithError(err).Fatal("verifying bucket")
+	}
+	if !exist {
+		err = db.OSS().MakeBucket(context.TODO(), "task", minio.MakeBucketOptions{})
+		if err != nil {
+			log.WithError(err).Fatal("fail to create bucket")
+		}
+	}
 	db.SQL().AutoMigrate(
 		model.User{},
 		model.UserRelation{},

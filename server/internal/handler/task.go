@@ -1,16 +1,24 @@
 package handler
 
 import (
+	"bytes"
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"math"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/minio/minio-go/v7"
 )
 
 func TaskNew(ctx *gin.Context) {
@@ -225,13 +233,23 @@ func TaskCommit(ctx *gin.Context) {
 	}
 
 	var cond model.TaskCondition
-	err = db.SQL().Table("task_condition").First(&cond).Error
+	err = db.SQL().Table("task_condition").Where("id = ?", req.ConditionId).First(&cond).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
+
+	var argument map[string]any
 	switch cond.Type {
+	case model.TaskTypeClick:
+		argument = map[string]any{
+			"create_at": time.Now().Unix(),
+		}
+	case model.TaskTypeText:
+		argument = req.Argument
+	case model.TaskTypeFile:
+
 	case model.TaskTypeQR:
 		tokenString := req.Argument["token"].(string)
 		claims := jwt.StandardClaims{}
@@ -248,13 +266,43 @@ func TaskCommit(ctx *gin.Context) {
 				return
 			}
 		}
+	case model.TaskTypeLocate:
+		locale := req.Argument["locate"].(string)
+		res := strings.Split(locale, "---data:image/png;base64,")
+		latLng := strings.Split(res[0], ",")
+
+		img, err := base64.StdEncoding.DecodeString(res[1])
+		if err != nil {
+			log.WithError(err).Error("fail to parse base64")
+			ctx.Abort()
+			return
+		}
+		reader := bytes.NewReader(img)
+		db.OSS().PutObject(context.Background(), "task", fmt.Sprintf("/locate/%d.png", cond.ID), reader, int64(len(img)), minio.PutObjectOptions{})
+		lat, err := strconv.ParseFloat(latLng[0], 64)
+		if err != nil {
+			log.WithError(err).Error("无法解析纬度")
+			ctx.Abort()
+			return
+		}
+
+		lng, err := strconv.ParseFloat(latLng[1], 64)
+		if err != nil {
+			log.WithError(err).Error("无法解析经度")
+			ctx.Abort()
+			return
+		}
+		argument = map[string]any{
+			"latitude":  lat,
+			"longitude": lng,
+		}
 	}
 
 	commit := model.TaskCommit{
 		TaskId:      req.TaskId,
 		UserId:      u.ID,
 		ConditionId: req.ConditionId,
-		Argument:    req.Argument,
+		Argument:    argument,
 	}
 	err = db.SQL().Table("task_commit").Create(&commit).Error
 	if err != nil {
@@ -325,26 +373,30 @@ func TaskGet(ctx *gin.Context) {
 					})
 					finished++
 				case model.TaskTypeLocate:
-					wantLat := require.Param["latitude"].(float64)
-					wantLng := require.Param["longitude"].(float64)
-					radius := require.Param["radius"].(float64)
-					gotLat := got.Argument["latitude"].(float64)
-					gotLng := got.Argument["longitude"].(float64)
-					distance := haversine(wantLat, wantLng, gotLat, gotLng)
-					if distance <= radius/1000 {
-						finished++
-						taskConds = append(taskConds, taskCond{
-							Want:  &require,
-							Got:   &got,
-							Valid: true,
-						})
-					} else {
-						taskConds = append(taskConds, taskCond{
-							Want:  &require,
-							Got:   &got,
-							Valid: false,
-						})
+					tc := taskCond{Valid: false, Got: &got}
+					for _, v := range require.Param {
+						v := v.(map[string]any)
+						wantLat := v["latitude"].(json.Number)
+						wantLng := v["longitude"].(json.Number)
+						radius := v["radius"].(json.Number)
+						gotLat := got.Argument["latitude"].(json.Number)
+						gotLng := got.Argument["longitude"].(json.Number)
+
+						wLat, _ := wantLat.Float64()
+						wLng, _ := wantLng.Float64()
+						wRadius, _ := radius.Float64()
+						gLat, _ := gotLat.Float64()
+						gLng, _ := gotLng.Float64()
+						distance := haversine(wLat, wLng, gLat, gLng)
+						tc.Want = &require
+
+						if distance <= wRadius/1000 {
+							finished++
+							tc.Valid = true
+							break
+						}
 					}
+					taskConds = append(taskConds, tc)
 				}
 			} else {
 				taskConds = append(taskConds, taskCond{
