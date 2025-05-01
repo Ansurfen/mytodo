@@ -365,7 +365,7 @@ func TaskGet(ctx *gin.Context) {
 		for _, require := range conds {
 			if got, ok := gots[require.ID]; ok {
 				switch require.Type {
-				case model.TaskTypeClick, model.TaskTypeImage, model.TaskTypeFile:
+				case model.TaskTypeClick, model.TaskTypeImage, model.TaskTypeFile, model.TaskTypeText:
 					taskConds = append(taskConds, taskCond{
 						Want:  &require,
 						Got:   &got,

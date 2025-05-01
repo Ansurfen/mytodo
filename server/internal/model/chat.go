@@ -42,8 +42,20 @@ type MessageReply struct {
 	VoiceDuration uint        `json:"voice_message_duration"`
 }
 
-func (MessageReply) TableName() string {
-	return "message_reply"
+type MessageTopicReply struct {
+	MessageReply
+}
+
+func (MessageTopicReply) TableName() string {
+	return "message_topic_reply"
+}
+
+type MessageFriendReply struct {
+	MessageReply
+}
+
+func (MessageFriendReply) TableName() string {
+	return "message_friend_reply"
 }
 
 type MessageReaction struct {
@@ -53,8 +65,20 @@ type MessageReaction struct {
 	ReactedUserId uint   `gorm:"type:int" json:"reactedUserId"`
 }
 
-func (MessageReaction) TableName() string {
-	return "message_reaction"
+type MessageTopicReaction struct {
+	MessageReaction
+}
+
+func (MessageTopicReaction) TableName() string {
+	return "message_topic_reaction"
+}
+
+type MessageFriendReaction struct {
+	MessageReaction
+}
+
+func (MessageFriendReaction) TableName() string {
+	return "message_friend_reaction"
 }
 
 type MessageType uint8
@@ -68,4 +92,26 @@ const (
 
 func (t MessageType) String() string {
 	return []string{"text", "iamge", "voice", "custom"}[t]
+}
+
+type MessageTopicUnread struct {
+	Model
+	UserId            uint `gorm:"index;not null" json:"user_id"`
+	TopicId           uint `gorm:"index;not null" json:"topic_id"`
+	LastReadMessageId uint `gorm:"not null;default:0" json:"last_read_message_id"`
+}
+
+func (t MessageTopicUnread) TableName() string {
+	return "message_topic_unread"
+}
+
+type MessageFriendUnread struct {
+	Model
+	UserId            uint `gorm:"index;not null" json:"user_id"`
+	FriendId          uint `gorm:"index;not null" json:"friend_id"`
+	LastReadMessageId uint `gorm:"not null;default:0" json:"last_read_message_id"`
+}
+
+func (t MessageFriendUnread) TableName() string {
+	return "message_friend_unread"
 }

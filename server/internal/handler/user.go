@@ -678,7 +678,7 @@ func FriendGet(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	if relation.ID == 0 {
+	if u.ID != uint(friendId) && relation.ID == 0 {
 		ctx.JSON(200, gin.H{
 			"data": data,
 		})
@@ -701,7 +701,7 @@ func FriendGet(ctx *gin.Context) {
 		return
 	}
 	data["post"] = posts
-	ctx.JSON(200, data)
+	ctx.JSON(200, gin.H{"data": data})
 }
 
 func FriendPostGet(ctx *gin.Context) {
