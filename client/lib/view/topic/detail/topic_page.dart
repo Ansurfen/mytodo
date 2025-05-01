@@ -82,6 +82,8 @@ class _TopicPageState extends State<TopicPage> {
                     id: controller.id,
                     isOnline: false,
                     isTopic: true,
+                    lastSenderName: '',
+                    lastMsgId: 0,
                   ),
                 );
               },

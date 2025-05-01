@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
 
 class LoggerFilter extends LogFilter {

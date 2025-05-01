@@ -57,6 +57,7 @@ class UserProfile {
   static UserProfile fromJson(JsonObject json) => _$UserProfileFromJson(json);
 }
 
+@JsonSerializable()
 class Chatsnapshot {
   @JsonKey(name: "unreaded", defaultValue: 0)
   int unreaded;
@@ -64,8 +65,14 @@ class Chatsnapshot {
   @JsonKey(name: "last_at")
   DateTime lastAt;
 
+  @JsonKey(name: "last_sender_name")
+  String lastSenderName;
+
   @JsonKey(name: "last_message")
   String lastMsg;
+
+  @JsonKey(name: "last_message_id")
+  int lastMsgId;
 
   // topic or username
   @JsonKey(name: "name")
@@ -83,7 +90,9 @@ class Chatsnapshot {
   Chatsnapshot({
     required this.unreaded,
     required this.lastAt,
+    required this.lastSenderName,
     required this.lastMsg,
+    required this.lastMsgId,
     required this.name,
     required this.id,
     required this.isOnline,
@@ -101,6 +110,8 @@ class Chatsnapshot {
       id: Mock.number(),
       isOnline: Mock.boolean(),
       isTopic: Mock.boolean(),
+      lastSenderName: Mock.username(),
+      lastMsgId: Mock.number(),
     );
   }
 
@@ -110,4 +121,6 @@ class Chatsnapshot {
       (index) => Chatsnapshot.random(),
     );
   }
+
+  static Chatsnapshot fromJson(JsonObject json) => _$ChatsnapshotFromJson(json);
 }

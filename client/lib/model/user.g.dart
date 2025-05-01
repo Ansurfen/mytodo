@@ -28,3 +28,28 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'topic_count': instance.topicCount,
       'follower_count': instance.followerCount,
     };
+
+Chatsnapshot _$ChatsnapshotFromJson(Map<String, dynamic> json) => Chatsnapshot(
+  unreaded: (json['unreaded'] as num?)?.toInt() ?? 0,
+  lastAt: DateTime.parse(json['last_at'] as String),
+  lastSenderName: json['last_sender_name'] as String,
+  lastMsg: json['last_message'] as String,
+  lastMsgId: (json['last_message_id'] as num).toInt(),
+  name: json['name'] as String,
+  id: (json['id'] as num).toInt(),
+  isOnline: json['is_online'] as bool? ?? false,
+  isTopic: json['is_topic'] as bool? ?? false,
+);
+
+Map<String, dynamic> _$ChatsnapshotToJson(Chatsnapshot instance) =>
+    <String, dynamic>{
+      'unreaded': instance.unreaded,
+      'last_at': instance.lastAt.toIso8601String(),
+      'last_sender_name': instance.lastSenderName,
+      'last_message': instance.lastMsg,
+      'last_message_id': instance.lastMsgId,
+      'name': instance.name,
+      'id': instance.id,
+      'is_online': instance.isOnline,
+      'is_topic': instance.isTopic,
+    };

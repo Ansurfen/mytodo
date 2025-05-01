@@ -90,6 +90,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           id: controller.id,
                           isOnline: true,
                           isTopic: false,
+                          lastSenderName: '',
+                          lastMsgId: 0,
                         ),
                       );
                     },

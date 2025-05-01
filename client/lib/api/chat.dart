@@ -110,35 +110,11 @@ Future<GetChatResponse> getChat(GetChatRequest req) async {
   );
 }
 
-class ChatSnapshotResponse extends BaseResponse {
-  List<ChatSnapshotDTO> data = [];
-
-  ChatSnapshotResponse(super.json);
-
-  ChatSnapshotResponse.fromResponse(Response res) : super(res.data) {
-    if (res.data["data"]["snaps"] != null) {
-      data =
-          (res.data["data"]["snaps"] as List)
-              .map(
-                (e) => ChatSnapshotDTO(
-                  lastAt: DateTime.parse(e["lastAt"]),
-                  lastMsg:
-                      (e["lastMsg"] as List).map((e) => e as String).toList(),
-                  username: e["username"],
-                  uid: e["uid"],
-                  count: e["count"],
-                ),
-              )
-              .toList();
-    }
-  }
-}
-
-Future chatSnapshotRequest() async {
-  return await HTTP.get(
+Future<List> chatSnapshotRequest() async {
+  return (await HTTP.get(
     '/chat/snap',
     options: Options(headers: {'Authorization': Guard.jwt}),
-  );
+  )).data["data"];
 }
 
 Future chatNew({

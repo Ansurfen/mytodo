@@ -9,6 +9,7 @@ import (
 	"mytodo/internal/model"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"time"
 
@@ -301,14 +302,15 @@ func ChatSnap(ctx *gin.Context) {
 	if !ok {
 		return
 	}
-	var message []messageTopicSnap
+	var messageTopic []messageSnap
 	err := db.SQL().Raw(`SELECT 
-    tj.topic_id,
+    tj.topic_id AS Id,
     lm.id AS last_message_id,
     lm.message AS last_message,
     u.name AS last_sender_name,
     lm.created_at,
-    COUNT(mt.id) AS unread_count
+    COUNT(mt.id) AS unread_count,
+    t.name AS topic_name  -- 这里加上了 topic 的 name 字段
 FROM 
     topic_join tj
 LEFT JOIN message_topic_unread mtu
@@ -326,27 +328,84 @@ JOIN user u ON lm.sent_by = u.id
 LEFT JOIN message_topic mt
     ON mt.topic_id = tj.topic_id
    AND mt.id > COALESCE(mtu.last_read_message_id, 0)
+JOIN topic t ON tj.topic_id = t.id
 WHERE 
     tj.user_id = %d
 GROUP BY 
-    tj.topic_id, lm.id, lm.message, u.name, lm.created_at
+    tj.topic_id, lm.id, lm.message, u.name, lm.created_at, t.name
 ORDER BY 
-    lm.created_at DESC;`, u.ID).Find(&message).Error
+    lm.created_at DESC;
+`, u.ID).Find(&messageTopic).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{"msg": "", "data": message})
+	var messageFriend []messageSnap
+	err = db.SQL().Raw(`SELECT
+	u.name AS name,
+    ur.friend_id AS Id,
+    lm.id AS last_message_id,
+    lm.message AS last_message,
+    u.name AS last_sender_name,
+    lm.created_at,
+    COUNT(m.id) AS unread_count
+FROM 
+    user_relation ur
+LEFT JOIN message_friend_unread mfu
+    ON ur.friend_id = mfu.friend_id AND ur.user_id = mfu.user_id
+JOIN (
+    SELECT 
+        friend_id,
+        MAX(id) AS last_message_id
+    FROM 
+        message_friend
+    GROUP BY friend_id
+) last_msg_ids ON ur.friend_id = last_msg_ids.friend_id
+JOIN message_friend lm ON lm.id = last_msg_ids.last_message_id
+JOIN user u ON lm.sent_by = u.id
+LEFT JOIN message_friend m
+    ON m.friend_id = ur.friend_id
+   AND m.id > COALESCE(mfu.last_read_message_id, 0)
+WHERE 
+    ur.user_id = %d
+GROUP BY 
+    ur.friend_id, lm.id, lm.message, u.name, lm.created_at
+ORDER BY 
+    lm.created_at DESC;`, u.ID).Find(&messageFriend).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	for i := 0; i < len(messageTopic); i++ {
+		messageTopic[i].IsTopic = true
+	}
+	for i := 0; i < len(messageFriend); i++ {
+		_, _, err = db.Rdb().Scan(context.TODO(), 100, fmt.Sprintf("*user_%d*", messageFriend[i].Id), 1).Result()
+		if err == nil {
+			messageFriend[i].Online = true
+		}
+	}
+	combined := append(messageTopic, messageFriend...)
+
+	sort.Slice(combined, func(i, j int) bool {
+		return combined[i].CreatedAt.After(combined[j].CreatedAt)
+	})
+
+	ctx.JSON(200, gin.H{"msg": "", "data": combined})
 }
 
-type messageTopicSnap struct {
-	TopicId   uint      `json:"topic_id"`
-	LastMsgId uint      `json:"last_message_id"`
-	LastMsg   string    `json:"last_message"`
-	SentBy    uint      `json:"sent_by"`
-	CreatedAt time.Time `json:"created_at"`
-	Unread    uint      `json:"unread_count"`
+type messageSnap struct {
+	IsTopic        bool      `json:"is_topic"`
+	Online         bool      `json:"is_online"`
+	Name           string    `json:"name"`
+	Id             uint      `json:"id"`
+	LastMessageId  uint      `json:"last_message_id"`
+	LastMessage    string    `json:"last_message"`
+	LastSenderName string    `json:"last_sender_name"`
+	CreatedAt      time.Time `json:"last_at"`
+	UnreadCount    uint      `json:"unreaded"`
 }
 
 func ChatTopicDel(ctx *gin.Context) {

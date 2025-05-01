@@ -91,6 +91,15 @@ func UserSign(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
+		err = db.SQL().Table("user_relation").Create(&model.UserRelation{
+			UserId:   user.ID,
+			FriendId: user.ID,
+		}).Error
+		if err != nil {
+			log.WithError(err).Error("creating user relation")
+			ctx.Abort()
+			return
+		}
 	} else {
 		if user.Password != MD5(req.Password) {
 			log.Error("password not match")
@@ -115,7 +124,6 @@ func UserSign(ctx *gin.Context) {
 			res.JWT = val
 		}
 	}
-
 	ctx.JSON(200, res)
 }
 
