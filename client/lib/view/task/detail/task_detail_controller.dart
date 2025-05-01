@@ -23,14 +23,14 @@ class TaskInfoController extends GetxController {
   Rx<String> qrCode = "".obs;
   WebSocketChannel? qrChannel;
   List<TFile> images = [];
-  List<ConditionItem> conds = [];
+  late TaskCardModel model;
 
   @override
   void onInit() {
     super.onInit();
-    var data = Get.parameters;
-    // TODO 根据id 查询出条件
-    conds = Get.arguments as List<ConditionItem>;
+    var data = Get.parameters; 
+    model = Get.arguments as TaskCardModel;
+
     return;
     id = int.parse(data['id']!);
     onTaps = [

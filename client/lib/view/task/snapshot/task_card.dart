@@ -33,7 +33,7 @@ class TaskCardModel {
   String description;
 
   @JsonKey(name: "conds", fromJson: parseCondition)
-  List<TaskCardCondModel> cond;
+  List<ConditionItem> cond;
 
   TaskCardModel(this.id, this.icon, this.name, this.description, this.cond);
 
@@ -41,10 +41,16 @@ class TaskCardModel {
       _$TaskCardModelFromJson(json);
 }
 
-List<TaskCardCondModel> parseCondition(List<Map> data) {
-  final ret = <TaskCardCondModel>[];
+List<ConditionItem> parseCondition(List<Map> data) {
+  final ret = <ConditionItem>[];
   for (var e in data) {
-    ret.add(TaskCardCondModel(e["want"]["type"], e["valid"]));
+    ret.add(
+      ConditionItem(
+        type: e["want"]["type"],
+        finish: e["valid"],
+        id: e["want"]["id"],
+      ),
+    );
   }
   return ret;
 }
@@ -144,16 +150,9 @@ class _TopicItemState extends State<TopicItem> {
 }
 
 class TaskCard extends StatefulWidget {
-  const TaskCard({
-    super.key,
-    required this.title,
-    required this.msg,
-    required this.model,
-  });
+  const TaskCard({super.key, required this.model});
 
-  final GetTopicDto model;
-  final String title;
-  final String msg;
+  final TaskCardModel model;
 
   @override
   State<TaskCard> createState() => _TaskCardState();
@@ -166,17 +165,10 @@ class _TaskCardState extends State<TaskCard>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final ButtonStyle flatButtonStyle = TextButton.styleFrom(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(4.0)),
-      ),
-    );
     bool isLight = Theme.of(context).brightness == Brightness.light;
     var key = widget.key as ValueKey<ExpansionTileCardState>;
+    var conds = widget.model.cond;
 
-    var conds = ConditionItem.randomList(
-      Mock.number(min: 1, max: ConditionType.values.length),
-    );
     return ExpansionTileCard(
       key: key,
       elevation: 0,
@@ -189,7 +181,7 @@ class _TaskCardState extends State<TaskCard>
         child: SvgPicture.asset(widget.model.icon),
       ),
       title: Text(
-        widget.title,
+        widget.model.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
@@ -199,7 +191,7 @@ class _TaskCardState extends State<TaskCard>
         ),
       ),
       subtitle: Text(
-        widget.msg,
+        widget.model.description,
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
@@ -235,32 +227,32 @@ class _TaskCardState extends State<TaskCard>
             // TODO
             IconButton(
               onPressed: () {
-                RouterProvider.toTaskDetail(1, conds);
+                RouterProvider.toTaskDetail(widget.model.id, widget.model);
               },
               icon: Icon(Icons.article, color: Colors.grey),
             ),
-            IconButton(
-              onPressed: () {
-                RouterProvider.viewTopicMember(widget.model.id);
-              },
-              icon: Icon(Icons.group, color: Colors.grey),
-            ),
-            IconButton(
-              onPressed: () async {
-                TodoShare.shareUri(
-                  context,
-                  Uri.parse(widget.model.inviteCode),
-                ).then(
-                  (value) => Get.snackbar(
-                    "Clipboard",
-                    "Topic's invite code is copied on clipboard.",
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
-                );
-                await TodoClipboard.set(widget.model.inviteCode);
-              },
-              icon: Icon(Icons.share, color: Colors.grey),
-            ),
+            // IconButton(
+            //   onPressed: () {
+            //     RouterProvider.viewTopicMember(widget.model.id);
+            //   },
+            //   icon: Icon(Icons.group, color: Colors.grey),
+            // ),
+            // IconButton(
+            //   onPressed: () async {
+            //     TodoShare.shareUri(
+            //       context,
+            //       Uri.parse(widget.model.inviteCode),
+            //     ).then(
+            //       (value) => Get.snackbar(
+            //         "Clipboard",
+            //         "Topic's invite code is copied on clipboard.",
+            //         backgroundColor: Theme.of(context).colorScheme.primary,
+            //       ),
+            //     );
+            //     await TodoClipboard.set(widget.model.inviteCode);
+            //   },
+            //   icon: Icon(Icons.share, color: Colors.grey),
+            // ),
           ],
         ),
       ],
@@ -314,15 +306,29 @@ class _TaskCardState extends State<TaskCard>
 }
 
 class ConditionItem {
-  String subtitle;
+  late String subtitle;
+  int id;
   bool finish;
   ConditionType type;
 
-  ConditionItem({
-    required this.finish,
-    required this.subtitle,
-    required this.type,
-  });
+  ConditionItem({required this.id, required this.finish, required this.type}) {
+    switch (type) {
+      case ConditionType.click:
+        subtitle = "";
+      case ConditionType.qr:
+        subtitle = "";
+      case ConditionType.locale:
+        subtitle = "";
+      case ConditionType.text:
+        subtitle = "";
+      case ConditionType.file:
+        subtitle = "";
+      case ConditionType.image:
+        subtitle = "";
+      case ConditionType.timer:
+        subtitle = "";
+    }
+  }
 
   IconData icon() {
     switch (type) {
@@ -336,6 +342,10 @@ class ConditionItem {
         return Icons.location_on;
       case ConditionType.text:
         return Icons.abc;
+      case ConditionType.image:
+        return Icons.image;
+      case ConditionType.timer:
+        return Icons.timer;
     }
   }
 
@@ -346,7 +356,7 @@ class ConditionItem {
           ConditionType.values[Mock.number(
             max: ConditionType.values.length - 1,
           )],
-      subtitle: "",
+      id: Mock.number(),
     );
   }
 
@@ -363,7 +373,7 @@ class ConditionItem {
       return ConditionItem(
         finish: Mock.boolean(),
         type: type,
-        subtitle: "Random subtitle",
+        id: Mock.number(),
       );
     }).toList();
   }
@@ -371,10 +381,12 @@ class ConditionItem {
 
 enum ConditionType {
   click,
+  file,
+  image,
   qr,
   locale,
   text,
-  file;
+  timer;
 
   @override
   String toString() {
@@ -389,6 +401,10 @@ enum ConditionType {
         return "condition_file".tr;
       case ConditionType.text:
         return "condition_text".tr;
+      case ConditionType.image:
+        return "condition_image".tr;
+      case ConditionType.timer:
+        return "condition_timer".tr;
     }
   }
 

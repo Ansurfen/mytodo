@@ -218,7 +218,7 @@ class _TaskPageState extends State<TaskPage>
                       icon: Icons.rss_feed,
                       desc: "no_task".tr,
                       what: "what_is_task".tr,
-                      render: controller.tasks.value.isNotEmpty,
+                      render: controller.tasks.isNotEmpty,
                       alignment: Alignment.topCenter,
                       padding: EdgeInsets.only(top: size.height * 0.2),
                       onTap: () {
@@ -245,35 +245,13 @@ class _TaskPageState extends State<TaskPage>
                           },
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          itemCount: controller.tasks.value.length,
+                          itemCount: controller.tasks.length,
                           itemBuilder: (ctx, idx) {
-                            var task =
-                                controller.tasks.value[controller
-                                    .tasks
-                                    .value
-                                    .keys
-                                    .elementAt(idx)];
-                            if (task != null) {
-                              final ValueKey<ExpansionTileCardState> k =
-                                  ValueKey(ExpansionTileCardState());
-                              return TaskCard(
-                                key: k,
-                                title: task.name,
-                                msg: task.desc,
-                                model: GetTopicDto(
-                                  1,
-                                  DateTime.now(),
-                                  DateTime.now(),
-                                  "",
-                                  "",
-                                  "6666",
-                                  animalMammal[Mock.number(
-                                    max: animalMammal.length - 1,
-                                  )],
-                                ),
-                              );
-                            }
-                            return null;
+                            var task = controller.tasks[idx];
+                            final ValueKey<ExpansionTileCardState> k = ValueKey(
+                              ExpansionTileCardState(),
+                            );
+                            return TaskCard(key: k, model: task);
                           },
                         ),
                       ),

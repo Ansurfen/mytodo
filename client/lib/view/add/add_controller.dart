@@ -87,18 +87,17 @@ class AddController extends GetxController
         }
 
         if (localeItems.isNotEmpty) {
+          var i = 0;
+          Map<String, dynamic> params = {};
           for (var e in localeItems) {
-            conditions.add(
-              TaskCondition(
-                type: "locate",
-                param: {
-                  "latitude": e.lat,
-                  "longitude": e.lng,
-                  "radius": e.radius,
-                },
-              ),
-            );
+            params[i.toString()] = {
+              "latitude": e.lat,
+              "longitude": e.lng,
+              "radius": e.radius,
+            };
+            i++;
           }
+          conditions.add(TaskCondition(type: 'locate', param: params));
         }
 
         taskNewRequest(

@@ -39,6 +39,18 @@ Future taskNewRequest({
   );
 }
 
+Future taskCommitRequest({
+  required int taskId,
+  required int condId,
+  required Map argument,
+}) async {
+  return HTTP.post(
+    '/task/commit',
+    data: {"task_id": taskId, "condition_id": condId, "argument": argument},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
 Future<List> topicGetRequest({required int page, required int limit}) async {
   return (await HTTP.get(
         '/task/get',

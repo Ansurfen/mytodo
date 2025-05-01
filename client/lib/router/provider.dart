@@ -105,8 +105,8 @@ class RouterProvider {
     to(OtherRouter.post, query: "?id=$id");
   }
 
-  static void toTaskDetail(int id, List<ConditionItem> conds) {
-    to(TaskRouter.detail, query: "?id=$id", arguments: conds);
+  static void toTaskDetail(int id, TaskCardModel model) {
+    to(TaskRouter.detail, query: "?id=$id", arguments: model);
   }
 
   static void toUserSign() {

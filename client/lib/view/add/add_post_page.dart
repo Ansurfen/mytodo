@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/view/add/add_controller.dart';
 
 class AddPostPage extends StatefulWidget {
@@ -63,12 +64,20 @@ class _AddPostPageState extends State<AddPostPage> {
         child: Column(
           children: [
             Theme(
-              data: ThemeData.light().copyWith(
-                colorScheme: ColorScheme.light(
-                  primary: Theme.of(context).primaryColor,
-                  secondary: Theme.of(context).primaryColorLight,
-                ),
-              ),
+              data:
+                  ThemeProvider.isDark
+                      ? ThemeData.dark().copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: Theme.of(context).primaryColor,
+                          secondary: Theme.of(context).primaryColorLight,
+                        ),
+                      )
+                      : ThemeData.light().copyWith(
+                        colorScheme: ColorScheme.light(
+                          primary: Theme.of(context).primaryColor,
+                          secondary: Theme.of(context).primaryColorLight,
+                        ),
+                      ),
               child: QuillSimpleToolbar(
                 controller: addController.post.controller,
                 config: QuillSimpleToolbarConfig(

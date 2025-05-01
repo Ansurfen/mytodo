@@ -7,14 +7,13 @@ import 'package:my_todo/api/task.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/utils/debounce.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
 
 class TaskController extends GetxController with GetTickerProviderStateMixin {
   late final AnimationController animationController;
   Animation<double>? topBarAnimation;
-  Rx<Map<int, GetTaskDto>> tasks = Rx({});
+  RxList<TaskCardModel> tasks = <TaskCardModel>[].obs;
   Pagination<GetTaskDto> pagination = Pagination();
   Rx<bool> showMask = false.obs;
   late Future<bool> getData;
@@ -32,17 +31,6 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
         curve: const Interval(0, 0.5, curve: Curves.fastOutSlowIn),
       ),
     );
-    List.generate(10, (idx) {
-      tasks.value[idx] = GetTaskDto(
-        idx,
-        Mock.username(),
-        Mock.text(),
-        Mock.text(),
-        DateTime.now(),
-        DateTime.now(),
-        [],
-      );
-    });
     super.onInit();
   }
 
@@ -59,9 +47,8 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future refreshTask() {
-    // page = 1;
     pagination.setIndex(1);
-    // listViews.clear();
+    tasks.clear();
     return _fetch();
   }
 
@@ -70,13 +57,18 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
       page: pagination.index(),
       limit: pagination.getLimit(),
     ).then((v) {
-      final models = <TaskCardModel>[];
       for (var e in v) {
-        final conds = <TaskCardCondModel>[];
-        (e["conds"] as List).forEach((elem) {
-          conds.add(TaskCardCondModel(elem["want"]["type"], elem["valid"]));
-        });
-        models.add(
+        final conds = <ConditionItem>[];
+        for (var elem in (e["conds"] as List)) {
+          conds.add(
+            ConditionItem(
+              id: elem["want"]["id"],
+              type: ConditionType.values[elem["want"]["type"]],
+              finish: elem["valid"],
+            ),
+          );
+        }
+        tasks.add(
           TaskCardModel(
             (e['id'] as num).toInt(),
             e['icon'] as String,
@@ -86,7 +78,6 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
           ),
         );
       }
-      Guard.log.i(models[0].cond);
     });
   }
 

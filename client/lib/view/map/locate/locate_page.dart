@@ -6,14 +6,22 @@ import 'package:my_todo/utils/web_sandbox.dart';
 import 'package:my_todo/view/map/locate/locate_controller.dart';
 
 class MapLocatePage extends StatefulWidget {
-  const MapLocatePage({super.key});
+  final int taskId;
+  final int condId;
+  const MapLocatePage({super.key, required this.taskId, required this.condId});
 
   @override
   State<MapLocatePage> createState() => _MapLocatePageState();
 }
 
 class _MapLocatePageState extends State<MapLocatePage> {
-  LocateController locateController = LocateController();
+  late LocateController locateController;
+
+  @override
+  void initState() {
+    super.initState();
+    locateController = LocateController(widget.taskId, widget.condId);
+  }
 
   @override
   Widget build(BuildContext context) {

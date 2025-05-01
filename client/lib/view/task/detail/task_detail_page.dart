@@ -68,7 +68,7 @@ class _TaskInfoPageState extends State<TaskInfoPage>
     setData();
 
     _tabController = TabController(
-      length: controller.conds.length,
+      length: controller.model.cond.length,
       vsync: this,
     );
     super.initState();
@@ -99,19 +99,27 @@ class _TaskInfoPageState extends State<TaskInfoPage>
   @override
   Widget build(BuildContext context) {
     List<Widget> tabViews = [];
-    List<Widget> tabs = List.generate(controller.conds.length, (idx) {
-      var cond = controller.conds[idx];
+    List<Widget> tabs = List.generate(controller.model.cond.length, (idx) {
+      var cond = controller.model.cond[idx];
       switch (cond.type) {
         case ConditionType.click:
           tabViews.add(TaskClickPage());
         case ConditionType.qr:
           tabViews.add(TaskQRPage());
         case ConditionType.locale:
-          tabViews.add(TaskLocalePage());
+          tabViews.add(
+            MapLocatePage(taskId: controller.model.id, condId: cond.id),
+          );
         case ConditionType.text:
           tabViews.add(TaskTextPage());
         case ConditionType.file:
           tabViews.add(TaskFilePage());
+        case ConditionType.image:
+          // TODO: Handle this case.
+          throw UnimplementedError();
+        case ConditionType.timer:
+          // TODO: Handle this case.
+          throw UnimplementedError();
       }
       return Tab(
         child: Row(
@@ -873,7 +881,8 @@ class TaskLocalePage extends StatefulWidget {
 class _TaskLocalePage extends State<TaskLocalePage> {
   @override
   Widget build(BuildContext context) {
-    return MapLocatePage();
+    // return MapLocatePage();
+    return Container();
   }
 }
 

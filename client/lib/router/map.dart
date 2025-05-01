@@ -13,10 +13,13 @@ class MapRouter {
   static String base(String pattern) => "/map$pattern";
 
   static final select = GetPage(
-      name: base('/select'),
-      page: () => const LocatePage(),
-      binding: LocationBinding());
+    name: base('/select'),
+    page: () => const LocatePage(),
+    binding: LocationBinding(),
+  );
 
-  static final locate =
-      GetPage(name: base('/locate'), page: () => const MapLocatePage());
+  static final locate = GetPage(
+    name: base('/locate'),
+    page: () => const MapLocatePage(taskId: 0, condId: 0),
+  );
 }
