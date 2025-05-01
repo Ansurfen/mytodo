@@ -7,6 +7,7 @@ import 'package:my_todo/abc/enumerations.dart';
 import 'package:my_todo/abc/extension.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/model/entity/task.dart';
+import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/utils/guard.dart';
 
 class TopicController extends GetxController with GetTickerProviderStateMixin {
@@ -14,11 +15,15 @@ class TopicController extends GetxController with GetTickerProviderStateMixin {
   var calendarMode = CalendarView.day3Draggable;
   var darkMode = false;
   List<Event> events = <Event>[];
+  late int id;
+  late Topic model;
 
   @override
   void onInit() {
     super.onInit();
-    topicCalendarRequest(id: int.parse(Get.parameters["id"]!)).then((v) {
+    id = int.parse(Get.parameters["id"]!);
+    model = Get.arguments as Topic;
+    topicCalendarRequest(id: id).then((v) {
       for (var e in v) {
         events.add(taskToEvent(Task.fromJson(e)));
       }

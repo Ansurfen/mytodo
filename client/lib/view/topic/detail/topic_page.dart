@@ -67,7 +67,7 @@ class _TopicPageState extends State<TopicPage> {
             ),
           ),
           title: Text(
-            Mock.username(),
+            controller.model.name,
             style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
           ),
           actions: [
@@ -78,8 +78,8 @@ class _TopicPageState extends State<TopicPage> {
                     unreaded: 0,
                     lastAt: DateTime.now(),
                     lastMsg: "",
-                    name: "xxx",
-                    id: 1,
+                    name: controller.model.name,
+                    id: controller.id,
                     isOnline: false,
                     isTopic: true,
                   ),

@@ -8,6 +8,8 @@ import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/post.dart';
+import 'package:my_todo/model/user.dart';
+import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/post/snapshot/post_card.dart';
 import 'package:my_todo/view/user/profile/profile_controller.dart';
@@ -79,8 +81,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     onPressed: () {
-                      // RouterProvider.viewChatConversation(
-                      //     controller.user.value);
+                      RouterProvider.viewChatConversation(
+                        Chatsnapshot(
+                          unreaded: 0,
+                          lastAt: DateTime.now(),
+                          lastMsg: "",
+                          name: controller.user.value.name,
+                          id: controller.id,
+                          isOnline: true,
+                          isTopic: false,
+                        ),
+                      );
                     },
                     child: const Icon(Icons.message, color: Colors.white),
                   ),
@@ -105,17 +116,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildCategory(
-                      "post_count".tr,
-                      controller.user.value.postCount,
+                    Obx(
+                      () => _buildCategory(
+                        "post_count".tr,
+                        controller.user.value.postCount,
+                      ),
                     ),
-                    _buildCategory(
-                      "follower_count".tr,
-                      controller.user.value.followerCount,
+                    Obx(
+                      () => _buildCategory(
+                        "follower_count".tr,
+                        controller.user.value.followerCount,
+                      ),
                     ),
-                    _buildCategory(
-                      "topic_count".tr,
-                      controller.user.value.topicCount,
+                    Obx(
+                      () => _buildCategory(
+                        "topic_count".tr,
+                        controller.user.value.topicCount,
+                      ),
                     ),
                   ],
                 ),
@@ -145,7 +162,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 separatorBuilder: (context, idx) {
                   return Divider();
                 },
-                itemCount: 10,
+                itemCount: 0,
               ),
             ],
           ),

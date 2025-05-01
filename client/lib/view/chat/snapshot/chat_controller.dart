@@ -28,7 +28,7 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
         allItems = Chatsnapshot.randomList();
         updateFilteredList("");
       } else {
-        chatSnapshot().then((res) {
+        chatSnapshotRequest().then((res) {
           // data.value = res.data;
         });
       }

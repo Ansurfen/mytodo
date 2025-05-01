@@ -14,7 +14,6 @@ class ProfileController extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     id = int.parse(Get.parameters["id"]!);
-
     user.value = UserProfile.fromJson(await userFriendGet(friend: id));
   }
 

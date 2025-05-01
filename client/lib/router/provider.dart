@@ -89,6 +89,10 @@ class RouterProvider {
     );
   }
 
+  static void toChatDetail(int id) {
+    to(OtherRouter.conversation, query: "?id=$id");
+  }
+
   static void viewUserEdit() {
     to(UserRouter.edit);
   }

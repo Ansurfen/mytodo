@@ -11,13 +11,16 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' as getx;
+import 'package:my_todo/api/chat.dart';
 import 'package:my_todo/config.dart';
 import 'package:my_todo/data.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/theme.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/view/chat/conversation/conversion_controller.dart';
 import 'package:universal_html/html.dart' as html;
@@ -36,22 +39,13 @@ class _ConversionPageState extends State<ConversionPage> {
 
   ConversionController controller = getx.Get.find<ConversionController>();
 
-  final _chatController = ChatController(
-    initialMessageList: MessageList.randomList(),
-    scrollController: ScrollController(),
-    currentUser: ChatUser(
-      id: '1',
-      name: 'Flutter',
-      profilePhoto: Data.profileImage,
-    ),
-    otherUsers: MessageList.randomUser(),
-  );
   void _showHideTypingIndicator() {
-    _chatController.setTypingIndicator = !_chatController.showTypingIndicator;
+    controller.chatController.setTypingIndicator =
+        !controller.chatController.showTypingIndicator;
   }
 
   void receiveMessage() async {
-    _chatController.addMessage(
+    controller.chatController.addMessage(
       Message(
         id: DateTime.now().toString(),
         message: 'I will schedule the meeting.',
@@ -60,7 +54,7 @@ class _ConversionPageState extends State<ConversionPage> {
       ),
     );
     await Future.delayed(const Duration(milliseconds: 500));
-    _chatController.addReplySuggestions([
+    controller.chatController.addReplySuggestions([
       const SuggestionItemData(text: 'Thanks.'),
       const SuggestionItemData(text: 'Thank you very much.'),
       const SuggestionItemData(text: 'Great.'),
@@ -84,99 +78,102 @@ class _ConversionPageState extends State<ConversionPage> {
   @override
   void initState() {
     super.initState();
-    if (true) {
-    } else {
-      Future.delayed(const Duration(microseconds: 10), () async {
-        Response response = await HTTP.post(
-          '/chat/topic/get',
-          data: {"topic_id": 1, "page": 1, "page_size": 20},
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-            },
-          ),
-        );
-        List<dynamic> data = response.data['data'];
-
-        for (var v in data) {
-          switch (v["message_type"]) {
-            case 0:
-              Message message;
-              List<String> reactions = [];
-              List<String> reactedUserIds = [];
-
-              if (v['reaction'] != null) {
-                for (var reaction in v['reaction']) {
-                  reactions.add(reaction['reaction']);
-                  reactedUserIds.add(reaction['reactedUserId'].toString());
-                }
-              }
-              if (v["reply_id"] != 0) {
-                Map<String, dynamic> reply = v["reply_message"];
-                String replyMessage = reply["message"];
-                MessageType replyType = convert(reply["message_type"]);
-                if (replyType == MessageType.image) {
-                  replyMessage =
-                      "${TodoConfig.baseUri}/chat/topic/image/$replyMessage";
-                }
-                message = Message(
-                  id: v["id"].toString(),
-                  messageType: MessageType.text,
-                  message: v["message"],
-                  createdAt: DateTime.parse(v["createdAt"]),
-                  sentBy: v["sentBy"].toString(),
-                  replyMessage: ReplyMessage(
-                    messageId: reply["messageId"].toString(),
-                    message: replyMessage,
-                    replyBy: reply["replyBy"].toString(),
-                    replyTo: reply["replyTo"].toString(),
-                    messageType: replyType,
-                    // voiceMessageDuration: Duration(
-                    //   seconds: reply["voice_message_duration"] as int,
-                    // ),
-                  ),
-                  reaction: Reaction(
-                    reactions: reactions,
-                    reactedUserIds: reactedUserIds,
-                  ),
-                );
-              } else {
-                message = Message(
-                  id: v["id"].toString(),
-                  messageType: MessageType.text,
-                  message: v["message"],
-                  createdAt: DateTime.parse(v["createdAt"]),
-                  sentBy: v["sentBy"].toString(),
-                  reaction: Reaction(
-                    reactions: reactions,
-                    reactedUserIds: reactedUserIds,
-                  ),
-                );
-              }
-              _chatController.addMessage(message);
-            case 1:
-              _chatController.addMessage(
-                Message(
-                  id: v["id"].toString(),
-                  messageType: MessageType.image,
-                  message:
-                      '${TodoConfig.baseUri}/chat/topic/image/${v["message"]}',
-                  createdAt: DateTime.parse(v["createdAt"]),
-                  sentBy: v["sentBy"].toString(),
-                ),
-              );
+    Future.delayed(const Duration(seconds: 0), () async {
+      List<dynamic> data = await chatGet(
+        id: controller.chatsnapshot.id,
+        page: 1,
+        pageSize: 10,
+        isTopic: controller.chatsnapshot.isTopic,
+      );
+      for (var v in data) {
+        List<String> reactions = [];
+        List<String> reactedUserIds = [];
+        if (v['reaction'] != null) {
+          for (var reaction in v['reaction']) {
+            reactions.add(reaction['reaction']);
+            reactedUserIds.add(reaction['reactedUserId'].toString());
           }
         }
-      });
-    }
+
+        switch (v["message_type"]) {
+          case 0:
+            Message message;
+
+            if (v["reply_id"] != 0) {
+              Map<String, dynamic> reply = v["reply_message"];
+              String replyMessage = reply["message"];
+              MessageType replyType = convert(reply["message_type"]);
+              if (replyType == MessageType.image) {
+                if (controller.chatsnapshot.isTopic) {
+                  replyMessage =
+                      "${TodoConfig.baseUri}/chat/topic/image/$replyMessage";
+                } else {
+                  replyMessage =
+                      "${TodoConfig.baseUri}/chat/friend/image/$replyMessage";
+                }
+              }
+              message = Message(
+                id: v["id"].toString(),
+                messageType: MessageType.text,
+                message: v["message"],
+                createdAt: DateTime.parse(v["createdAt"]),
+                sentBy: v["sentBy"].toString(),
+                replyMessage: ReplyMessage(
+                  messageId: reply["messageId"].toString(),
+                  message: replyMessage,
+                  replyBy: reply["replyBy"].toString(),
+                  replyTo: reply["replyTo"].toString(),
+                  messageType: replyType,
+                  // voiceMessageDuration: Duration(
+                  //   seconds: reply["voice_message_duration"] as int,
+                  // ),
+                ),
+                reaction: Reaction(
+                  reactions: reactions,
+                  reactedUserIds: reactedUserIds,
+                ),
+              );
+            } else {
+              message = Message(
+                id: v["id"].toString(),
+                messageType: MessageType.text,
+                message: v["message"],
+                createdAt: DateTime.parse(v["createdAt"]),
+                sentBy: v["sentBy"].toString(),
+                reaction: Reaction(
+                  reactions: reactions,
+                  reactedUserIds: reactedUserIds,
+                ),
+              );
+            }
+            controller.chatController.addMessage(message);
+          case 1:
+            controller.chatController.addMessage(
+              Message(
+                id: v["id"].toString(),
+                messageType: MessageType.image,
+                message:
+                    controller.chatsnapshot.isTopic
+                        ? '${TodoConfig.baseUri}/chat/topic/image/${v["message"]}'
+                        : '${TodoConfig.baseUri}/chat/friend/image/${v["message"]}',
+                createdAt: DateTime.parse(v["createdAt"]),
+                sentBy: v["sentBy"].toString(),
+                reaction: Reaction(
+                  reactions: reactions,
+                  reactedUserIds: reactedUserIds,
+                ),
+              ),
+            );
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ChatView(
-        chatController: _chatController,
+        chatController: controller.chatController,
         onSendTap: _onSendTap,
         featureActiveConfig: const FeatureActiveConfig(
           lastSeenAgoBuilderVisibility: true,
@@ -213,7 +210,30 @@ class _ConversionPageState extends State<ConversionPage> {
         appBar: ChatViewAppBar(
           elevation: 0,
           backGroundColor: Theme.of(context).colorScheme.primary,
-          profilePicture: Data.profileImage,
+          leading: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: ThemeProvider.contrastColor(
+                    context,
+                    light: Colors.black,
+                    dark: Theme.of(context).primaryColor,
+                  ),
+                ),
+              ),
+              SizedBox(width: 5),
+              CircleAvatar(
+                radius: 25,
+                backgroundColor: Theme.of(context).primaryColorLight,
+                child: SvgPicture.asset("assets/animal/bird/bird.svg"),
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
           backArrowColor: ThemeProvider.contrastColor(
             context,
             light: Colors.black,
@@ -426,17 +446,17 @@ class _ConversionPageState extends State<ConversionPage> {
           ),
           backgroundColor: Theme.of(context).primaryColorLight,
           userReactionCallback: (message, emoji) async {
-            Response response = await HTTP.post(
-              "/chat/topic/reaction",
-              data: {"message_id": int.parse(message.id), "emoji": emoji},
-              options: Options(
-                headers: {
-                  'Authorization':
-                      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-                },
-              ),
-            );
-            print(response.data);
+            if (controller.chatsnapshot.isTopic) {
+              await chatTopicReaction(
+                messageId: int.parse(message.id),
+                emoji: emoji,
+              );
+            } else {
+              await chatFriendReaction(
+                messageId: int.parse(message.id),
+                emoji: emoji,
+              );
+            }
           },
         ),
         messageConfig: MessageConfiguration(
@@ -450,7 +470,7 @@ class _ConversionPageState extends State<ConversionPage> {
             });
 
             return BubbleChat(
-              isSender: msg.sentBy == _chatController.currentUser.id,
+              isSender: msg.sentBy == controller.chatController.currentUser.id,
               child: InkWell(
                 child: videoSection(_controller),
                 onTap: () {
@@ -606,20 +626,21 @@ class _ConversionPageState extends State<ConversionPage> {
       id: DateTime.now().toString(),
       createdAt: DateTime.now(),
       message: message,
-      sentBy: _chatController.currentUser.id,
+      sentBy: controller.chatController.currentUser.id,
       replyMessage: replyMessage,
       messageType: messageType,
     );
-    _chatController.addMessage(msg);
+    controller.chatController.addMessage(msg);
     Future.delayed(const Duration(seconds: 1), () {
-      sendJsonData(msg.toJson());
+      controller.sendMessage(msg.toJson());
     });
     Future.delayed(const Duration(milliseconds: 300), () {
-      _chatController.initialMessageList.last.setStatus =
+      controller.chatController.initialMessageList.last.setStatus =
           MessageStatus.undelivered;
     });
     Future.delayed(const Duration(seconds: 1), () {
-      _chatController.initialMessageList.last.setStatus = MessageStatus.read;
+      controller.chatController.initialMessageList.last.setStatus =
+          MessageStatus.read;
     });
   }
 }
