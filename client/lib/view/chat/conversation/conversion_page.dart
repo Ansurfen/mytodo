@@ -78,7 +78,7 @@ class _ConversionPageState extends State<ConversionPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 0), () async {
+    Future.delayed(const Duration(microseconds: 10), () async {
       List<dynamic> data = await chatGet(
         id: controller.chatsnapshot.id,
         page: 1,
@@ -98,7 +98,6 @@ class _ConversionPageState extends State<ConversionPage> {
         switch (v["message_type"]) {
           case 0:
             Message message;
-
             if (v["reply_id"] != 0) {
               Map<String, dynamic> reply = v["reply_message"];
               String replyMessage = reply["message"];

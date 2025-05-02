@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/api/user.dart';
 import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
@@ -10,6 +11,7 @@ import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/model/user.dart';
 import 'package:my_todo/router/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/post/snapshot/post_card.dart';
 import 'package:my_todo/view/user/profile/profile_controller.dart';
@@ -105,9 +107,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         Theme.of(context).primaryColor,
                       ),
                     ),
-                    onPressed: () {},
-                    child: const Text(
-                      "follow",
+                    onPressed: () {
+                      userFriendNewRequest(
+                        friendId: controller.id,
+                      ).then((v) => {Guard.log.i(v)});
+                    },
+                    child: Text(
+                      "follow".tr,
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

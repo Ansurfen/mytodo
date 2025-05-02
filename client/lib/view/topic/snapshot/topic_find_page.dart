@@ -60,7 +60,7 @@ class _TopicFindPageState extends State<TopicFindPage> {
                     child: ListView.separated(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: controller.topicMe.length,
+                      itemCount: controller.topicFind.length,
                       itemBuilder: (context, index) {
                         TopicFind tf = controller.topicFind[index];
                         return InkWell(

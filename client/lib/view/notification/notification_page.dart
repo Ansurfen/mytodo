@@ -6,9 +6,9 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/component/refresh.dart';
+import 'package:my_todo/model/entity/notify.dart';
 import 'package:my_todo/theme/animate.dart';
 import 'package:my_todo/theme/provider.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/notification/notification_controller.dart';
 import 'package:my_todo/view/notification/notification_item.dart';
 import 'package:my_todo/view/topic/snapshot/topic_page.dart'
@@ -54,8 +54,18 @@ class _NotificationPageState extends State<NotificationPage> {
                 () => ListView.separated(
                   shrinkWrap: true,
                   itemBuilder: (BuildContext context, int index) {
-                    // return NotificationItem(data: controller.notifications[index]);
-                    return MailTile(mail: mails[index]);
+                    Notify item = controller.notifications[index];
+                    return NotificationItem(
+                      model: NotificationItemModel(
+                        sender: item.sender,
+                        sub: item.title,
+                        msg: item.content,
+                        date: item.createdAt,
+                        readed: item.status > 1,
+                        type: item.type,
+                        id: item.id,
+                      ),
+                    );
                   },
                   itemCount: controller.notifications.length,
                   separatorBuilder: (BuildContext context, int index) {
@@ -82,70 +92,4 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
     );
   }
-
-  List<Mail> mails = [
-    Mail(
-      sender: 'Medium',
-      sub: 'Showcase View',
-      msg: 'Check new showcase View',
-      date: '1 May',
-      isUnread: false,
-    ),
-    Mail(
-      sender: 'Quora',
-      sub: 'New Question for you',
-      msg: 'Hi, There is new question for you',
-      date: '2 May',
-      isUnread: true,
-    ),
-    Mail(
-      sender: 'Google',
-      sub: 'Flutter 1.5',
-      msg: 'We have launched Flutter 1.5',
-      date: '3 May',
-      isUnread: false,
-    ),
-    Mail(
-      sender: 'Github',
-      sub: 'Showcase View',
-      msg: 'New star on your showcase view.',
-      date: '4 May ',
-      isUnread: true,
-    ),
-    Mail(
-      sender: 'Simform',
-      sub: 'Credit card Plugin',
-      msg: 'Check out our credit card plugin',
-      date: '5 May',
-      isUnread: false,
-    ),
-    Mail(
-      sender: 'Flutter',
-      sub: 'Flutter is Future',
-      msg: 'Flutter launched for Web',
-      date: '6 May',
-      isUnread: true,
-    ),
-    Mail(
-      sender: 'Medium',
-      sub: 'Showcase View',
-      msg: 'Check new showcase View',
-      date: '7 May ',
-      isUnread: false,
-    ),
-    Mail(
-      sender: 'Simform',
-      sub: 'Credit card Plugin',
-      msg: 'Check out our credit card plugin',
-      date: '8 May',
-      isUnread: true,
-    ),
-    Mail(
-      sender: 'Flutter',
-      sub: 'Flutter is Future',
-      msg: 'Flutter launched for Web',
-      date: '9 May',
-      isUnread: false,
-    ),
-  ];
 }

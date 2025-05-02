@@ -348,7 +348,7 @@ func TaskGet(ctx *gin.Context) {
 		}
 
 		var commits []model.TaskCommit
-		err = db.SQL().Table("task_commit").Where("task_id = ?", task.ID).Find(&commits).Error
+		err = db.SQL().Table("task_commit").Where("task_id = ? AND user_id = ?", task.ID, u.ID).Find(&commits).Error
 		if err != nil {
 			log.WithError(err).Error("running sql")
 			ctx.Abort()

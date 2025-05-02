@@ -107,6 +107,17 @@ Future topicApplyNew({required int topicId}) async {
   )).data["msg"];
 }
 
+Future topicApplyCommit({
+  required int notificationId,
+  required bool pass,
+}) async {
+  return HTTP.post(
+    '/topic/apply/commit',
+    data: {'notification_id': notificationId, 'pass': pass},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
 Future<GetTopicResponse> getTopic(GetTopicRequest req) async {
   if (Guard.isOffline()) {
     return GetTopicResponse(

@@ -248,6 +248,18 @@ func TopicApplyNew(ctx *gin.Context) {
 				ctx.Abort()
 				return
 			}
+			notificationAction := model.NotificationAction{
+				NotificationId: notification.ID,
+				Receiver:       topic.Creator,
+				Status:         model.NotifyStatePending,
+			}
+			err = tx.Table("notification_action").Create(&notificationAction).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
 			tx.Commit()
 		} else {
 			log.WithError(err).Error("running sql")
@@ -317,7 +329,20 @@ func TopicApplyCommit(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		err = tx.Table("notification_publish").Delete(&model.NotificationPublish{NotificationId: notification.ID}).Error
+		var action model.NotificationAction
+		err = tx.Table("notification_action").Where("nid = ?", notification.ID).First(&action).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		if req.Pass {
+			action.Status = model.NotifyStateConfirmed
+		} else {
+			action.Status = model.NotifyStateRejected
+		}
+		err = tx.Table("notification_action").Save(&action).Error
 		if err != nil {
 			tx.Rollback()
 			log.WithError(err).Error("running sql")
@@ -326,12 +351,33 @@ func TopicApplyCommit(ctx *gin.Context) {
 		}
 		tx.Commit()
 	} else {
-		err = db.SQL().Table("notification_publish").Delete(&model.NotificationPublish{NotificationId: notification.ID}).Error
+		tx := db.SQL().Begin()
+		err = tx.Table("notification").Where("id = ?", notification.ID).Delete(&model.Notification{}).Error
 		if err != nil {
+			tx.Rollback()
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
+		err = tx.Table("notification_publish").Where("notification_id = ? AND user_id = ?", notification.ID, u.ID).Delete(&model.NotificationPublish{}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		err = tx.Table("notification_action").Create(&model.NotificationAction{
+			NotificationId: notification.ID,
+			Status:         model.NotifyStateRejected,
+			Receiver:       u.ID,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		tx.Commit()
 	}
 }
 
@@ -595,7 +641,7 @@ func TopicMemberInvite(ctx *gin.Context) {
 	notification := model.Notification{
 		Type:        model.NotificationTypeTopicInvite,
 		Creator:     u.ID,
-		Name:        "Topic invitation",
+		Name:        "Topic Invitation",
 		Description: fmt.Sprintf("%d;%d", u.ID, req.TopicId),
 	}
 	tx := db.SQL().Begin()
@@ -652,7 +698,7 @@ func TopicMemberInvite(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "successfully send invitation",
 	})
 }

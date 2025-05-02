@@ -530,7 +530,14 @@ func FriendNew(ctx *gin.Context) {
 	if !ok {
 		return
 	}
-
+	if u.ID == req.FriendId {
+		log.Error("you cannot add yourself")
+		ctx.Abort()
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg": "you cannot add yourself",
+		})
+		return
+	}
 	var old model.Notification
 	err = db.SQL().Table("notification").Where("creator = ? AND description = ?", u.ID, req.FriendId).First(&old).Error
 	if err != nil {
@@ -539,59 +546,55 @@ func FriendNew(ctx *gin.Context) {
 			notifiction := model.Notification{
 				Type:        model.NotificationTypeAddFriend,
 				Creator:     u.ID,
+				Name:        "Make Friend",
 				Description: fmt.Sprintf("%d", req.FriendId),
 			}
-			tx.Table("notification").Create(&notifiction)
+			err = tx.Table("notification").Create(&notifiction).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+			notificationPub := model.NotificationPublish{
+				NotificationId: notifiction.ID,
+				UserID:         req.FriendId,
+			}
+			err = tx.Table("notification_publish").Create(&notificationPub).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
 			notificationAction := model.NotificationAction{
 				NotificationId: notifiction.ID,
 				Receiver:       req.FriendId,
 				Status:         model.NotifyStatePending,
 			}
-			tx.Table("notification_action").Create(&notificationAction)
-			tx.Commit()
-		} else {
-
-		}
-	} else {
-		// exist
-		// check action is valid
-		var action model.NotificationAction
-		err = db.SQL().Table("notification_action").Where("notification_id = ?", old.ID).First(&action).Error
-		if err != nil {
-			log.WithError(err).Error("running sql")
-			ctx.Abort()
-			return
-		}
-		if action.ID == 0 {
-			notificationAction := model.NotificationAction{
-				NotificationId: old.ID,
-				Receiver:       req.FriendId,
-				Status:         model.NotifyStatePending,
-			}
-			err = db.SQL().Table("notification_action").Create(&notificationAction).Error
+			err = tx.Table("notification_action").Create(&notificationAction).Error
 			if err != nil {
+				tx.Rollback()
 				log.WithError(err).Error("running sql")
 				ctx.Abort()
 				return
 			}
-		} else {
-			ctx.JSON(200, gin.H{
-				"msg": "request already exist",
+			tx.Commit()
+			ctx.JSON(http.StatusOK, gin.H{
+				"msg": "successfully sends friend request",
 			})
+			return
+		} else {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": "fail to create notification",
+			})
+			return
 		}
 	}
 
-	// rel := model.UserRelation{
-	// 	UserId:   u.ID,
-	// 	FriendId: req.FriendId,
-	// }
-	// err = db.SQL().Table("user_relation").Create(&rel).Error
-	// if err != nil {
-	// 	log.WithError(err).Error("running sql")
-	// 	ctx.Abort()
-	// 	return
-	// }
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "duplicate request",
 	})
 }
@@ -604,11 +607,11 @@ func FriendCommit(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+
 	var status uint8 = model.NotifyStateUnknown
-	switch req.Status {
-	case "confirm":
+	if req.Pass {
 		status = model.NotifyStateConfirmed
-	case "reject":
+	} else {
 		status = model.NotifyStateRejected
 	}
 	if status == model.NotifyStateUnknown {
@@ -622,7 +625,7 @@ func FriendCommit(ctx *gin.Context) {
 		return
 	}
 	var action model.NotificationAction
-	err = db.SQL().Table("notification_action").Where("notification_id = ?", req.NotificationId).First(&action).Error
+	err = db.SQL().Table("notification_action").Where("nid = ?", req.NotificationId).First(&action).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
@@ -636,9 +639,36 @@ func FriendCommit(ctx *gin.Context) {
 
 	action.Status = status
 	tx := db.SQL().Begin()
+	err = tx.Table("notification_action").Save(&action).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
 
-	tx.Table("notification_action").Save(&action)
+	if status == model.NotifyStateConfirmed {
+		var n model.Notification
+		err = tx.Table("notification").Where("id = ?", req.NotificationId).First(&n).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		err = tx.Table("user_relation").Create(&model.UserRelation{
+			UserId:   u.ID,
+			FriendId: n.Creator,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+	}
 
+	tx.Commit()
 }
 
 func FriendGet(ctx *gin.Context) {
@@ -735,7 +765,7 @@ func FriendGet(ctx *gin.Context) {
 		return
 	}
 	data["post"] = posts
-	ctx.JSON(200, gin.H{"data": data})
+	ctx.JSON(http.StatusOK, gin.H{"data": data})
 }
 
 func FriendPostGet(ctx *gin.Context) {
@@ -770,7 +800,7 @@ func FriendPostGet(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"data": posts,
 	})
 }
@@ -852,7 +882,7 @@ func FriendSnapshot(ctx *gin.Context) {
 	}
 
 	// Return the updated list of users with their online status
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"data": users,
 	})
 }

@@ -29,14 +29,19 @@ class Notify {
   @JsonKey(name: "content", defaultValue: '')
   String content;
 
-  Notify(
-      {required this.id,
-      required this.type,
-      required this.status,
-      required this.createdAt,
-      this.param = '',
-      this.title = '',
-      this.content = ''});
+  @JsonKey(name: "sender")
+  String sender;
+
+  Notify({
+    required this.id,
+    required this.type,
+    required this.status,
+    required this.createdAt,
+    required this.sender,
+    this.param = '',
+    this.title = '',
+    this.content = '',
+  });
 
   factory Notify.fromJson(JsonObject json) => _$NotifyFromJson(json);
 }
@@ -45,7 +50,8 @@ enum NotifyType {
   unknown(0),
   addFriend(1),
   inviteFriend(2),
-  text(3);
+  text(3),
+  topicApply(4);
 
   const NotifyType(this.value);
   final int value;
@@ -58,6 +64,8 @@ enum NotifyType {
         return NotifyType.inviteFriend;
       case 3:
         return NotifyType.text;
+      case 4:
+        return NotifyType.topicApply;
     }
     return NotifyType.unknown;
   }

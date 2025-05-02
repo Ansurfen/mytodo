@@ -258,4 +258,14 @@ Map<String, String> get enUS => {
 
   "topic_apply_join": "Apply to join",
   "topic_apply_close": "Close",
+
+  "notification": "Notification",
+
+  "confirm": "Confirm",
+  "reject": "Reject",
+
+  "notification_commit": "Notification Commit",
+  "notification_commit_finish": "The notification has been handled.",
+
+  "invite_friend": "Invite Friend",
 };

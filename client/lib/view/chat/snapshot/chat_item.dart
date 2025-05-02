@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_todo/component/image.dart';
-import 'package:my_todo/utils/guard.dart';
 
 Random random = Random();
 List names = [

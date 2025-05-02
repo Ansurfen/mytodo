@@ -14,3 +14,8 @@ type NotificationPublishNewRequest struct {
 	NotificationId uint   `json:"notification_id"`
 	UsersId        []uint `json:"users_id"`
 }
+
+type NotificationPublishGetRequest struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
+}

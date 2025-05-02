@@ -248,4 +248,14 @@ Map<String, String> get zhCN => {
 
   "topic_apply_join": "申请加入",
   "topic_apply_close": "关闭弹窗",
+
+  "notification": "通知",
+
+  "confirm": "同意",
+  "reject": "拒绝",
+
+  "notification_commit": "通知提交",
+  "notification_commit_finish": "您已经处理了此通知",
+
+  "invite_friend": "邀请好友",
 };

@@ -11,6 +11,7 @@ Notify _$NotifyFromJson(Map<String, dynamic> json) => Notify(
   type: (json['type'] as num?)?.toInt() ?? 0,
   status: (json['status'] as num?)?.toInt() ?? 0,
   createdAt: DateTime.parse(json['created_at'] as String),
+  sender: json['sender'] as String,
   param: json['param'] as String? ?? '',
   title: json['title'] as String? ?? '',
   content: json['content'] as String? ?? '',
@@ -24,4 +25,5 @@ Map<String, dynamic> _$NotifyToJson(Notify instance) => <String, dynamic>{
   'param': instance.param,
   'title': instance.title,
   'content': instance.content,
+  'sender': instance.sender,
 };

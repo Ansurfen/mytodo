@@ -55,12 +55,12 @@ type UserEditRequest struct {
 }
 
 type FriendNewRequest struct {
-	FriendId uint `json:"friendId"`
+	FriendId uint `json:"friend_id"`
 }
 
 type FriendCommitRequest struct {
-	NotificationId uint   `json:"notification_id"`
-	Status         string `json:"status"`
+	NotificationId uint `json:"notification_id"`
+	Pass           bool `json:"pass"`
 }
 
 type FriendPostGetRequest struct {

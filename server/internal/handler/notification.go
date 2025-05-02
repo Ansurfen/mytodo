@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
+	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
@@ -131,30 +135,92 @@ func NotificationPublishNew(ctx *gin.Context) {
 }
 
 func NotificationPublishGet(ctx *gin.Context) {
+	var req api.NotificationPublishGetRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	limit := req.PageSize
+	offset := (req.Page - 1) * req.PageSize
+
 	u, ok := getUser(ctx)
 	if !ok {
 		return
 	}
-	var publishes []model.NotificationPublish
-	err := db.SQL().Table("notification_publish").Where("user_id = ?", u.ID).Find(&publishes).Error
+	var notifications []notificationSnapshot
+	err = db.SQL().Raw(`SELECT
+    n.id AS id,
+    n.type AS type,
+    COALESCE(na.status, 0) AS status,
+    np.created_at AS created_at,
+    n.name AS title,
+    n.description AS content,
+    u.name AS sender
+FROM
+    notification_publish np
+JOIN
+    notification n ON np.notification_id = n.id
+LEFT JOIN
+    notification_action na ON na.nid = np.notification_id AND na.receiver = np.user_id
+LEFT JOIN
+    user u ON n.creator = u.id
+WHERE
+    np.user_id = %d
+    AND np.deleted_at IS NULL
+    AND n.deleted_at IS NULL
+ORDER BY
+    np.created_at DESC
+LIMIT %d OFFSET %d`, u.ID, limit, offset).Find(&notifications).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
-	var notifications []model.Notification
-	for _, pub := range publishes {
-		var notification model.Notification
-		err = db.SQL().Table("notification").Where("id = ?", pub.NotificationId).First(&notification).Error
-		if err != nil {
-			log.WithError(err).Error("running sql")
-			ctx.Abort()
-			return
+	fmt.Println(notifications)
+	for i, n := range notifications {
+		switch n.Type {
+		case model.NotificationTypeTopicApply:
+			topicId, err := strconv.Atoi(n.Content)
+			if err != nil {
+				log.WithError(err).Error("fail to parse topic id")
+				ctx.Abort()
+				return
+			}
+			var topic model.Topic
+			err = db.SQL().Table("topic").Where("id = ?", topicId).First(&topic).Error
+			if err != nil {
+				log.WithError(err).Error("fail to get topic")
+				ctx.Abort()
+				return
+			}
+			notifications[i].Content = topic.Name
 		}
-		notifications = append(notifications, notification)
 	}
-	ctx.JSON(200, gin.H{
-		"msg":  "successfully gets notficaiton publishes",
-		"data": notifications,
+	var total int64
+	err = db.SQL().Unscoped().Table("notification_publish").Where("user_id = ?", u.ID).Count(&total).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully gets notficaiton publishes",
+		"data": gin.H{
+			"total":         total,
+			"notifications": notifications,
+		},
 	})
+}
+
+type notificationSnapshot struct {
+	Id        uint      `json:"id"`
+	Type      uint      `json:"type"`
+	Status    uint      `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	Sender    string    `json:"sender"`
 }

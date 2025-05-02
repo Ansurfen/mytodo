@@ -36,7 +36,7 @@ func ChatTopicNew(ctx *gin.Context) {
 	if req.ReplyId != 0 {
 		reply := model.MessageReply{
 			MessageId: req.ReplyId,
-			ReplyBy:   req.ReplyBy,
+			ReplyBy:   req.ReplyTo,
 			ReplyTo:   req.ReplyTo,
 		}
 		tx := db.SQL().Begin()
@@ -107,7 +107,7 @@ func ChatFriendNew(ctx *gin.Context) {
 	if req.ReplyId != 0 {
 		reply := model.MessageReply{
 			MessageId: req.ReplyId,
-			ReplyBy:   req.ReplyBy,
+			ReplyBy:   req.ReplyTo,
 			ReplyTo:   req.ReplyTo,
 		}
 		tx := db.SQL().Begin()
@@ -234,7 +234,7 @@ func ChatTopicGet(ctx *gin.Context) {
 		}
 	}
 
-	ctx.JSON(200, gin.H{"code": 200, "msg": "", "data": messages})
+	ctx.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": messages})
 }
 
 func ChatFriendGet(ctx *gin.Context) {
@@ -252,7 +252,8 @@ func ChatFriendGet(ctx *gin.Context) {
 	fmt.Println("check user in topic", user.ID)
 	var messages []model.Message
 	err = db.SQL().Table("message_friend").
-		Where("friend_id = ?", req.FriendId).
+		Where("(friend_id = ? AND sent_by = ?) OR (friend_id = ? AND sent_by = ?)",
+			req.FriendId, user.ID, user.ID, req.FriendId).
 		Offset((req.Page - 1) * req.PageSize).
 		Limit(req.PageSize).
 		Find(&messages).Error
@@ -294,7 +295,7 @@ func ChatFriendGet(ctx *gin.Context) {
 			messages[i].Reactions = reactions
 		}
 	}
-	ctx.JSON(200, gin.H{"code": 200, "msg": "", "data": messages})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "", "data": messages})
 }
 
 func ChatSnap(ctx *gin.Context) {
@@ -394,7 +395,7 @@ ORDER BY
 		return combined[i].CreatedAt.After(combined[j].CreatedAt)
 	})
 
-	ctx.JSON(200, gin.H{"msg": "", "data": combined})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "", "data": combined})
 }
 
 type messageSnap struct {

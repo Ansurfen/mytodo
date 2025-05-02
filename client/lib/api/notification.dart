@@ -19,21 +19,27 @@ class NotifyActionAddRequest {
   @JsonKey(name: "param", defaultValue: "")
   String param;
 
-  NotifyActionAddRequest(
-      {required this.type, required this.receiver, this.param = ""});
+  NotifyActionAddRequest({
+    required this.type,
+    required this.receiver,
+    this.param = "",
+  });
 
   FormData toFormData() {
     FormData formData = FormData();
-    formData.fields
-        .addAll({'id': '$receiver', 'type': '$type', 'param': param}.entries);
+    formData.fields.addAll(
+      {'id': '$receiver', 'type': '$type', 'param': param}.entries,
+    );
     return formData;
   }
 }
 
 Future notifyActionAdd(NotifyActionAddRequest req) async {
-  return await HTTP.post('/notify/action/add',
-      data: req.toFormData(),
-      options: Options(headers: {'x-token': Guard.jwt}));
+  return await HTTP.post(
+    '/notify/action/add',
+    data: req.toFormData(),
+    options: Options(headers: {'x-token': Guard.jwt}),
+  );
 }
 
 @JsonSerializable()
@@ -65,29 +71,11 @@ class NotifyActionCommitRequest {
 }
 
 Future notifyActionCommit(NotifyActionCommitRequest req) async {
-  return await HTTP.post('/notify/action/add',
-      data: req.toFormData(),
-      options: Options(headers: {'x-token': Guard.jwt}));
-}
-
-class NotifyAllResponse extends BaseResponse {
-  late final List<Notify> notifications;
-
-  NotifyAllResponse() : super({});
-
-  NotifyAllResponse.fromResponse(Response res)
-      : notifications = (res.data["data"]["notify"] as List)
-            .map((e) => Notify.fromJson(e))
-            .toList(),
-        super(res.data);
-}
-
-Future<NotifyAllResponse> notifyAll() async {
-  if (Guard.isOffline()) {
-    return NotifyAllResponse();
-  }
-  return NotifyAllResponse.fromResponse(await HTTP.get('/notify/all',
-      options: Options(headers: {'x-token': Guard.jwt})));
+  return await HTTP.post(
+    '/notify/action/add',
+    data: req.toFormData(),
+    options: Options(headers: {'x-token': Guard.jwt}),
+  );
 }
 
 class NotifyGetDetailRequest {
@@ -97,9 +85,7 @@ class NotifyGetDetailRequest {
 
   FormData toFormData() {
     FormData formData = FormData();
-    formData.fields.addAll({
-      'id': "$id",
-    }.entries);
+    formData.fields.addAll({'id': "$id"}.entries);
     return formData;
   }
 }
@@ -110,15 +96,28 @@ class NotifyGetDetailResponse extends BaseResponse {
   NotifyGetDetailResponse() : super({});
 
   NotifyGetDetailResponse.fromResponse(Response res)
-      : notify = Notify.fromJson(res.data["data"]["notify"]),
-        super(res.data);
+    : notify = Notify.fromJson(res.data["data"]["notify"]),
+      super(res.data);
 }
 
 Future<NotifyGetDetailResponse> notifyGetDetail(
-    NotifyGetDetailRequest req) async {
+  NotifyGetDetailRequest req,
+) async {
   if (Guard.isOffline()) {
     return NotifyGetDetailResponse();
   }
   return NotifyGetDetailResponse.fromResponse(
-      await HTTP.post('/notify/detail', data: req.toFormData()));
+    await HTTP.post('/notify/detail', data: req.toFormData()),
+  );
+}
+
+Future notificationPublishGetRequest({
+  required int page,
+  required int pageSize,
+}) async {
+  return (await HTTP.get(
+    '/notification/publish/get',
+    data: {'page': page, 'page_size': pageSize},
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
 }

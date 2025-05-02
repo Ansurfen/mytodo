@@ -78,6 +78,25 @@ Future<List> userContactsRequest() async {
   )).data["data"];
 }
 
+Future userFriendNewRequest({required int friendId}) async {
+  return (await HTTP.post(
+    "/user/friend/new",
+    data: {"friend_id": friendId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data;
+}
+
+Future userFriendCommit({
+  required int notificationId,
+  required bool pass,
+}) async {
+  return (await HTTP.post(
+    "/user/friend/commit",
+    data: {"notification_id": notificationId, "pass": pass},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data;
+}
+
 class UserSignRequest {
   String email;
   String password;

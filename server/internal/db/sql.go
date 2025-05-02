@@ -30,7 +30,6 @@ func NewSQL(opt conf.SQL) *TodoDB {
 
 func (db *TodoDB) Raw(format string, arg ...any) (tx *gorm.DB) {
 	sql := fmt.Sprintf(format, arg...)
-	log.WithField("sql", sql).Debugf("executing sql")
 	return db.DB.Raw(sql)
 }
 
