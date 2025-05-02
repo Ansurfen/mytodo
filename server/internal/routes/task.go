@@ -15,6 +15,7 @@ func InstallTaskRoute(e *gin.Engine) {
 		taskRouter.POST("/edit", middleware.Auth, handler.TaskEdit)
 		taskRouter.POST("/commit", middleware.Auth, handler.TaskCommit)
 		taskRouter.GET("/get", middleware.Auth, handler.TaskGet)
+		taskRouter.GET("/dashboard", middleware.Auth, handler.TaskDashboard)
 		taskRouter.GET("/qr/:task", middleware.Auth, handler.TaskQR)
 	}
 }

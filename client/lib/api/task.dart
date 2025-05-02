@@ -211,3 +211,47 @@ Future<TaskHasPermResponse> taskHasPerm(TaskHasPermRequest req) async {
     ),
   );
 }
+
+@JsonSerializable()
+class TaskDashboardStats {
+  @JsonKey(name: "completed")
+  int completed;
+
+  @JsonKey(name: "overdue")
+  int overdue;
+
+  @JsonKey(name: "in_progress")
+  int inProgress;
+
+  @JsonKey(name: "daily")
+  int daily;
+
+  @JsonKey(name: "monthly")
+  int monthly;
+
+  @JsonKey(name: "yearly")
+  int yearly;
+
+  TaskDashboardStats({
+    required this.completed,
+    required this.overdue,
+    required this.inProgress,
+    required this.daily,
+    required this.monthly,
+    required this.yearly,
+  });
+
+  factory TaskDashboardStats.fromJson(Map<String, dynamic> json) =>
+      _$TaskDashboardStatsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TaskDashboardStatsToJson(this);
+}
+
+Future<TaskDashboardStats> taskDashboard() async {
+  return TaskDashboardStats.fromJson(
+    (await HTTP.get(
+      '/task/dashboard',
+      options: Options(headers: {"Authorization": Guard.jwt}),
+    )).data["data"],
+  );
+}

@@ -416,6 +416,96 @@ func TaskGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": detailedTasks})
 }
 
+func TaskDashboard(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var topicJoins []model.TopicJoin
+	err := db.SQL().Table("topic_join").Where("user_id = ?", u.ID).Find(&topicJoins).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	var tasks []model.Task
+	for _, join := range topicJoins {
+		var topicTasks []model.Task
+		err = db.SQL().Table("task").Where("topic_id = ?", join.TopicId).Find(&topicTasks).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		tasks = append(tasks, topicTasks...)
+	}
+
+	now := time.Now()
+	stats := struct {
+		Completed  int `json:"completed"`
+		Overdue    int `json:"overdue"`
+		InProgress int `json:"in_progress"`
+		Daily      int `json:"daily"`
+		Monthly    int `json:"monthly"`
+		Yearly     int `json:"yearly"`
+	}{}
+
+	for _, task := range tasks {
+		// Get task conditions
+		var conds []model.TaskCondition
+		err = db.SQL().Table("task_condition").Where("task_id = ?", task.ID).Find(&conds).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		// Get task commits for this user
+		var commits []model.TaskCommit
+		err = db.SQL().Table("task_commit").Where("task_id = ? AND user_id = ?", task.ID, u.ID).Find(&commits).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		// Count completed conditions
+		completedConds := 0
+		for _, commit := range commits {
+			for _, cond := range conds {
+				if commit.ConditionId == cond.ID {
+					completedConds++
+					break
+				}
+			}
+		}
+
+		// Check task status
+		if completedConds == len(conds) {
+			stats.Completed++
+		} else if task.EndAt.Before(now) {
+			stats.Overdue++
+		} else {
+			stats.InProgress++
+		}
+
+		// Check task duration
+		duration := task.EndAt.Sub(task.StartAt)
+		if duration <= 24*time.Hour {
+			stats.Daily++
+		} else if duration <= 30*24*time.Hour {
+			stats.Monthly++
+		} else {
+			stats.Yearly++
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": stats,
+	})
+}
+
 type taskCond struct {
 	Want  *model.TaskCondition `json:"want"`
 	Got   *model.TaskCommit    `json:"got"`

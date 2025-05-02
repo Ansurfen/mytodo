@@ -4,9 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/task.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/utils/debounce.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
 
@@ -32,6 +32,11 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
       ),
     );
     super.onInit();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      taskDashboard().then((v) {
+        Guard.log.i(v.toJson());
+      });
+    });
   }
 
   @override
