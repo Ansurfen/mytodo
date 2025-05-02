@@ -25,9 +25,7 @@ class _TopicMePageState extends State<TopicMePage> {
   Widget build(BuildContext context) {
     return refreshContainer(
       context: context,
-      onRefresh: () {
-        controller.freshTopic();
-      },
+      onRefresh: controller.fetchTopicMe,
       onLoad: () {},
       child: SingleChildScrollView(
         child: Column(
@@ -42,7 +40,7 @@ class _TopicMePageState extends State<TopicMePage> {
                 icon: Icons.rss_feed,
                 desc: "no_topic".tr,
                 what: "what_is_topic".tr,
-                render: controller.topics.isNotEmpty,
+                render: controller.topicMe.isNotEmpty,
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(
                   top: MediaQuery.sizeOf(context).height * 0.35,
@@ -63,14 +61,14 @@ class _TopicMePageState extends State<TopicMePage> {
                     child: ListView.separated(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: controller.topics.length,
+                      itemCount: controller.topicMe.length,
                       itemBuilder: (context, index) {
                         final ValueKey<ExpansionTileCardState> k = ValueKey(
                           ExpansionTileCardState(),
                         );
                         return TopicCard(
                           key: k,
-                          model: controller.topics[index],
+                          model: controller.topicMe[index],
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {

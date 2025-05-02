@@ -1,15 +1,13 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:my_todo/main5.dart';
-import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/view/add/add_task_page.dart';
+import 'package:my_todo/api/topic.dart';
+import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/topic/snapshot/topic_controller.dart';
 import 'package:my_todo/view/topic/snapshot/topic_find_page.dart';
@@ -26,16 +24,11 @@ class _SubscribeState extends State<TopicSnapshotPage>
     with AutomaticKeepAliveClientMixin {
   TopicSnapshotController controller = Get.find<TopicSnapshotController>();
 
-  Future<bool> getData() async {
-    await controller.freshTopic();
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
     Future.delayed(Duration.zero, () {
-      controller.freshTopic();
+      controller.animationController.forward();
     });
     ThemeData themeData = Theme.of(context);
     return Scaffold(
@@ -86,6 +79,22 @@ class _SubscribeState extends State<TopicSnapshotPage>
   bool get wantKeepAlive => true;
 }
 
+class TopicFindItemModel {
+  String icon;
+  String name;
+  String description;
+  List<String> tags;
+  int memberCount;
+
+  TopicFindItemModel({
+    required this.icon,
+    required this.name,
+    required this.description,
+    required this.tags,
+    required this.memberCount,
+  });
+}
+
 class TopicFindItem extends StatelessWidget {
   const TopicFindItem({
     required this.model,
@@ -95,7 +104,7 @@ class TopicFindItem extends StatelessWidget {
   });
   final bool showCaseDetail;
   final GlobalKey<State<StatefulWidget>>? showCaseKey;
-  final Mail model;
+  final TopicFindItemModel model;
 
   @override
   Widget build(BuildContext context) {
@@ -112,9 +121,7 @@ class TopicFindItem extends StatelessWidget {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: Theme.of(context).primaryColorLight,
-                  child: SvgPicture.asset(
-                    animalMammal[Mock.number(max: animalMammal.length - 1)],
-                  ),
+                  child: SvgPicture.asset(model.icon),
                 ),
                 const Padding(padding: EdgeInsets.only(left: 8)),
                 Expanded(
@@ -122,7 +129,7 @@ class TopicFindItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        model.sender,
+                        model.name,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
@@ -130,7 +137,7 @@ class TopicFindItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        model.sub,
+                        model.description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -138,16 +145,7 @@ class TopicFindItem extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
-                      Row(
-                        children: [
-                          tags(
-                            context,
-                            List.generate(Mock.number(max: 5), (idx) {
-                              return Mock.username();
-                            }),
-                          ),
-                        ],
-                      ),
+                      Row(children: [tags(context, model.tags)]),
                     ],
                   ),
                 ),
@@ -159,7 +157,7 @@ class TopicFindItem extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    Mock.number().toString(),
+                    model.memberCount.toString(),
                     style: TextStyle(color: Colors.grey),
                   ),
                   Container(width: 3),
@@ -172,20 +170,12 @@ class TopicFindItem extends StatelessWidget {
       ),
     );
   }
-
-  void _showCustomDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // 点击外部不能关闭弹窗
-      builder: (BuildContext context) {
-        return CustomDialog();
-      },
-    );
-  }
 }
 
 class CustomDialog extends StatefulWidget {
-  const CustomDialog({super.key});
+  TopicFind model;
+
+  CustomDialog({super.key, required this.model});
 
   @override
   _CustomDialogState createState() => _CustomDialogState();
@@ -233,25 +223,75 @@ class _CustomDialogState extends State<CustomDialog>
       child: SlideTransition(
         position: _animation, // 将动画应用到弹窗
         child: Material(
-          color: Colors.white,
+          color:
+              ThemeProvider.isDark
+                  ? CupertinoColors.darkBackgroundGray
+                  : Colors.white,
           borderRadius: BorderRadius.circular(10),
           child: Padding(
             padding: EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  Mock.username(),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.model.name,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          widget.model.memberCount.toString(),
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        Container(width: 3),
+                        Icon(Icons.group, color: Colors.grey, size: 16),
+                      ],
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20),
-                IconButton(onPressed: () {}, icon: Icon(Icons.abc)),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // 点击按钮关闭弹窗
-                  },
-                  child: Text("关闭弹窗"),
+                Text(widget.model.description),
+                SizedBox(height: 10),
+                tags(context, widget.model.tags ?? []),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      onPressed: Get.back,
+                      child: Text("topic_apply_close".tr),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      onPressed: () {
+                        topicApplyNew(topicId: widget.model.id).then((v) {
+                          Get.snackbar("topic_apply_join".tr, v);
+                        });
+                        Get.back();
+                      },
+                      child: Text("topic_apply_join".tr),
+                    ),
+                  ],
                 ),
               ],
             ),

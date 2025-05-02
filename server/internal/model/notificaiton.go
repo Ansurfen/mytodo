@@ -31,6 +31,7 @@ const (
 	NotificationTypeAddFriend          // Type for adding a friend
 	NotificationTypeTopicInvite        // Type for inviting a friend
 	NotificationTypeSendText           // Type for sending a text message
+	NotificationTypeTopicApply         // Type for applying to a topic
 )
 
 // NotificationPublish represents the relationship between notifications and users who receive them.

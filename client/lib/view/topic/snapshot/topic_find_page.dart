@@ -3,15 +3,11 @@ import 'package:get/get.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/component/container/empty_container.dart';
 import 'package:my_todo/component/refresh.dart';
-import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/model/dto/topic.dart';
-import 'package:my_todo/model/entity/topic.dart';
 import 'package:my_todo/theme/animate.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/view/topic/snapshot/topic_controller.dart';
 import 'package:my_todo/view/topic/snapshot/topic_page.dart';
 
-import '../../../main5.dart';
 import '../../../utils/dialog.dart';
 
 class TopicFindPage extends StatefulWidget {
@@ -28,10 +24,8 @@ class _TopicFindPageState extends State<TopicFindPage> {
   Widget build(BuildContext context) {
     return refreshContainer(
       context: context,
-      onRefresh: () {
-        controller.freshTopic();
-      },
-      onLoad: () {},
+      onRefresh: controller.fetchTopicFind,
+      onLoad: controller.loadTopicFind,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -45,7 +39,7 @@ class _TopicFindPageState extends State<TopicFindPage> {
                 icon: Icons.rss_feed,
                 desc: "no_topic".tr,
                 what: "what_is_topic".tr,
-                render: controller.topics.isNotEmpty,
+                render: controller.topicFind.isNotEmpty,
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(
                   top: MediaQuery.sizeOf(context).height * 0.35,
@@ -66,20 +60,18 @@ class _TopicFindPageState extends State<TopicFindPage> {
                     child: ListView.separated(
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      itemCount: controller.topics.length,
+                      itemCount: controller.topicMe.length,
                       itemBuilder: (context, index) {
-                        Topic chat = controller.topics[index];
+                        TopicFind tf = controller.topicFind[index];
                         return InkWell(
-                          onTap: () {
-                            _showCustomDialog(context);
-                          },
+                          onTap: () => showTopicDetail(context, tf),
                           child: TopicFindItem(
-                            model: Mail(
-                              sender: Mock.username(),
-                              sub: Mock.text(),
-                              msg: Mock.text(),
-                              date: Mock.dateTime().toString(),
-                              isUnread: false,
+                            model: TopicFindItemModel(
+                              icon: tf.icon,
+                              name: tf.name,
+                              description: tf.description,
+                              tags: tf.tags ?? [],
+                              memberCount: tf.memberCount,
                             ),
                           ),
                         );
@@ -112,12 +104,12 @@ class _TopicFindPageState extends State<TopicFindPage> {
     );
   }
 
-  void _showCustomDialog(BuildContext context) {
+  void showTopicDetail(BuildContext context, TopicFind topic) {
     showDialog(
       context: context,
       barrierDismissible: false, // 点击外部不能关闭弹窗
       builder: (BuildContext context) {
-        return CustomDialog();
+        return CustomDialog(model: topic);
       },
     );
   }

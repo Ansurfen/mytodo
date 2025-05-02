@@ -255,4 +255,7 @@ Map<String, String> get enUS => {
   "desc": "Description",
 
   "member": "Member",
+
+  "topic_apply_join": "Apply to join",
+  "topic_apply_close": "Close",
 };

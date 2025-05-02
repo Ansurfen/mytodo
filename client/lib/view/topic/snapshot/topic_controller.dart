@@ -18,7 +18,12 @@ class TopicSnapshotController extends GetxController
   late final AnimationController animationController;
   TextEditingController inviteCode = TextEditingController();
 
-  RxList<Topic> topics = <Topic>[].obs;
+  RxList<Topic> topicMe = <Topic>[].obs;
+  RxList<TopicFind> topicFind = <TopicFind>[].obs;
+
+  int topicFindTotal = 0;
+  int topicFindPage = 1;
+  int topicFindPageSize = 10;
 
   @override
   void onInit() {
@@ -41,7 +46,9 @@ class TopicSnapshotController extends GetxController
       if (tabController.indexIsChanging) {
         if (tabController.index == 0) {
           fetchTopicMe();
-        } else {}
+        } else {
+          fetchTopicFind();
+        }
       }
     });
   }
@@ -50,10 +57,6 @@ class TopicSnapshotController extends GetxController
   void dispose() {
     _uploadTopic.cancel();
     super.dispose();
-  }
-
-  Future freshTopic() async {
-    animationController.forward();
   }
 
   void addTopic(BuildContext context, {required Function setState}) {
@@ -76,13 +79,72 @@ class TopicSnapshotController extends GetxController
   }
 
   void fetchTopicMe() {
+    topicMe.clear();
     topicGetRequest().then((v) {
-      for (var e in v) {
-        topics.add(Topic.fromJson(e));
+      if (v != null) {
+        for (var e in v) {
+          topicMe.add(Topic.fromJson(e));
+        }
       }
-      Guard.log.i(topics);
     });
   }
 
-  void fetchTopicFind() {}
+  void fetchTopicFind() {
+    topicFind.clear();
+    topicFindTotal = 0;
+    topicFindPage = 1;
+    topicFindPageSize = 10;
+    topicFindRequest(page: topicFindPage, pageSize: topicFindPageSize).then((
+      v,
+    ) {
+      for (var e in v["topic"]) {
+        topicFind.add(TopicFind.fromJson(e));
+      }
+      topicFindTotal = v["total"];
+    });
+  }
+
+  void loadTopicFind() {
+    if (topicFindPageSize * topicFindPageSize > topicFindTotal) {
+      return;
+    }
+    topicFindPage++;
+    topicFindRequest(page: topicFindPage, pageSize: topicFindPageSize).then((
+      v,
+    ) {
+      for (var e in v["topic"]) {
+        topicFind.add(TopicFind.fromJson(e));
+      }
+      topicFindTotal = v["total"];
+    });
+  }
+}
+
+class TopicFind extends Topic {
+  late int memberCount;
+
+  TopicFind(
+    super.icon,
+    super.id,
+    super.creator,
+    super.name,
+    super.description,
+    super.tags,
+    super.inviteCode,
+    this.memberCount,
+  );
+
+  static TopicFind fromJson(Map<String, dynamic> json) {
+    final parent = Topic.fromJson(json);
+    return TopicFind(
+      parent.icon,
+      parent.id,
+      parent.creator,
+      parent.name,
+      parent.description,
+      parent.tags,
+      parent.inviteCode,
+      json['member_count'],
+    );
+  }
 }

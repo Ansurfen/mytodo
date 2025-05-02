@@ -10,6 +10,7 @@ import (
 	"mytodo/internal/db"
 	"mytodo/internal/model"
 	"net/http"
+	"strconv"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
@@ -128,6 +129,217 @@ func TopicGet(ctx *gin.Context) {
 	})
 }
 
+func TopicFind(ctx *gin.Context) {
+	var req api.TopicFindRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	limit := req.PageSize
+	offest := (req.Page - 1) * req.PageSize
+	var topic []topicFind
+	err = db.SQL().Raw(`SELECT 
+    t.id,
+    t.icon,
+    t.creator,
+    t.name,
+    t.description,
+    t.is_public,
+    t.tags,
+    t.invite_code,
+    COUNT(tj.user_id) AS member_count
+FROM 
+    topic t
+LEFT JOIN 
+    topic_join tj ON t.id = tj.topic_id
+WHERE 
+    t.is_public = 1
+GROUP BY 
+    t.id
+ORDER BY 
+    t.created_at DESC
+LIMIT %d OFFSET %d;
+`, limit, offest).Find(&topic).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	var cnt int64
+	err = db.SQL().Table("topic").Where("is_public = 1").Count(&cnt).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully gets topics",
+		"data": gin.H{
+			"topic": topic,
+			"total": cnt,
+		},
+	})
+}
+
+func TopicApplyNew(ctx *gin.Context) {
+	var req api.TopicApplyNewRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var topicJoin model.TopicJoin
+	err = db.SQL().Table("topic_join").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).First(&topicJoin).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if topicJoin.ID != 0 {
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg":  "already joined",
+			"data": nil,
+		})
+		ctx.Abort()
+		return
+	}
+	var exist model.Notification
+	err = db.SQL().Table("notification").Where("type = ? AND creator = ? AND description = ?", model.NotificationTypeTopicApply, u.ID, req.TopicId).First(&exist).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			tx := db.SQL().Begin()
+			notification := model.Notification{
+				Type:        model.NotificationTypeTopicApply,
+				Creator:     u.ID,
+				Name:        "Topic Apply",
+				Description: fmt.Sprintf("%d", req.TopicId),
+			}
+			err = tx.Create(&notification).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+			var topic model.Topic
+			err = db.SQL().Table("topic").Where("id = ?", req.TopicId).First(&topic).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+			notificationPub := model.NotificationPublish{
+				NotificationId: notification.ID,
+				UserID:         topic.Creator,
+			}
+			err = tx.Table("notification_publish").Create(&notificationPub).Error
+			if err != nil {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+			tx.Commit()
+		} else {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+	}
+	ctx.JSON(200, gin.H{
+		"msg": "successfully sent application",
+	})
+}
+
+func TopicApplyCommit(ctx *gin.Context) {
+	var req api.TopicApplyCommitRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	var notification model.Notification
+	err = db.SQL().Table("notification").Where("id = ?", req.NotificationId).First(&notification).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	topicId, err := strconv.Atoi(notification.Description)
+	if err != nil {
+		log.WithError(err).Error("fail to parse topic id")
+		ctx.Abort()
+		return
+	}
+	var topic model.Topic
+	err = db.SQL().Table("topic").Where("id = ?", topicId).First(&topic).Error
+
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	if topic.Creator != u.ID {
+		log.WithError(err).Error("permission denied")
+		ctx.Abort()
+		return
+	}
+
+	if req.Pass {
+		tx := db.SQL().Begin()
+		err = tx.Table("topic_join").Create(&model.TopicJoin{
+			TopicId: topic.ID,
+			UserId:  notification.Creator,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		err = tx.Table("topic_policy").Create(&model.TopicPolicy{
+			TopicId: topic.ID,
+			UserId:  notification.Creator,
+			Role:    model.TopicRoleMember,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		err = tx.Table("notification_publish").Delete(&model.NotificationPublish{NotificationId: notification.ID}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		tx.Commit()
+	} else {
+		err = db.SQL().Table("notification_publish").Delete(&model.NotificationPublish{NotificationId: notification.ID}).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+	}
+}
+
+type topicFind struct {
+	model.Topic
+	MemberCount uint `json:"member_count"`
+}
+
 func TopicGetSelectable(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -171,7 +383,53 @@ func TopicEdit(ctx *gin.Context) {
 }
 
 func TopicDel(ctx *gin.Context) {
-
+	var req api.TopicDelRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	var topic model.Topic
+	err = db.SQL().Table("topic").Where("id = ?", req.TopicId).First(&topic).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	if topic.Creator != u.ID {
+		log.WithError(err).Error("permission denied")
+		ctx.Abort()
+		return
+	}
+	tx := db.SQL().Begin()
+	err = tx.Table("topic").Delete(&topic).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	err = tx.Table("topic_join").Delete(&model.TopicJoin{TopicId: req.TopicId}).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	err = tx.Table("topic_policy").Delete(&model.TopicPolicy{TopicId: req.TopicId}).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
 func TopicJoin(ctx *gin.Context) {

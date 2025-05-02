@@ -245,4 +245,7 @@ Map<String, String> get zhCN => {
   "desc": "描述",
 
   "member": "成员",
+
+  "topic_apply_join": "申请加入",
+  "topic_apply_close": "关闭弹窗",
 };

@@ -56,12 +56,11 @@ class GetTopicResponse extends BaseResponse {
   }
 }
 
-Future<List> topicGetRequest() async {
+Future<List?> topicGetRequest() async {
   return (await HTTP.get(
-        "/topic/get",
-        options: Options(headers: {"Authorization": Guard.jwt}),
-      )).data["data"]
-      as List;
+    "/topic/get",
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
 }
 
 Future<List<Topic>> topicGetSelectableRequest() async {
@@ -90,6 +89,22 @@ Future topicMemberGetRequest({required int id}) async {
         options: Options(headers: {"Authorization": Guard.jwt}),
       )).data["data"]
       as List;
+}
+
+Future topicFindRequest({required int page, required int pageSize}) async {
+  return (await HTTP.post(
+    '/topic/find',
+    data: {'page': page, 'page_size': pageSize},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
+}
+
+Future topicApplyNew({required int topicId}) async {
+  return (await HTTP.post(
+    '/topic/apply/new',
+    data: {'topic_id': topicId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["msg"];
 }
 
 Future<GetTopicResponse> getTopic(GetTopicRequest req) async {

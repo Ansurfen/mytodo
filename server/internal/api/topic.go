@@ -44,3 +44,17 @@ type TopicExitRequest struct {
 type TopicCalendarRequest struct {
 	TopicId uint `json:"topic_id"`
 }
+
+type TopicFindRequest struct {
+	Page     uint `json:"page"`
+	PageSize uint `json:"page_size"`
+}
+
+type TopicApplyNewRequest struct {
+	TopicId uint `json:"topic_id"`
+}
+
+type TopicApplyCommitRequest struct {
+	NotificationId uint `json:"notification_id"`
+	Pass           bool `json:"pass"`
+}
