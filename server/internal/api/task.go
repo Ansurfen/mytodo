@@ -31,7 +31,7 @@ type TaskDelRequest struct {
 }
 
 type TaskEditRequest struct {
-	TaskId      uint         `json:"task_id"`
+	TaskId      uint         `json:"id"`
 	Name        string       `json:"name"`
 	Description string       `json:"description"`
 	StartAt     iso8601.Time `json:"start_at"`

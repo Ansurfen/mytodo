@@ -341,3 +341,10 @@ Future taskEditRequest({
     options: Options(headers: {"Authorization": Guard.jwt}),
   );
 }
+
+Future taskStatsRequest(int taskId) async {
+  return (await HTTP.get(
+    '/task/stats/$taskId',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
+}

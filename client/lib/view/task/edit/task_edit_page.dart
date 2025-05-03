@@ -41,8 +41,7 @@ class _TaskEditPageState extends State<TaskEditPage> {
         ),
         trailing: IconButton(
           onPressed: () {
-            // TODO: 实现保存功能
-            Get.back();
+            controller.saveTaskData();
           },
           icon: Icon(
             Icons.cloud_upload,
@@ -50,7 +49,10 @@ class _TaskEditPageState extends State<TaskEditPage> {
           ),
         ),
       ),
-      body: Container(color: Colors.transparent, child: taskEditView()),
+      body: Container(
+        color: Colors.transparent,
+        child: Obx(() => taskEditView()),
+      ),
     );
   }
 

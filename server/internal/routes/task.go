@@ -23,5 +23,6 @@ func InstallTaskRoute(e *gin.Engine) {
 		taskRouter.GET("/file/:filename", handler.TaskFileDownload)
 		taskRouter.DELETE("/file/:filename", middleware.Auth, handler.TaskFileDelete)
 		taskRouter.GET("/detail/:taskId", middleware.Auth, handler.TaskDetail)
+		taskRouter.GET("/stats/:taskId", middleware.Auth, handler.TaskStats)
 	}
 }

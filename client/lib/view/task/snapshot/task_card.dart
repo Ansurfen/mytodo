@@ -1,6 +1,7 @@
 // Copyright 2025 The MyTodo Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'dart:math';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
@@ -222,12 +223,17 @@ class _TaskCardState extends State<TaskCard>
           buttonHeight: 52.0,
           buttonMinWidth: 90.0,
           children: [
-            // TODO
             IconButton(
               onPressed: () {
                 RouterProvider.toTaskDetail(widget.model.id, widget.model);
               },
               icon: Icon(Icons.article, color: Colors.grey),
+            ),
+            IconButton(
+              onPressed: () {
+                RouterProvider.toTaskDetail(widget.model.id, widget.model);
+              },
+              icon: Icon(FontAwesomeIcons.chartLine, color: Colors.grey),
             ),
             IconButton(
               onPressed: () {
