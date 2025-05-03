@@ -540,3 +540,33 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	// Distance in kilometers
 	return R * c
 }
+
+func TaskHeatMap(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	// 查询用户最近一年的任务提交记录
+	oneYearAgo := time.Now().AddDate(-1, 0, 0)
+	var commits []model.TaskCommit
+	err := db.SQL().Table("task_commit").
+		Where("user_id = ? AND created_at >= ?", u.ID, oneYearAgo).
+		Find(&commits).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	// 按日期统计提交次数
+	heatmap := make(map[string]int)
+	for _, commit := range commits {
+		date := commit.CreatedAt.Format("2006-01-02")
+		heatmap[date]++
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": heatmap,
+	})
+}

@@ -255,3 +255,24 @@ Future<TaskDashboardStats> taskDashboard() async {
     )).data["data"],
   );
 }
+
+@JsonSerializable()
+class TaskHeatMapResponse extends BaseResponse {
+  @JsonKey(name: "data")
+  Map<String, int> heatmap;
+
+  TaskHeatMapResponse(this.heatmap) : super({});
+
+  TaskHeatMapResponse.fromResponse(Response res)
+    : heatmap = Map<String, int>.from(res.data["data"]),
+      super(res.data);
+}
+
+Future<TaskHeatMapResponse> taskHeatMap() async {
+  return TaskHeatMapResponse.fromResponse(
+    await HTTP.get(
+      '/task/heatmap',
+      options: Options(headers: {"Authorization": Guard.jwt}),
+    ),
+  );
+}

@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/task.dart';
-import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/utils/debounce.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
@@ -14,7 +13,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   late final AnimationController animationController;
   Animation<double>? topBarAnimation;
   RxList<TaskCardModel> tasks = <TaskCardModel>[].obs;
-  Pagination<GetTaskDto> pagination = Pagination();
+  Pagination<TaskCardModel> pagination = Pagination();
   Rx<bool> showMask = false.obs;
   late Future<bool> getData;
 

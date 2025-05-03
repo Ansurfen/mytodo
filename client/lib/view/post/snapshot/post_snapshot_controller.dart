@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/hook/post.dart';
-import 'package:my_todo/model/dto/post.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
@@ -19,7 +18,7 @@ class PostSnapshotController extends GetxController
   Rx<List<Post>> data = Rx([]);
   late StreamSubscription<Post> _uploadPost;
   late TabController tabController;
-  Pagination<GetPostDto> pagination = Pagination(index: 1);
+  Pagination<Post> pagination = Pagination();
 
   @override
   void onInit() {
