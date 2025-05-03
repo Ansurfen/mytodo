@@ -18,6 +18,7 @@ import 'package:my_todo/view/splash/splash_page.dart';
 import 'package:my_todo/view/notification/notification_binding.dart';
 import 'package:my_todo/view/notification/notification_page.dart';
 import 'package:my_todo/view/photo/photo_page.dart';
+import 'package:my_todo/view/statistics/statistics_binding.dart';
 import 'package:my_todo/view/statistics/statistics_page.dart';
 
 class OtherRouter {
@@ -54,6 +55,7 @@ class OtherRouter {
   static final statistic = GetPage(
     name: '/statistic',
     page: () => const StatisticsPage(),
+    binding: StatisticsBinding(),
   );
 
   static final add = GetPage(

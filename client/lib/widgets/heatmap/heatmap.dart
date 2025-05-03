@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:my_todo/theme/color.dart';
-import 'package:my_todo/utils/guard.dart';
 
 class TodoHeatMap extends StatefulWidget {
-  const TodoHeatMap({super.key});
+  final Map<DateTime, int> heatMap;
+
+  const TodoHeatMap({super.key, required this.heatMap});
 
   @override
   State<StatefulWidget> createState() => _HeatMapExample();
@@ -19,20 +20,11 @@ class _HeatMapExample extends State<TodoHeatMap> {
 
   bool isOpacityMode = true;
 
-  Map<DateTime, int> heatMapDatasets = {};
-
   @override
   void dispose() {
     super.dispose();
     dateController.dispose();
     heatLevelController.dispose();
-  }
-
-  @override
-  void initState() {
-    heatMapDatasets[DateTime.parse("20250301")] = 10;
-    heatMapDatasets[DateTime.parse("20250302")] = 1;
-    super.initState();
   }
 
   @override
@@ -49,7 +41,7 @@ class _HeatMapExample extends State<TodoHeatMap> {
                   scrollable: true,
                   colorMode:
                       isOpacityMode ? ColorMode.opacity : ColorMode.color,
-                  datasets: heatMapDatasets,
+                  datasets: widget.heatMap,
                   colorsets: shuffleAndMapColors(context),
                   onClick: (value) {
                     ScaffoldMessenger.of(
@@ -63,6 +55,7 @@ class _HeatMapExample extends State<TodoHeatMap> {
                     const Text('Color Mode'),
                     CupertinoSwitch(
                       value: isOpacityMode,
+                      activeColor: Theme.of(context).primaryColor,
                       onChanged: (value) {
                         setState(() {
                           isOpacityMode = value;

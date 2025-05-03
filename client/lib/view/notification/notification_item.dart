@@ -79,16 +79,12 @@ class NotificationItem extends StatelessWidget {
                   ),
                 ];
           case NotifyType.inviteFriend:
-            throw UnimplementedError();
-          case NotifyType.text:
-            throw UnimplementedError();
-          case NotifyType.topicApply:
-            message = "${model.sender} 申请加入 ${model.msg} 频道";
+            message = "${model.sender} 邀请你加入 ${model.msg} 频道";
             actions = <CupertinoActionSheetAction>[
               CupertinoActionSheetAction(
                 isDefaultAction: true,
                 onPressed: () {
-                  topicApplyCommit(
+                  topicMemberCommitRequest(
                     notificationId: model.id,
                     pass: true,
                   ).then((_) => Get.back());
@@ -103,7 +99,38 @@ class NotificationItem extends StatelessWidget {
               CupertinoActionSheetAction(
                 isDestructiveAction: true,
                 onPressed: () {
-                  topicApplyCommit(
+                  topicMemberCommitRequest(
+                    notificationId: model.id,
+                    pass: false,
+                  ).then((_) => Get.back());
+                },
+                child: Text('reject'.tr),
+              ),
+            ];
+          case NotifyType.text:
+            throw UnimplementedError();
+          case NotifyType.topicApply:
+            message = "${model.sender} 申请加入 ${model.msg} 频道";
+            actions = <CupertinoActionSheetAction>[
+              CupertinoActionSheetAction(
+                isDefaultAction: true,
+                onPressed: () {
+                  topicApplyCommitRequest(
+                    notificationId: model.id,
+                    pass: true,
+                  ).then((_) => Get.back());
+                },
+                child: Text(
+                  'confirm'.tr,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+              CupertinoActionSheetAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  topicApplyCommitRequest(
                     notificationId: model.id,
                     pass: false,
                   ).then((_) => Get.back());

@@ -4,7 +4,8 @@ import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:my_todo/widgets/heatmap/heatmap.dart';
 
 class TodoHeatMapCalendar extends StatefulWidget {
-  const TodoHeatMapCalendar({super.key});
+  final Map<DateTime, int> heatMap;
+  const TodoHeatMapCalendar({super.key, required this.heatMap});
 
   @override
   State<StatefulWidget> createState() => _HeatMapCalendarExample();
@@ -15,8 +16,6 @@ class _HeatMapCalendarExample extends State<TodoHeatMapCalendar> {
   final TextEditingController heatLevelController = TextEditingController();
 
   bool isOpacityMode = true;
-
-  Map<DateTime, int> heatMapDatasets = {};
 
   @override
   void dispose() {
@@ -37,7 +36,7 @@ class _HeatMapCalendarExample extends State<TodoHeatMapCalendar> {
             // HeatMapCalendar
             child: HeatMapCalendar(
               flexible: true,
-              datasets: heatMapDatasets,
+              datasets: widget.heatMap,
               colorMode: isOpacityMode ? ColorMode.opacity : ColorMode.color,
               colorsets: shuffleAndMapColors(context),
             ),
@@ -51,6 +50,7 @@ class _HeatMapCalendarExample extends State<TodoHeatMapCalendar> {
             const Text('Color Mode'),
             CupertinoSwitch(
               value: isOpacityMode,
+              activeColor: Theme.of(context).primaryColor,
               onChanged: (value) {
                 setState(() {
                   isOpacityMode = value;

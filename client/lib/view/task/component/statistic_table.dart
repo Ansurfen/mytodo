@@ -3,40 +3,16 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/api/task.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/color.dart';
 import 'dart:math' as math;
 import 'package:my_todo/theme/provider.dart';
 
-class StatisticTableModel {
-  int completed;
-  int timeout;
-  int running;
-
-  int periodTotalCount;
-  int periodFinishedCount;
-  int scheduleTotalCount;
-  int scheduleFinishedCount;
-  int generalTotalCount;
-  int generalFinishedCount;
-
-  StatisticTableModel({
-    required this.completed,
-    required this.timeout,
-    required this.running,
-    required this.periodTotalCount,
-    required this.periodFinishedCount,
-    required this.scheduleTotalCount,
-    required this.scheduleFinishedCount,
-    required this.generalTotalCount,
-    required this.generalFinishedCount,
-  });
-}
-
 class StatisticTable extends StatelessWidget {
   final AnimationController? animationController;
   final Animation<double>? animation;
-  final StatisticTableModel data;
+  final TaskDashboardStats data;
 
   const StatisticTable({
     super.key,
@@ -228,7 +204,7 @@ class StatisticTable extends StatelessWidget {
                     context,
                     title: 'task_timeout'.tr,
                     icon: Icons.alarm,
-                    value: data.timeout,
+                    value: data.overdue,
                   ),
                 ],
               ),
@@ -266,7 +242,7 @@ class StatisticTable extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            '${(data.running * animation!.value).toInt()}',
+                            '${(data.inProgress * animation!.value).toInt()}',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: StatisticTableTheme.fontName,
@@ -390,8 +366,8 @@ class StatisticTable extends StatelessWidget {
               context,
               title: 'task_day'.tr,
               // color: '#87A0E5',
-              wip: data.periodTotalCount - data.periodFinishedCount,
-              left: data.periodTotalCount - data.periodFinishedCount,
+              wip: data.dailyTotal - data.dailyFinished,
+              left: data.dailyTotal - data.dailyFinished,
             ),
           ),
           Expanded(
@@ -403,8 +379,8 @@ class StatisticTable extends StatelessWidget {
                   context,
                   title: 'task_month'.tr,
                   // color: '#F56E98',
-                  wip: data.generalTotalCount - data.generalFinishedCount,
-                  left: data.generalTotalCount - data.generalFinishedCount,
+                  wip: data.monthlyTotal - data.monthlyFinished,
+                  left: data.monthlyTotal - data.monthlyFinished,
                 ),
               ],
             ),
@@ -418,8 +394,8 @@ class StatisticTable extends StatelessWidget {
                   context,
                   title: 'task_year'.tr,
                   // color: '#F1B440',
-                  wip: data.scheduleTotalCount - data.scheduleFinishedCount,
-                  left: data.scheduleTotalCount - data.scheduleFinishedCount,
+                  wip: data.yearlyTotal - data.yearlyFinished,
+                  left: data.yearlyTotal - data.yearlyFinished,
                 ),
               ],
             ),

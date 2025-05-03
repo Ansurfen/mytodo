@@ -11,16 +11,11 @@ import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/component/container/empty_container.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/component/title/title_view.dart';
-import 'package:my_todo/mock/provider.dart';
-import 'package:my_todo/mock/statistic.dart';
-import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/animate.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/guide.dart';
-import 'package:my_todo/view/add/add_task_page.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
 import 'package:my_todo/view/task/snapshot/task_controller.dart';
@@ -191,10 +186,12 @@ class _TaskPageState extends State<TaskPage>
                   onTap: () {
                     RouterProvider.toStatistic();
                   },
-                  child: StatisticTable(
-                    data: statisticTableData,
-                    animation: opacity,
-                    animationController: controller.animationController,
+                  child: Obx(
+                    () => StatisticTable(
+                      data: controller.stats.value,
+                      animation: opacity,
+                      animationController: controller.animationController,
+                    ),
                   ),
                 ),
                 FadeAnimatedBuilder(

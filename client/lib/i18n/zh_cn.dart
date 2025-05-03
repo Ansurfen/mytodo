@@ -258,4 +258,7 @@ Map<String, String> get zhCN => {
   "notification_commit_finish": "您已经处理了此通知",
 
   "invite_friend": "邀请好友",
+
+  "statistics": "统计",
+  "heatmap": "热度图",
 };

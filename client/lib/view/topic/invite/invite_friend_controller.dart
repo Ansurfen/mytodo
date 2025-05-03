@@ -11,6 +11,7 @@ class TopicInviteController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    id = int.parse(Get.parameters["id"]!);
     userContactsRequest().then((res) {
       for (var user in res) {
         if (user["id"] != Guard.u!.id) {

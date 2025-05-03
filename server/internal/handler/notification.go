@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
@@ -179,7 +178,7 @@ LIMIT %d OFFSET %d`, u.ID, limit, offset).Find(&notifications).Error
 		ctx.Abort()
 		return
 	}
-	fmt.Println(notifications)
+
 	for i, n := range notifications {
 		switch n.Type {
 		case model.NotificationTypeTopicApply:

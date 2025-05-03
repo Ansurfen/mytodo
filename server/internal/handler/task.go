@@ -421,6 +421,8 @@ func TaskDashboard(ctx *gin.Context) {
 	if !ok {
 		return
 	}
+
+	// 获取用户加入的所有话题
 	var topicJoins []model.TopicJoin
 	err := db.SQL().Table("topic_join").Where("user_id = ?", u.ID).Find(&topicJoins).Error
 	if err != nil {
@@ -429,6 +431,7 @@ func TaskDashboard(ctx *gin.Context) {
 		return
 	}
 
+	// 获取所有相关任务
 	var tasks []model.Task
 	for _, join := range topicJoins {
 		var topicTasks []model.Task
@@ -443,45 +446,75 @@ func TaskDashboard(ctx *gin.Context) {
 
 	now := time.Now()
 	stats := struct {
-		Completed  int `json:"completed"`
-		Overdue    int `json:"overdue"`
-		InProgress int `json:"in_progress"`
-		Daily      int `json:"daily"`
-		Monthly    int `json:"monthly"`
-		Yearly     int `json:"yearly"`
+		Completed       int `json:"completed"`
+		Overdue         int `json:"overdue"`
+		InProgress      int `json:"in_progress"`
+		DailyTotal      int `json:"daily_total"`
+		DailyFinished   int `json:"daily_finished"`
+		MonthlyTotal    int `json:"monthly_total"`
+		MonthlyFinished int `json:"monthly_finished"`
+		YearlyTotal     int `json:"yearly_total"`
+		YearlyFinished  int `json:"yearly_finished"`
 	}{}
 
+	// 批量获取所有任务的条件和提交记录
+	var taskIDs []uint
 	for _, task := range tasks {
-		// Get task conditions
-		var conds []model.TaskCondition
-		err = db.SQL().Table("task_condition").Where("task_id = ?", task.ID).Find(&conds).Error
+		taskIDs = append(taskIDs, task.ID)
+	}
+
+	// 获取所有任务的条件
+	var allConds []model.TaskCondition
+	if len(taskIDs) > 0 {
+		err = db.SQL().Table("task_condition").Where("task_id IN ?", taskIDs).Find(&allConds).Error
 		if err != nil {
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
+	}
 
-		// Get task commits for this user
-		var commits []model.TaskCommit
-		err = db.SQL().Table("task_commit").Where("task_id = ? AND user_id = ?", task.ID, u.ID).Find(&commits).Error
+	// 获取所有任务的提交记录
+	var allCommits []model.TaskCommit
+	if len(taskIDs) > 0 {
+		err = db.SQL().Table("task_commit").Where("task_id IN ? AND user_id = ?", taskIDs, u.ID).Find(&allCommits).Error
 		if err != nil {
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
+	}
 
-		// Count completed conditions
+	// 按任务ID组织条件和提交记录
+	condsByTask := make(map[uint][]model.TaskCondition)
+	commitsByTask := make(map[uint][]model.TaskCommit)
+
+	for _, cond := range allConds {
+		condsByTask[cond.TaskId] = append(condsByTask[cond.TaskId], cond)
+	}
+
+	for _, commit := range allCommits {
+		commitsByTask[commit.TaskId] = append(commitsByTask[commit.TaskId], commit)
+	}
+
+	// 统计任务状态
+	for _, task := range tasks {
+		conds := condsByTask[task.ID]
+		commits := commitsByTask[task.ID]
+
+		// 计算完成的条件数量
 		completedConds := 0
+		condMap := make(map[uint]bool)
 		for _, commit := range commits {
-			for _, cond := range conds {
-				if commit.ConditionId == cond.ID {
-					completedConds++
-					break
-				}
+			condMap[commit.ConditionId] = true
+		}
+		for _, cond := range conds {
+			if condMap[cond.ID] {
+				completedConds++
 			}
 		}
 
-		// Check task status
+		// 更新任务状态统计
 		if completedConds == len(conds) {
 			stats.Completed++
 		} else if task.EndAt.Before(now) {
@@ -490,14 +523,23 @@ func TaskDashboard(ctx *gin.Context) {
 			stats.InProgress++
 		}
 
-		// Check task duration
+		// 更新任务周期统计
 		duration := task.EndAt.Sub(task.StartAt)
 		if duration <= 24*time.Hour {
-			stats.Daily++
+			stats.DailyTotal++
+			if completedConds == len(conds) {
+				stats.DailyFinished++
+			}
 		} else if duration <= 30*24*time.Hour {
-			stats.Monthly++
+			stats.MonthlyTotal++
+			if completedConds == len(conds) {
+				stats.MonthlyFinished++
+			}
 		} else {
-			stats.Yearly++
+			stats.YearlyTotal++
+			if completedConds == len(conds) {
+				stats.YearlyFinished++
+			}
 		}
 	}
 

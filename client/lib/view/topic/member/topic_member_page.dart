@@ -44,9 +44,11 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
           const SizedBox(width: 15),
           settingWidget(),
           const SizedBox(width: 15),
-          const IconButton(
-            onPressed: RouterProvider.viewTopicInvite,
-            icon: Icon(Icons.share),
+          IconButton(
+            onPressed: () {
+              RouterProvider.viewTopicInvite(controller.id);
+            },
+            icon: const Icon(Icons.share),
           ),
           const SizedBox(width: 10),
         ],

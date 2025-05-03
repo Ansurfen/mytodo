@@ -268,4 +268,7 @@ Map<String, String> get enUS => {
   "notification_commit_finish": "The notification has been handled.",
 
   "invite_friend": "Invite Friend",
+
+  "statistics": "Statistics",
+  "heatmap": "Heatmap",
 };

@@ -284,7 +284,7 @@ class _CustomDialogState extends State<CustomDialog>
                         ),
                       ),
                       onPressed: () {
-                        topicApplyNew(topicId: widget.model.id).then((v) {
+                        topicApplyNewRequest(topicId: widget.model.id).then((v) {
                           Get.snackbar("topic_apply_join".tr, v);
                         });
                         Get.back();

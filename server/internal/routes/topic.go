@@ -26,6 +26,7 @@ func InstallTopicRoute(e *gin.Engine) {
 			memberRouter.POST("/invite", middleware.Auth, handler.TopicMemberInvite)
 			memberRouter.POST("/get", handler.TopicMemberGet)
 			memberRouter.POST("/del", middleware.Auth, handler.TopicMemberDel)
+			memberRouter.POST("/commit", middleware.Auth, handler.TopicMemberCommit)
 		}
 	}
 }

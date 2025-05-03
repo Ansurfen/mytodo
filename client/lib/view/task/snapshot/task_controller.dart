@@ -16,6 +16,17 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   Pagination<TaskCardModel> pagination = Pagination();
   Rx<bool> showMask = false.obs;
   late Future<bool> getData;
+  Rx<TaskDashboardStats> stats = TaskDashboardStats(
+    completed: 0,
+    overdue: 0,
+    inProgress: 0,
+    dailyFinished: 0,
+    dailyTotal: 0,
+    monthlyFinished: 0,
+    monthlyTotal: 0,
+    yearlyFinished: 0,
+    yearlyTotal: 0,
+  ).obs;
 
   @override
   void onInit() {
@@ -33,7 +44,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
     super.onInit();
     Future.delayed(const Duration(milliseconds: 100), () {
       taskDashboard().then((v) {
-        Guard.log.i(v.toJson());
+        stats.value = v;
       });
     });
   }

@@ -142,8 +142,8 @@ class RouterProvider {
     to(TopicRouter.member, query: "?id=$id");
   }
 
-  static void viewTopicInvite() {
-    to(TopicRouter.invite);
+  static void viewTopicInvite(int id) {
+    to(TopicRouter.invite, query: "?id=$id");
   }
 
   static void viewTopicDetail(int id, Topic model) {

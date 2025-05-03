@@ -223,22 +223,34 @@ class TaskDashboardStats {
   @JsonKey(name: "in_progress")
   int inProgress;
 
-  @JsonKey(name: "daily")
-  int daily;
+  @JsonKey(name: "daily_finished")
+  int dailyFinished;
 
-  @JsonKey(name: "monthly")
-  int monthly;
+  @JsonKey(name: "daily_total")
+  int dailyTotal;
 
-  @JsonKey(name: "yearly")
-  int yearly;
+  @JsonKey(name: "monthly_finished")
+  int monthlyFinished;
+
+  @JsonKey(name: "monthly_total")
+  int monthlyTotal;
+
+  @JsonKey(name: "yearly_finished")
+  int yearlyFinished;
+
+  @JsonKey(name: "yearly_total")
+  int yearlyTotal;
 
   TaskDashboardStats({
     required this.completed,
     required this.overdue,
     required this.inProgress,
-    required this.daily,
-    required this.monthly,
-    required this.yearly,
+    required this.dailyFinished,
+    required this.dailyTotal,
+    required this.monthlyFinished,
+    required this.monthlyTotal,
+    required this.yearlyFinished,
+    required this.yearlyTotal,
   });
 
   factory TaskDashboardStats.fromJson(Map<String, dynamic> json) =>
@@ -256,23 +268,10 @@ Future<TaskDashboardStats> taskDashboard() async {
   );
 }
 
-@JsonSerializable()
-class TaskHeatMapResponse extends BaseResponse {
-  @JsonKey(name: "data")
-  Map<String, int> heatmap;
-
-  TaskHeatMapResponse(this.heatmap) : super({});
-
-  TaskHeatMapResponse.fromResponse(Response res)
-    : heatmap = Map<String, int>.from(res.data["data"]),
-      super(res.data);
-}
-
-Future<TaskHeatMapResponse> taskHeatMap() async {
-  return TaskHeatMapResponse.fromResponse(
-    await HTTP.get(
-      '/task/heatmap',
-      options: Options(headers: {"Authorization": Guard.jwt}),
-    ),
-  );
+Future<Map<String, dynamic>> taskHeatMap() async {
+  return (await HTTP.get(
+        '/task/heatmap',
+        options: Options(headers: {"Authorization": Guard.jwt}),
+      )).data["data"]
+      as Map<String, dynamic>;
 }

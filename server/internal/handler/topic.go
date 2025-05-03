@@ -11,6 +11,7 @@ import (
 	"mytodo/internal/model"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
@@ -637,69 +638,105 @@ func TopicMemberInvite(ctx *gin.Context) {
 	if !ok {
 		return
 	}
-	metadata := fmt.Sprintf("%d;%d", u.ID, req.TopicId)
-	notification := model.Notification{
-		Type:        model.NotificationTypeTopicInvite,
-		Creator:     u.ID,
-		Name:        "Topic Invitation",
-		Description: fmt.Sprintf("%d;%d", u.ID, req.TopicId),
-	}
-	tx := db.SQL().Begin()
 
-	var exist model.Notification
-	tx.Table("notification").Where("type = ? AND description = ?", model.NotificationTypeTopicInvite, metadata).First(&exist)
-	if exist.ID != 0 {
-		notification = exist
-	} else {
-		err = tx.Table("notification").Create(&notification).Error
-		if err != nil {
-			tx.Rollback()
-			log.WithError(err).Error("running sql")
-			ctx.Abort()
-			return
-		}
+	// 检查用户是否有权限邀请成员
+	policy, err := loadTopicPolicy(req.TopicId, u.ID)
+	if err != nil {
+		log.WithError(err).Error("fail to read policy")
+		ctx.Abort()
+		return
+	}
+	if !policy.Role.GE(model.TopicRoleAdmin) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg": "permission denied",
+		})
+		ctx.Abort()
+		return
 	}
 
-	var publishes []model.NotificationPublish
+	// 检查用户是否已经加入话题
 	for _, uid := range req.UsersId {
-		if uid == notification.Creator {
-			continue
-		}
-
-		var existingRecord model.NotificationPublish
-		if err := db.SQL().Table("notification_publish").
-			Where("notification_id = ? AND user_id = ?", notification.ID, uid).
-			First(&existingRecord).Error; err != nil && err != gorm.ErrRecordNotFound {
-			tx.Rollback()
-			log.WithError(err).Error("check if record exists")
-			ctx.Abort()
-			return
-		}
-
-		if existingRecord.ID == 0 {
-			publishes = append(publishes, model.NotificationPublish{
-				NotificationId: notification.ID,
-				UserID:         uid,
-			})
-		}
-	}
-
-	if len(publishes) > 0 {
-		err = tx.Table("notification_publish").CreateInBatches(&publishes, len(publishes)).Error
-		if err != nil {
-			tx.Rollback()
+		var topicJoin model.TopicJoin
+		err = db.SQL().Table("topic_join").Where("topic_id = ? AND user_id = ?", req.TopicId, uid).First(&topicJoin).Error
+		if err != nil && err != gorm.ErrRecordNotFound {
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
+		if topicJoin.ID != 0 {
+			ctx.JSON(http.StatusOK, gin.H{
+				"msg":  "user already joined",
+				"data": uid,
+			})
+			ctx.Abort()
+			return
+		}
 	}
+
+	// 创建邀请通知
+	tx := db.SQL().Begin()
+	for _, uid := range req.UsersId {
+		// 检查是否已经存在邀请
+		var exist model.Notification
+		metadata := fmt.Sprintf("%d;%d", req.TopicId, uid)
+		err = db.SQL().Table("notification").Where("type = ? AND description = ?", model.NotificationTypeTopicInvite, metadata).First(&exist).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				notification := model.Notification{
+					Type:        model.NotificationTypeTopicInvite,
+					Creator:     u.ID,
+					Name:        "Topic Invitation",
+					Description: metadata,
+				}
+				err = tx.Create(&notification).Error
+				if err != nil {
+					tx.Rollback()
+					log.WithError(err).Error("running sql")
+					ctx.Abort()
+					return
+				}
+
+				notificationPub := model.NotificationPublish{
+					NotificationId: notification.ID,
+					UserID:         uid,
+				}
+				err = tx.Table("notification_publish").Create(&notificationPub).Error
+				if err != nil {
+					tx.Rollback()
+					log.WithError(err).Error("running sql")
+					ctx.Abort()
+					return
+				}
+
+				notificationAction := model.NotificationAction{
+					NotificationId: notification.ID,
+					Receiver:       uid,
+					Status:         model.NotifyStatePending,
+				}
+				err = tx.Table("notification_action").Create(&notificationAction).Error
+				if err != nil {
+					tx.Rollback()
+					log.WithError(err).Error("running sql")
+					ctx.Abort()
+					return
+				}
+			} else {
+				tx.Rollback()
+				log.WithError(err).Error("running sql")
+				ctx.Abort()
+				return
+			}
+		}
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		log.WithError(err).Error("fail to commit tx")
 		ctx.Abort()
 		return
 	}
+
 	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "successfully send invitation",
+		"msg": "successfully sent invitation",
 	})
 }
 
@@ -778,4 +815,139 @@ func loadTopicPolicy(tid, uid uint) (policy model.TopicPolicy, err error) {
 	err = db.SQL().Table("topic_policy").
 		Where("topic_id = ? AND user_id = ?", tid, uid).First(&policy).Error
 	return
+}
+
+func TopicMemberCommit(ctx *gin.Context) {
+	var req api.TopicMemberCommitRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	// 获取通知信息
+	var notification model.Notification
+	err = db.SQL().Table("notification").Where("id = ?", req.NotificationId).First(&notification).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	// 解析话题ID和用户ID
+	parts := strings.Split(notification.Description, ";")
+	if len(parts) != 2 {
+		log.Error("invalid notification description")
+		ctx.Abort()
+		return
+	}
+	topicId, err := strconv.Atoi(parts[0])
+	if err != nil {
+		log.WithError(err).Error("fail to parse topic id")
+		ctx.Abort()
+		return
+	}
+	userId, err := strconv.Atoi(parts[1])
+	if err != nil {
+		log.WithError(err).Error("fail to parse user id")
+		ctx.Abort()
+		return
+	}
+
+	// 获取当前用户
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	if uint(userId) != u.ID {
+		log.Error("permission denied")
+		ctx.Abort()
+		return
+	}
+
+	if req.Pass {
+		// 接受邀请
+		tx := db.SQL().Begin()
+
+		// 创建话题加入记录
+		err = tx.Table("topic_join").Create(&model.TopicJoin{
+			TopicId: uint(topicId),
+			UserId:  u.ID,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		// 创建话题权限记录
+		err = tx.Table("topic_policy").Create(&model.TopicPolicy{
+			TopicId: uint(topicId),
+			UserId:  u.ID,
+			Role:    model.TopicRoleMember,
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		// 更新通知状态
+		var action model.NotificationAction
+		err = tx.Table("notification_action").Where("nid = ? AND receiver = ?", notification.ID, u.ID).First(&action).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		action.Status = model.NotifyStateConfirmed
+		err = tx.Table("notification_action").Save(&action).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			log.WithError(err).Error("fail to commit tx")
+			ctx.Abort()
+			return
+		}
+	} else {
+		// 拒绝邀请
+		tx := db.SQL().Begin()
+
+		// 更新通知状态
+		var action model.NotificationAction
+		err = tx.Table("notification_action").Where("nid = ? AND receiver = ?", notification.ID, u.ID).First(&action).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		action.Status = model.NotifyStateRejected
+		err = tx.Table("notification_action").Save(&action).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			log.WithError(err).Error("fail to commit tx")
+			ctx.Abort()
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully processed invitation",
+	})
 }

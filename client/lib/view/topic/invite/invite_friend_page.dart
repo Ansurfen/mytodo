@@ -2,13 +2,11 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/scaffold.dart';
-import 'package:my_todo/mock/chat.dart';
 import 'package:my_todo/theme/checkbox.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/view/chat/snapshot/chat_page.dart';
 import 'package:my_todo/view/topic/invite/invite_friend_controller.dart';
 
@@ -39,10 +37,12 @@ class _TopicInvitePageState extends State<TopicInvitePage> {
                     .where((c) => controller.selectedContactIds.contains(c.id))
                     .toList();
 
-            for (var e in selectedContacts) {
-              Guard.log.i(e.id);
-            }
-            Get.back();
+            topicMemberInviteRequest(
+              topicId: controller.id,
+              userIds: selectedContacts.map((e) => int.parse(e.id!)).toList(),
+            ).then((res) {
+              Get.back();
+            });
           },
           icon: Icon(
             Icons.send,

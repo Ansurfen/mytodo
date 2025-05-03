@@ -99,7 +99,7 @@ Future topicFindRequest({required int page, required int pageSize}) async {
   )).data["data"];
 }
 
-Future topicApplyNew({required int topicId}) async {
+Future topicApplyNewRequest({required int topicId}) async {
   return (await HTTP.post(
     '/topic/apply/new',
     data: {'topic_id': topicId},
@@ -107,12 +107,34 @@ Future topicApplyNew({required int topicId}) async {
   )).data["msg"];
 }
 
-Future topicApplyCommit({
+Future topicApplyCommitRequest({
   required int notificationId,
   required bool pass,
 }) async {
   return HTTP.post(
     '/topic/apply/commit',
+    data: {'notification_id': notificationId, 'pass': pass},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicMemberInviteRequest({
+  required int topicId,
+  required List<int> userIds,
+}) async {
+  return HTTP.post(
+    '/topic/member/invite',
+    data: {'topic_id': topicId, 'users_id': userIds},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicMemberCommitRequest({
+  required int notificationId,
+  required bool pass,
+}) async {
+  return HTTP.post(
+    '/topic/member/commit',
     data: {'notification_id': notificationId, 'pass': pass},
     options: Options(headers: {"Authorization": Guard.jwt}),
   );

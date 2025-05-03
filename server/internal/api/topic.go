@@ -58,3 +58,8 @@ type TopicApplyCommitRequest struct {
 	NotificationId uint `json:"notification_id"`
 	Pass           bool `json:"pass"`
 }
+
+type TopicMemberCommitRequest struct {
+	NotificationId uint `json:"notification_id"`
+	Pass           bool `json:"pass"`
+}

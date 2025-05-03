@@ -31,9 +31,12 @@ TaskDashboardStats _$TaskDashboardStatsFromJson(Map<String, dynamic> json) =>
       completed: (json['completed'] as num).toInt(),
       overdue: (json['overdue'] as num).toInt(),
       inProgress: (json['in_progress'] as num).toInt(),
-      daily: (json['daily'] as num).toInt(),
-      monthly: (json['monthly'] as num).toInt(),
-      yearly: (json['yearly'] as num).toInt(),
+      dailyFinished: (json['daily_finished'] as num).toInt(),
+      dailyTotal: (json['daily_total'] as num).toInt(),
+      monthlyFinished: (json['monthly_finished'] as num).toInt(),
+      monthlyTotal: (json['monthly_total'] as num).toInt(),
+      yearlyFinished: (json['yearly_finished'] as num).toInt(),
+      yearlyTotal: (json['yearly_total'] as num).toInt(),
     );
 
 Map<String, dynamic> _$TaskDashboardStatsToJson(TaskDashboardStats instance) =>
@@ -41,7 +44,10 @@ Map<String, dynamic> _$TaskDashboardStatsToJson(TaskDashboardStats instance) =>
       'completed': instance.completed,
       'overdue': instance.overdue,
       'in_progress': instance.inProgress,
-      'daily': instance.daily,
-      'monthly': instance.monthly,
-      'yearly': instance.yearly,
+      'daily_finished': instance.dailyFinished,
+      'daily_total': instance.dailyTotal,
+      'monthly_finished': instance.monthlyFinished,
+      'monthly_total': instance.monthlyTotal,
+      'yearly_finished': instance.yearlyFinished,
+      'yearly_total': instance.yearlyTotal,
     };
