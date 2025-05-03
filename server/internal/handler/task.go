@@ -5,12 +5,15 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"math"
 	"mytodo/internal/api"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +21,9 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 )
 
 func TaskNew(ctx *gin.Context) {
@@ -159,14 +164,69 @@ func TaskEdit(ctx *gin.Context) {
 	if !req.EndAt.IsZero() {
 		task.EndAt = req.EndAt.Time
 	}
-	// TODO
-	// var conds []model.TaskCondition
-	// for _, c := range req.Conditions {
-	// 	switch c.Type {
 
-	// 	}
-	// }
+	// 更新任务基本信息
+	err = db.SQL().Table("task").Save(&task).Error
+	if err != nil {
+		log.WithError(err).Error("fail to update task")
+		ctx.Abort()
+		return
+	}
 
+	// 处理任务条件的更新
+	if len(req.Conditions) > 0 {
+		// 删除所有现有条件
+		err = db.SQL().Table("task_condition").Where("task_id = ?", task.ID).Delete(&model.TaskCondition{}).Error
+		if err != nil {
+			log.WithError(err).Error("fail to delete existing conditions")
+			ctx.Abort()
+			return
+		}
+
+		// 创建新的条件
+		var conds []model.TaskCondition
+		for _, cond := range req.Conditions {
+			var taskType model.TaskType
+			switch cond.Type {
+			case "click":
+				taskType = model.TaskTypeClick
+			case "locate":
+				taskType = model.TaskTypeLocate
+			case "file":
+				taskType = model.TaskTypeFile
+			case "text":
+				taskType = model.TaskTypeText
+			case "qr":
+				taskType = model.TaskTypeQR
+			case "image":
+				taskType = model.TaskTypeImage
+			case "timer":
+				taskType = model.TaskTypeTimer
+			default:
+				log.WithError(err).Error("unknown task type")
+				ctx.Abort()
+				return
+			}
+
+			conds = append(conds, model.TaskCondition{
+				TaskId: task.ID,
+				Type:   taskType,
+				Param:  cond.Param,
+			})
+		}
+
+		// 批量创建新条件
+		err = db.SQL().Table("task_condition").CreateInBatches(&conds, len(conds)).Error
+		if err != nil {
+			log.WithError(err).Error("fail to create new conditions")
+			ctx.Abort()
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully updated task",
+	})
 }
 
 func TaskQR(ctx *gin.Context) {
@@ -211,7 +271,7 @@ func TaskQR(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"msg":  "",
 		"data": tokenStr,
 	})
@@ -248,6 +308,7 @@ func TaskCommit(ctx *gin.Context) {
 		}
 	case model.TaskTypeText:
 		argument = req.Argument
+		argument["create_at"] = time.Now().Unix()
 	case model.TaskTypeFile:
 
 	case model.TaskTypeQR:
@@ -277,8 +338,9 @@ func TaskCommit(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
+		filename := uuid.New().String()
 		reader := bytes.NewReader(img)
-		db.OSS().PutObject(context.Background(), "task", fmt.Sprintf("/locate/%d.png", cond.ID), reader, int64(len(img)), minio.PutObjectOptions{})
+		db.OSS().PutObject(context.Background(), "task", fmt.Sprintf("/locate/%s.png", filename), reader, int64(len(img)), minio.PutObjectOptions{})
 		lat, err := strconv.ParseFloat(latLng[0], 64)
 		if err != nil {
 			log.WithError(err).Error("无法解析纬度")
@@ -295,6 +357,8 @@ func TaskCommit(ctx *gin.Context) {
 		argument = map[string]any{
 			"latitude":  lat,
 			"longitude": lng,
+			"image":     filename,
+			"create_at": time.Now().Unix(),
 		}
 	}
 
@@ -303,6 +367,20 @@ func TaskCommit(ctx *gin.Context) {
 		UserId:      u.ID,
 		ConditionId: req.ConditionId,
 		Argument:    argument,
+	}
+	var old model.TaskCommit
+	db.SQL().Table("task_commit").Where("task_id = ? AND user_id = ? AND cond_id = ?", req.TaskId, u.ID, req.ConditionId).First(&old)
+	if old.ID != 0 && (cond.Type == model.TaskTypeLocate || cond.Type == model.TaskTypeText) {
+		old.Argument = argument
+		if err = db.SQL().Table("task_commit").Save(&old).Error; err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		ctx.JSON(200, gin.H{
+			"msg": "successfully update task commit",
+		})
+		return
 	}
 	err = db.SQL().Table("task_commit").Create(&commit).Error
 	if err != nil {
@@ -365,13 +443,28 @@ func TaskGet(ctx *gin.Context) {
 		for _, require := range conds {
 			if got, ok := gots[require.ID]; ok {
 				switch require.Type {
-				case model.TaskTypeClick, model.TaskTypeImage, model.TaskTypeFile, model.TaskTypeText:
+				case model.TaskTypeClick, model.TaskTypeImage, model.TaskTypeText:
 					taskConds = append(taskConds, taskCond{
 						Want:  &require,
 						Got:   &got,
 						Valid: true,
 					})
 					finished++
+				case model.TaskTypeFile:
+					if _, ok := got.Argument["files"].([]interface{}); ok {
+						taskConds = append(taskConds, taskCond{
+							Want:  &require,
+							Got:   &got,
+							Valid: true,
+						})
+						finished++
+					} else {
+						taskConds = append(taskConds, taskCond{
+							Want:  &require,
+							Got:   &got,
+							Valid: false,
+						})
+					}
 				case model.TaskTypeLocate:
 					tc := taskCond{Valid: false, Got: &got}
 					for _, v := range require.Param {
@@ -611,4 +704,295 @@ func TaskHeatMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": heatmap,
 	})
+}
+
+func TaskLocate(ctx *gin.Context) {
+	filename := ctx.Param("filename")
+
+	obj, err := db.OSS().GetObject(context.TODO(), "task", fmt.Sprintf("/locate/%s.png", filename), minio.GetObjectOptions{})
+	if err != nil {
+		log.WithError(err).Debug("getting profile")
+	}
+	defer obj.Close()
+
+	ctx.Header("Content-Type", "image/png")
+	ctx.Header("Content-Disposition", fmt.Sprintf("inline; filename=%s.png", filename))
+
+	_, err = io.Copy(ctx.Writer, obj)
+	if err != nil {
+		log.WithError(err).Error("writing image to response")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "Error while sending profile image"})
+		return
+	}
+}
+
+func TaskFileUpload(ctx *gin.Context) {
+	// 获取用户信息
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	// 解析请求
+	var req api.TaskFileUploadRequest
+	err := ctx.Bind(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	// 生成唯一文件名
+	filename := uuid.New().String() + path.Ext(req.File.Filename)
+
+	// 打开上传的文件
+	src, err := req.File.Open()
+	if err != nil {
+		log.WithError(err).Error("fail to open uploaded file")
+		ctx.Abort()
+		return
+	}
+	defer src.Close()
+
+	// 上传到 MinIO
+	_, err = db.OSS().PutObject(
+		context.Background(),
+		"task",
+		fmt.Sprintf("/file/%s", filename),
+		src,
+		req.File.Size,
+		minio.PutObjectOptions{ContentType: req.File.Header.Get("Content-Type")},
+	)
+	if err != nil {
+		log.WithError(err).Error("fail to upload file to minio")
+		ctx.Abort()
+		return
+	}
+
+	// 获取现有的任务提交记录
+	var commit model.TaskCommit
+	err = db.SQL().Table("task_commit").
+		Where("task_id = ? AND user_id = ? AND cond_id = ?", req.TaskId, u.ID, req.ConditionId).
+		First(&commit).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.WithError(err).Error("fail to get task commit")
+		ctx.Abort()
+		return
+	}
+
+	// 准备文件信息
+	fileInfo := map[string]interface{}{
+		"filename":      filename,
+		"original_name": req.File.Filename,
+		"size":          req.File.Size,
+		"content_type":  req.File.Header.Get("Content-Type"),
+	}
+
+	// 获取现有的文件列表
+	var files []map[string]interface{}
+	if commit.ID != 0 {
+		argument := commit.Argument
+		if existingFiles, ok := argument["files"].([]interface{}); ok {
+			for _, f := range existingFiles {
+				if file, ok := f.(map[string]interface{}); ok {
+					files = append(files, file)
+				}
+			}
+		}
+	}
+
+	// 添加新文件到列表
+	files = append(files, fileInfo)
+
+	// 更新或创建任务提交记录
+	argument := map[string]interface{}{
+		"files":     files,
+		"create_at": time.Now().Unix(),
+	}
+
+	if commit.ID != 0 {
+		// 更新现有记录
+		commit.Argument = argument
+		err = db.SQL().Table("task_commit").Save(&commit).Error
+	} else {
+		// 创建新记录
+		commit = model.TaskCommit{
+			TaskId:      req.TaskId,
+			UserId:      u.ID,
+			ConditionId: req.ConditionId,
+			Argument:    argument,
+		}
+		err = db.SQL().Table("task_commit").Create(&commit).Error
+	}
+
+	if err != nil {
+		log.WithError(err).Error("fail to save task commit")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg":  "successfully uploaded file",
+		"data": fileInfo,
+	})
+}
+
+func TaskFileDownload(ctx *gin.Context) {
+	filename := ctx.Param("filename")
+
+	// 从 MinIO 获取文件
+	obj, err := db.OSS().GetObject(
+		context.Background(),
+		"task",
+		fmt.Sprintf("/file/%s", filename),
+		minio.GetObjectOptions{},
+	)
+	if err != nil {
+		log.WithError(err).Error("fail to get file from minio")
+		ctx.Abort()
+		return
+	}
+	defer obj.Close()
+
+	// 获取文件信息
+	stat, err := obj.Stat()
+	if err != nil {
+		log.WithError(err).Error("fail to get file stat")
+		ctx.Abort()
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", stat.ContentType)
+	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	ctx.Header("Content-Length", strconv.FormatInt(stat.Size, 10))
+
+	// 发送文件内容
+	_, err = io.Copy(ctx.Writer, obj)
+	if err != nil {
+		log.WithError(err).Error("fail to send file")
+		ctx.Abort()
+		return
+	}
+}
+
+func TaskFileDelete(ctx *gin.Context) {
+	// 获取用户信息
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	// 获取文件名
+	filename := ctx.Param("filename")
+
+	// 从 MinIO 删除文件
+	err := db.OSS().RemoveObject(
+		context.Background(),
+		"task",
+		fmt.Sprintf("/file/%s", filename),
+		minio.RemoveObjectOptions{},
+	)
+	if err != nil {
+		log.WithError(err).Error("fail to delete file from minio")
+		ctx.Abort()
+		return
+	}
+
+	// 从数据库中的任务提交记录中删除文件信息
+	var commit model.TaskCommit
+	err = db.SQL().Table("task_commit").
+		Where("user_id = ? AND argument->>'$.files[*].filename' LIKE ?", u.ID, "%"+filename+"%").
+		First(&commit).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusOK, gin.H{
+				"msg": "file not found in database",
+			})
+			return
+		}
+		log.WithError(err).Error("fail to get task commit")
+		ctx.Abort()
+		return
+	}
+
+	// 更新文件列表
+	argument := commit.Argument
+	if files, ok := argument["files"].([]interface{}); ok {
+		var updatedFiles []map[string]interface{}
+		for _, f := range files {
+			if file, ok := f.(map[string]interface{}); ok {
+				if file["filename"] != filename {
+					updatedFiles = append(updatedFiles, file)
+				}
+			}
+		}
+		argument["files"] = updatedFiles
+	}
+
+	// 更新数据库记录
+	commit.Argument = argument
+	err = db.SQL().Table("task_commit").Save(&commit).Error
+	if err != nil {
+		log.WithError(err).Error("fail to update task commit")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully deleted file",
+	})
+}
+
+func TaskDetail(ctx *gin.Context) {
+	// 获取用户信息
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	// 获取任务ID
+	taskId := ctx.Param("taskId")
+	if taskId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "task id is required",
+		})
+		return
+	}
+
+	// 查询任务信息
+	var task model.Task
+	err := db.SQL().Table("task").
+		Where("id = ? AND creator = ?", taskId, u.ID).
+		First(&task).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"msg": "task not found",
+			})
+			return
+		}
+		log.WithError(err).Error("fail to get task")
+		ctx.Abort()
+		return
+	}
+
+	// 查询任务条件
+	var conditions []model.TaskCondition
+	err = db.SQL().Table("task_condition").
+		Where("task_id = ?", taskId).
+		Find(&conditions).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get task conditions")
+		ctx.Abort()
+		return
+	}
+
+	// 构建响应
+	response := gin.H{
+		"task":       task,
+		"conditions": conditions,
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": response})
 }

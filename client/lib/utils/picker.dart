@@ -131,7 +131,7 @@ Future<List<TFile>> filePicker(
         await FilePicker.platform.pickFiles(allowMultiple: allowMultiple);
     if (result != null && result.files.isNotEmpty) {
       if (!completer.isCompleted) {
-        completer.complete(result.files.map((e) => AppFile(e.name)).toList());
+        completer.complete(result.files.map((e) => AppFile(e.path!)).toList());
       }
     }
   }

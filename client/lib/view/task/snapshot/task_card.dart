@@ -12,9 +12,7 @@ import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/router/topic.dart';
 import 'package:my_todo/theme/provider.dart';
-import 'package:my_todo/utils/clipboard.dart';
 import 'package:my_todo/utils/json.dart';
-import 'package:my_todo/utils/share.dart';
 
 part 'task_card.g.dart';
 
@@ -231,6 +229,12 @@ class _TaskCardState extends State<TaskCard>
               },
               icon: Icon(Icons.article, color: Colors.grey),
             ),
+            IconButton(
+              onPressed: () {
+                RouterProvider.toTaskEdit(widget.model.id);
+              },
+              icon: Icon(Icons.edit, color: Colors.grey),
+            ),
             // IconButton(
             //   onPressed: () {
             //     RouterProvider.viewTopicMember(widget.model.id);
@@ -310,8 +314,14 @@ class ConditionItem {
   int id;
   bool finish;
   ConditionType type;
+  Map<String, dynamic> argument;
 
-  ConditionItem({required this.id, required this.finish, required this.type}) {
+  ConditionItem({
+    required this.id,
+    required this.finish,
+    required this.type,
+    this.argument = const {},
+  }) {
     switch (type) {
       case ConditionType.click:
         subtitle = "";

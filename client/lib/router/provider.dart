@@ -117,6 +117,10 @@ class RouterProvider {
     to(TaskRouter.detail, query: "?id=$id", arguments: model);
   }
 
+  static void toTaskEdit(int id) {
+    to(TaskRouter.edit, query: "?id=$id");
+  }
+
   static void toUserSign() {
     offNamed(UserRouter.sign);
   }

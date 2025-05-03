@@ -16,17 +16,18 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   Pagination<TaskCardModel> pagination = Pagination();
   Rx<bool> showMask = false.obs;
   late Future<bool> getData;
-  Rx<TaskDashboardStats> stats = TaskDashboardStats(
-    completed: 0,
-    overdue: 0,
-    inProgress: 0,
-    dailyFinished: 0,
-    dailyTotal: 0,
-    monthlyFinished: 0,
-    monthlyTotal: 0,
-    yearlyFinished: 0,
-    yearlyTotal: 0,
-  ).obs;
+  Rx<TaskDashboardStats> stats =
+      TaskDashboardStats(
+        completed: 0,
+        overdue: 0,
+        inProgress: 0,
+        dailyFinished: 0,
+        dailyTotal: 0,
+        monthlyFinished: 0,
+        monthlyTotal: 0,
+        yearlyFinished: 0,
+        yearlyTotal: 0,
+      ).obs;
 
   @override
   void onInit() {
@@ -80,6 +81,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
               id: elem["want"]["id"],
               type: ConditionType.values[elem["want"]["type"]],
               finish: elem["valid"],
+              argument: elem["got"] != null ? elem["got"]["argument"] : {},
             ),
           );
         }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'dart:convert';
-
+import 'dart:io' as io;
 import 'package:dio/dio.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:my_todo/api/response.dart';
@@ -12,6 +12,8 @@ import 'package:my_todo/model/entity/task.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/utils/picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 part 'task.g.dart';
 
@@ -49,6 +51,25 @@ Future taskCommitRequest({
     data: {"task_id": taskId, "condition_id": condId, "argument": argument},
     options: Options(headers: {"Authorization": Guard.jwt}),
   );
+}
+
+Future<Map<String, dynamic>> taskFileUploadRequest({
+  required int taskId,
+  required int condId,
+  required TFile file,
+}) async {
+  FormData formData = FormData.fromMap({
+    'task_id': taskId,
+    'condition_id': condId,
+  });
+
+  formData.files.add(MapEntry("file", await file.m));
+
+  return (await HTTP.post(
+    '/task/file/upload',
+    data: formData,
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
 }
 
 Future<List> topicGetRequest({required int page, required int limit}) async {
@@ -274,4 +295,49 @@ Future<Map<String, dynamic>> taskHeatMap() async {
         options: Options(headers: {"Authorization": Guard.jwt}),
       )).data["data"]
       as Map<String, dynamic>;
+}
+
+Future<void> taskFileDeleteRequest(String filename) async {
+  await HTTP.delete(
+    '/task/file/$filename',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future<void> taskFileDownloadRequest(String filename) async {
+  await HTTP.get(
+    '/task/file/$filename',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future taskDetailRequest(int taskId) async {
+  return (await HTTP.get(
+    '/task/detail/$taskId',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
+}
+
+Future taskEditRequest({
+  required int id,
+  required String icon,
+  required String name,
+  required String description,
+  required DateTime startAt,
+  required DateTime endAt,
+  required List<TaskCondition> conditions,
+}) async {
+  return await HTTP.post(
+    '/task/edit',
+    data: {
+      "id": id,
+      "icon": icon,
+      "name": name,
+      "description": description,
+      "start_at": startAt.toIso8601String(),
+      "end_at": endAt.toIso8601String(),
+      "conditions": conditions,
+    },
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
 }

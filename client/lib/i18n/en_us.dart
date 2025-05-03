@@ -99,7 +99,8 @@ Map<String, String> get enUS => {
 
   "year": "Year",
   "month": "Month",
-
+  "day": "Day",
+  
   // showcase
   "showcase_back": "Back",
   "showcase_close": "Close",
@@ -271,4 +272,13 @@ Map<String, String> get enUS => {
 
   "statistics": "Statistics",
   "heatmap": "Heatmap",
+
+  "locale_finish": "You have completed the task",
+  "click_finish": "You have completed the task",
+  "click_commit": "Click to commit",
+  "text_finish": "You have completed the task",
+
+  "submit_time": "Submit Time",
+
+  "page_not_found": "Page Not Found",
 };

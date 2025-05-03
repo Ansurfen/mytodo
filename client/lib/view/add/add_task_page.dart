@@ -196,7 +196,7 @@ class LocaleItem {
   double lat;
   int radius;
 
-  LocaleItem({required this.lng, required this.lat, this.radius = 30});
+  LocaleItem({required this.lng, required this.lat, this.radius = 1000});
 }
 
 final List<String> foods = ['assets/food/grapes.svg'];

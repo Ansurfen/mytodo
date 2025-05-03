@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:my_todo/component/icon.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/router/provider.dart';
@@ -11,12 +12,13 @@ class PageNotFound extends StatelessWidget {
     return todoScaffold(
       context,
       appBar: AppBar(
-        elevation: 5,
+        elevation: 0,
         leading: todoTextIconButton(
           context,
           icon: Icons.arrow_back_ios,
           onPressed: () => RouterProvider.back(),
         ),
+        title: Text('page_not_found'.tr),
       ),
       body: Container(
         padding: const EdgeInsets.only(top: 100),

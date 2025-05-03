@@ -49,6 +49,20 @@ class HTTP {
       options: options,
     );
   }
+
+  static Future<Response<T>> delete<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParams,
+    Options? options,
+  }) {
+    return _dio.delete(
+      path,
+      data: data,
+      queryParameters: queryParams,
+      options: options,
+    );
+  }
 }
 
 class Gateway extends Interceptor {

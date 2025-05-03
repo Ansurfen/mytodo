@@ -148,7 +148,7 @@ class _TaskPageState extends State<TaskPage>
               controller.animationController.forward();
             });
             return _taskList(context);
-          }
+          } 
           return const TaskSkeletonPage();
         },
       ),

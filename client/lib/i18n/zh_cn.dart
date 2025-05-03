@@ -90,6 +90,7 @@ Map<String, String> get zhCN => {
 
   "year": "年",
   "month": "月",
+  "day": "日",
 
   // showcase
   "showcase_back": "返回",
@@ -261,4 +262,13 @@ Map<String, String> get zhCN => {
 
   "statistics": "统计",
   "heatmap": "热度图",
+
+  "locale_finish": "您已完成签到",
+  "click_finish": "您已完成打卡",
+  "click_commit": "点击完成打卡",
+  "text_finish": "您已完成文本提交",
+
+  "submit_time": "提交时间",
+
+  "page_not_found": "页面未找到",
 };

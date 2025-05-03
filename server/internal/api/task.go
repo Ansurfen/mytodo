@@ -1,6 +1,8 @@
 package api
 
 import (
+	"mime/multipart"
+
 	"github.com/relvacode/iso8601"
 	"gorm.io/datatypes"
 )
@@ -38,4 +40,10 @@ type TaskEditRequest struct {
 		Type  string            `json:"type"`
 		Param datatypes.JSONMap `json:"param"`
 	} `json:"conditions"`
+}
+
+type TaskFileUploadRequest struct {
+	TaskId      uint                  `form:"task_id"`
+	ConditionId uint                  `form:"condition_id"`
+	File        *multipart.FileHeader `form:"file"`
 }
