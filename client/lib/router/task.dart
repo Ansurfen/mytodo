@@ -2,13 +2,15 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 import 'package:get/get.dart';
+import 'package:my_todo/view/task/chart/task_chart_binding.dart';
+import 'package:my_todo/view/task/chart/task_chart_page.dart';
 import 'package:my_todo/view/task/detail/task_detail_binding.dart';
 import 'package:my_todo/view/task/detail/task_detail_page.dart';
 import 'package:my_todo/view/task/edit/task_edit_binding.dart';
 import 'package:my_todo/view/task/edit/task_edit_page.dart';
 
 class TaskRouter {
-  static List<GetPage> pages = [detail, edit];
+  static List<GetPage> pages = [detail, edit, chart];
 
   static final detail = GetPage(
     name: '/detail',
@@ -20,5 +22,11 @@ class TaskRouter {
     name: '/edit',
     page: () => const TaskEditPage(),
     binding: TaskEditBinding(),
+  );
+
+  static final chart = GetPage(
+    name: '/chart',
+    page: () => const TaskChartPage(),
+    binding: TaskChartBinding(),
   );
 }

@@ -94,7 +94,7 @@ class _TaskPageState extends State<TaskPage>
                 ),
               ),
             ],
-            child: notificationWidget(context),
+            child: notificationWidget(context, controller.unreadCount.value),
           ),
           Showcase(
             key: Guide.two,

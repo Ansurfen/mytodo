@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         elevation: 0,
         actions: [
-          notificationWidget(context),
+          notificationWidget(context, controller.unreadCount.value),
           const SizedBox(width: 30),
           settingWidget(),
           const SizedBox(width: 20),

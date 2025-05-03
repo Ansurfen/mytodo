@@ -1004,9 +1004,10 @@ func TaskStats(c *gin.Context) {
 		return
 	}
 
-	taskId := c.Param("taskId")
-	if taskId == "" {
-		c.JSON(400, gin.H{"error": "task id is required"})
+	taskId, err := strconv.Atoi(c.Param("taskId"))
+	if err != nil {
+		log.WithError(err).Error("fail to parse taskId")
+		c.Abort()
 		return
 	}
 
@@ -1017,28 +1018,7 @@ func TaskStats(c *gin.Context) {
 		return
 	}
 
-	// 获取话题成员
-	var members []model.User
-	if err := db.SQL().Model(&model.Topic{}).
-		Select("users.*").
-		Joins("JOIN topic_members ON topic_members.topic_id = topics.id").
-		Joins("JOIN users ON users.id = topic_members.user_id").
-		Where("topics.id = ?", task.TopicId).
-		Find(&members).Error; err != nil {
-		c.JSON(500, gin.H{"error": "failed to get topic members"})
-		return
-	}
-
-	// 获取任务条件总数
-	var totalConditions int64
-	if err := db.SQL().Model(&model.TaskCondition{}).
-		Where("task_id = ?", taskId).
-		Count(&totalConditions).Error; err != nil {
-		c.JSON(500, gin.H{"error": "failed to get task conditions"})
-		return
-	}
-
-	// 获取每个成员的提交情况
+	// 获取话题成员和他们的提交统计
 	type MemberStats struct {
 		UserID   uint   `json:"user_id"`
 		Name     string `json:"name"`
@@ -1048,42 +1028,40 @@ func TaskStats(c *gin.Context) {
 	}
 
 	var stats []MemberStats
-	for _, member := range members {
-		// 获取该成员完成的提交数
-		var finishedCount int64
-		if err := db.SQL().Model(&model.TaskCommit{}).
-			Joins("JOIN task_conditions ON task_commits.condition_id = task_conditions.id").
-			Where("task_commits.user_id = ? AND task_conditions.task_id = ?", member.ID, taskId).
-			Count(&finishedCount).Error; err != nil {
-			c.JSON(500, gin.H{"error": "failed to get member commit count"})
-			return
-		}
+	err = db.SQL().Raw(`
+		SELECT 
+			u.id AS user_id,
+			u.name AS name,
+			COUNT(DISTINCT tc.id) AS total,
+			COUNT(DISTINCT tcm.id) AS finished,
+			MAX(tcm.created_at) AS commit_at
+		FROM 
+			topic_join tj
+		JOIN 
+			user u ON tj.user_id = u.id
+		LEFT JOIN 
+			task_condition tc ON tc.task_id = %d AND tc.deleted_at IS NULL
+		LEFT JOIN 
+			task_commit tcm ON tcm.task_id = %d 
+			AND tcm.user_id = u.id 
+			AND tcm.cond_id = tc.id
+			AND tcm.deleted_at IS NULL
+		WHERE 
+			tj.topic_id = %d
+			AND tj.deleted_at IS NULL
+			AND u.deleted_at IS NULL
+		GROUP BY 
+			u.id, u.name
+	`, taskId, taskId, task.TopicId).Scan(&stats).Error
 
-		// 获取该成员最后一次提交时间
-		var lastCommit model.TaskCommit
-		if err := db.SQL().Where("user_id = ? AND task_id = ?", member.ID, taskId).
-			Order("created_at DESC").
-			First(&lastCommit).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(500, gin.H{"error": "failed to get last commit"})
-			return
-		}
-
-		stat := MemberStats{
-			UserID:   member.ID,
-			Name:     member.Name,
-			Finished: finishedCount,
-			Total:    totalConditions,
-		}
-
-		if lastCommit.ID != 0 {
-			stat.CommitAt = lastCommit.CreatedAt.Format(time.RFC3339)
-		}
-
-		stats = append(stats, stat)
+	if err != nil {
+		log.WithError(err).Error("failed to get member stats")
+		c.JSON(500, gin.H{"error": "failed to get member stats"})
+		return
 	}
 
 	// 计算总体完成率
-	totalMembers := len(members)
+	totalMembers := len(stats)
 	finishedMembers := 0
 	for _, stat := range stats {
 		if stat.Finished == stat.Total {

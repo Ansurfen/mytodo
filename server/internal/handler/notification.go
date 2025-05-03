@@ -223,3 +223,33 @@ type notificationSnapshot struct {
 	Content   string    `json:"content"`
 	Sender    string    `json:"sender"`
 }
+
+func NotificationUnreadCount(c *gin.Context) {
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	var count int64
+	err := db.SQL().Raw(`
+		SELECT COUNT(DISTINCT np.id)
+		FROM notification_publish np
+		JOIN notification n ON np.notification_id = n.id
+		LEFT JOIN notification_action na ON na.nid = np.notification_id AND na.receiver = np.user_id
+		WHERE np.user_id = %d
+		AND np.deleted_at IS NULL
+		AND n.deleted_at IS NULL
+		AND (na.id IS NULL OR na.status = %d)
+	`, u.ID, model.NotifyStatePending).Count(&count).Error
+
+	if err != nil {
+		log.WithError(err).Error("failed to get unread count")
+		c.JSON(500, gin.H{"msg": "failed to get unread count"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"msg":  "successfully gets unread count",
+		"data": count,
+	})
+}

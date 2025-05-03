@@ -38,10 +38,14 @@ class ChatController extends GetxController with GetTickerProviderStateMixin {
       } else {
         chatSnapshotRequest().then((res) {
           for (var item in res) {
-            allItems.add(Chatsnapshot.fromJson(item));
+            var v = Chatsnapshot.fromJson(item);
+            if (v.isTopic) {
+              v.lastMsg = "${v.lastSenderName}: ${v.lastMsg}";
+            }
+            allItems.add(v);
           }
           updateFilteredList("");
-       });
+        });
       }
     });
   }

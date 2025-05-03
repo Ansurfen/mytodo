@@ -342,9 +342,10 @@ Future taskEditRequest({
   );
 }
 
-Future taskStatsRequest(int taskId) async {
-  return (await HTTP.get(
+Future<Map<String, dynamic>> taskStatsRequest(int taskId) async {
+  final response = await HTTP.get(
     '/task/stats/$taskId',
     options: Options(headers: {"Authorization": Guard.jwt}),
-  )).data["data"];
+  );
+  return response.data;
 }

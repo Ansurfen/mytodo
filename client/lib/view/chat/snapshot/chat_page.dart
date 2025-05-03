@@ -10,6 +10,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:my_todo/api/chat.dart';
+import 'package:my_todo/api/notification.dart';
 import 'package:my_todo/api/user.dart';
 import 'package:my_todo/component/animate/fade_out_slow_in_container.dart';
 import 'package:my_todo/component/image.dart';
@@ -36,6 +37,7 @@ class _ChatPageState extends State<ChatPage>
   ChatController controller = Get.find<ChatController>();
   List<ContactInfo> contacts = [];
   RxList<ContactInfo> filteredItems = <ContactInfo>[].obs;
+  RxInt unreadCount = 0.obs;
 
   @override
   void initState() {
@@ -52,6 +54,9 @@ class _ChatPageState extends State<ChatPage>
       }
       _handleList(contacts);
       filteredItems.value = List.from(contacts);
+    });
+    notificationUnreadCountRequest().then((res) {
+      unreadCount.value = res ?? 0;
     });
     // contacts.addAll(
     //   List.generate(Mock.number(min: 5), (idx) {
@@ -107,7 +112,7 @@ class _ChatPageState extends State<ChatPage>
           ),
         ),
         actions: [
-          notificationWidget(context),
+          notificationWidget(context, unreadCount.value),
           const SizedBox(width: 30),
           settingWidget(),
           const SizedBox(width: 20),

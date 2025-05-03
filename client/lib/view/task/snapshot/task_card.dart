@@ -231,7 +231,7 @@ class _TaskCardState extends State<TaskCard>
             ),
             IconButton(
               onPressed: () {
-                RouterProvider.toTaskDetail(widget.model.id, widget.model);
+                RouterProvider.toTaskChart(widget.model.id);
               },
               icon: Icon(FontAwesomeIcons.chartLine, color: Colors.grey),
             ),
@@ -241,28 +241,6 @@ class _TaskCardState extends State<TaskCard>
               },
               icon: Icon(Icons.edit, color: Colors.grey),
             ),
-            // IconButton(
-            //   onPressed: () {
-            //     RouterProvider.viewTopicMember(widget.model.id);
-            //   },
-            //   icon: Icon(Icons.group, color: Colors.grey),
-            // ),
-            // IconButton(
-            //   onPressed: () async {
-            //     TodoShare.shareUri(
-            //       context,
-            //       Uri.parse(widget.model.inviteCode),
-            //     ).then(
-            //       (value) => Get.snackbar(
-            //         "Clipboard",
-            //         "Topic's invite code is copied on clipboard.",
-            //         backgroundColor: Theme.of(context).colorScheme.primary,
-            //       ),
-            //     );
-            //     await TodoClipboard.set(widget.model.inviteCode);
-            //   },
-            //   icon: Icon(Icons.share, color: Colors.grey),
-            // ),
           ],
         ),
       ],

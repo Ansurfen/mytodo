@@ -121,3 +121,11 @@ Future notificationPublishGetRequest({
     options: Options(headers: {'Authorization': Guard.jwt}),
   )).data["data"];
 }
+
+Future<int?> notificationUnreadCountRequest() async {
+  return (await HTTP.get(
+        '/notification/unread/count',
+        options: Options(headers: {'Authorization': Guard.jwt}),
+      )).data["data"]
+      as int?;
+}

@@ -271,4 +271,9 @@ Map<String, String> get zhCN => {
   "submit_time": "提交时间",
 
   "page_not_found": "页面未找到",
+
+  "task_progress": "任务进度",
+  "total_members": "总成员",
+  "finished_members": "已完成成员",
+  "progress": "进度",
 };

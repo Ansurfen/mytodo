@@ -11,13 +11,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/i18n/exception.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/permission.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-Widget notificationWidget(BuildContext context) {
+Widget notificationWidget(BuildContext context, int count) {
   return Padding(
     padding: const EdgeInsets.only(top: 5),
     child: badges.Badge(
@@ -26,16 +25,16 @@ Widget notificationWidget(BuildContext context) {
         disappearanceFadeAnimationDuration: Duration(milliseconds: 200),
         curve: Curves.easeInCubic,
       ),
-      showBadge: true,
+      showBadge: count > 0,
       badgeStyle: badges.BadgeStyle(badgeColor: Theme.of(context).primaryColor),
       badgeContent: Text(
-        Mock.number(min: 1, max: 100).toString(),
+        count.toString(),
         style: TextStyle(color: Theme.of(context).colorScheme.primary),
       ),
       child: IconButton(
         icon: const Icon(Icons.notifications),
         onPressed: () {
-          RouterProvider.viewNotification();
+          RouterProvider.toNotification();
           // grantPermission(context, Permission.notification, allowWeb: true)
           //     .then((ok) {
           //   if (ok) {

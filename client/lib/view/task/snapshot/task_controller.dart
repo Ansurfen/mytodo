@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:my_todo/api/notification.dart';
 import 'package:my_todo/api/task.dart';
 import 'package:my_todo/utils/debounce.dart';
 import 'package:my_todo/utils/pagination.dart';
@@ -27,7 +28,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
         yearlyFinished: 0,
         yearlyTotal: 0,
       ).obs;
-
+  RxInt unreadCount = 0.obs;
   @override
   void onInit() {
     getData = doOnce(_getData)();
@@ -45,6 +46,9 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 100), () {
       taskDashboard().then((v) {
         stats.value = v;
+      });
+      notificationUnreadCountRequest().then((res) {
+        unreadCount.value = res ?? 0;
       });
     });
   }

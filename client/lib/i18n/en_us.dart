@@ -281,4 +281,9 @@ Map<String, String> get enUS => {
   "submit_time": "Submit Time",
 
   "page_not_found": "Page Not Found",
+
+  "task_progress": "Task Progress",
+  "total_members": "Total Members",
+  "finished_members": "Finished Members",
+  "progress": "Progress",
 };

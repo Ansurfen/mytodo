@@ -61,7 +61,7 @@ class RouterProvider {
     return OtherRouter.splash.name;
   }
 
-  static void viewNotification() {
+  static void toNotification() {
     to(OtherRouter.notification);
   }
 
@@ -115,6 +115,10 @@ class RouterProvider {
 
   static void toTaskDetail(int id, TaskCardModel model) {
     to(TaskRouter.detail, query: "?id=$id", arguments: model);
+  }
+
+  static void toTaskChart(int id) {
+    to(TaskRouter.chart, query: "?id=$id");
   }
 
   static void toTaskEdit(int id) {

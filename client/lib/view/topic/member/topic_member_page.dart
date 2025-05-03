@@ -40,7 +40,7 @@ class _TopicMemberPageState extends State<TopicMemberPage> {
         title: Text("member".tr),
         elevation: 0,
         actions: [
-          notificationWidget(context),
+          notificationWidget(context, controller.unreadCount.value),
           const SizedBox(width: 15),
           settingWidget(),
           const SizedBox(width: 15),
