@@ -23,6 +23,7 @@ func InstallTopicRoute(e *gin.Engine) {
 		topicRouter.POST("/edit", middleware.Auth, handler.TopicEdit)
 		topicRouter.POST("/disband", middleware.Auth, handler.TopicDisband)
 		topicRouter.GET("/permission/:topicId", middleware.Auth, handler.TopicPermission)
+		topicRouter.POST("/subscribe", middleware.Auth, handler.TopicSubscribe)
 		memberRouter := topicRouter.Group("/member")
 		{
 			memberRouter.POST("/invite", middleware.Auth, handler.TopicMemberInvite)

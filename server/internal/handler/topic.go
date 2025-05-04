@@ -1055,6 +1055,57 @@ func TopicPermission(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "success", "data": policy.Role})
 }
 
+func TopicSubscribe(c *gin.Context) {
+	var req api.TopicSubscribeRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	// 检查邀请码是否存在
+	var topic model.Topic
+	if err := db.SQL().Table("topic").Where("invite_code = ?", req.InviteCode).First(&topic).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "invite code not found"})
+		return
+	}
+
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	// 检查用户是否已经在频道中
+	var topicJoin model.TopicJoin
+	err := db.SQL().Unscoped().Table("topic_join").Where("topic_id = ? AND user_id = ?", topic.ID, u.ID).First(&topicJoin).Error
+	if err == nil {
+		// 用户已存在，更新 deleted_at 为 null
+		if err := db.SQL().Unscoped().Table("topic_join").Model(&topicJoin).Update("deleted_at", nil).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+			return
+		}
+		// 更新权限记录
+		err = db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ?", topic.ID, u.ID).Update("deleted_at", nil).Error
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"msg": "success"})
+		return
+	}
+
+	// 用户不存在，创建新记录
+	err = db.SQL().Table("topic_join").Create(&model.TopicJoin{
+		TopicId: topic.ID,
+		UserId:  u.ID,
+	}).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "success"})
+}
+
 // TopicGrantAdmin 授予管理员权限
 func TopicGrantAdmin(c *gin.Context) {
 	var req api.TopicMemberDelRequest

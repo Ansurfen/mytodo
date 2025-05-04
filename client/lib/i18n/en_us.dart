@@ -301,4 +301,21 @@ Map<String, String> get enUS => {
 
   "success_exit_topic": "Successfully exited topic",
   "exit_topic": "Exit Topic",
+
+  "disband_topic": "Disband Topic",
+  "disband_topic_desc": "Confirm to disband the topic",
+
+  "success_disband_topic": "Successfully disbanded topic",
+
+  "grant_admin": "Grant Admin",
+  "revoke_admin": "Revoke Admin",
+  "success_grant_admin": "Successfully granted admin",
+  "success_revoke_admin": "Successfully revoked admin",
+
+  "invite_code": "Invite Code",
+  "invite_code_desc": "Please enter the invite code to join the topic",
+  "invite_code_empty": "Invite code is empty",
+  "invite_code_empty_desc": "Please enter the invite code to join the topic",
+  "invite_code_success": "Successfully joined topic",
+  "invite_code_success_desc": "You have successfully joined the topic",
 };

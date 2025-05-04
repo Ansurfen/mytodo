@@ -207,11 +207,11 @@ class SubscribeTopicRequest {
   Map<String, Object?> toJson() => _$SubscribeTopicRequestToJson(this);
 }
 
-Future subscribeTopic(SubscribeTopicRequest req) {
+Future topicSubscribeRequest({required String code}) async {
   return HTTP.post(
-    "/topic/sub",
-    data: jsonEncode(req),
-    options: Options(headers: {"x-token": Guard.jwt}),
+    "/topic/subscribe",
+    data: {'invite_code': code},
+    options: Options(headers: {"Authorization": Guard.jwt}),
   );
 }
 

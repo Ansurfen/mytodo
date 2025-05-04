@@ -23,6 +23,10 @@ type TopicDelRequest struct {
 	TopicId uint `json:"topic_id"`
 }
 
+type TopicSubscribeRequest struct {
+	InviteCode string `json:"invite_code"`
+}
+
 type TopicMemberGetRequest struct {
 	TopicId uint `json:"topic_id"`
 }

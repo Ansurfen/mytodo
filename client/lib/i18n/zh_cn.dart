@@ -291,4 +291,21 @@ Map<String, String> get zhCN => {
 
   "success_exit_topic": "成功退出频道",
   "exit_topic": "退出频道",
+
+  "disband_topic": "解散频道",
+  "disband_topic_desc": "确定解散该频道",
+
+  "success_disband_topic": "成功解散频道",
+
+  "grant_admin": "授予管理员",
+  "revoke_admin": "撤销管理员",
+  "success_grant_admin": "成功授予管理员",
+  "success_revoke_admin": "成功撤销管理员",
+
+  "invite_code": "邀请码",
+  "invite_code_desc": "请输入邀请码以加入频道",
+  "invite_code_empty": "邀请码为空",
+  "invite_code_empty_desc": "请输入邀请码以加入频道",
+  "invite_code_success": "成功加入频道",
+  "invite_code_success_desc": "您已成功加入频道",
 };

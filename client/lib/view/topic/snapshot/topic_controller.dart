@@ -63,14 +63,18 @@ class TopicSnapshotController extends GetxController
     showSingleTextField(
       context,
       title: 'invite_code'.tr,
-      hintText: "invite_code_tip".tr,
+      hintText: "invite_code_desc".tr,
       controller: inviteCode,
       onCancel: Get.back,
       onConfirm: () {
-        subscribeTopic(SubscribeTopicRequest(code: inviteCode.text)).then((
-          value,
-        ) {
-          setState(() {});
+        // 检验是否为空
+        if (inviteCode.text.isEmpty) {
+          Get.snackbar("invite_code_empty".tr, "invite_code_empty_desc".tr);
+          return;
+        }
+        topicSubscribeRequest(code: inviteCode.text).then((value) {
+          Get.snackbar("invite_code_success".tr, "invite_code_success_desc".tr);
+          fetchTopicMe();
         });
         inviteCode.text = "";
         Get.back();
