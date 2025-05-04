@@ -11,7 +11,7 @@ import 'package:my_todo/config.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/image.dart';
 import 'package:my_todo/model/entity/post.dart';
-import 'package:my_todo/model/vo/post.dart';
+import 'package:my_todo/model/post.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/mock/post.dart' as mock;
@@ -21,7 +21,20 @@ class PostDetailController extends GetxController {
   String content = "";
   late int id;
   int selectedComment = -1;
-  PostDetailModel data = PostDetailModel.empty();
+  Rx<PostDetail> data =
+      PostDetail(
+        id: 0,
+        uid: 0,
+        createdAt: DateTime.now(),
+        username: "",
+        about: "",
+        likeCount: 0,
+        visitCount: 0,
+        isMale: false,
+        title: "",
+        text: [],
+        isFavorite: false,
+      ).obs;
   Rx<Map<int, PostComment>> comments = Rx({});
   bool showReply = false;
   final QuillController quillController = QuillController.basic();
@@ -31,10 +44,13 @@ class PostDetailController extends GetxController {
     super.onInit();
     id = int.parse(Get.parameters["id"]!);
     quillController.readOnly = true;
-    var res = (await postGetRequest(postId: id)) as Map<String, dynamic>;
+    var res = (await postDetailRequest(id: id)) as Map<String, dynamic>;
+
+    data.value = PostDetail.fromJson(res);
+    
 
     quillController.document = Document.fromJson(
-      (res["post"]["text"] as List).map((v) {
+      (data.value.text).map((v) {
         if (v is Map<String, dynamic> && v.containsKey("insert")) {
           var insert = v["insert"];
 
@@ -51,7 +67,7 @@ class PostDetailController extends GetxController {
         return v;
       }).toList(),
     );
-
+    update();
     comments.value[1] = PostComment(
       username: Mock.username(),
       createdAt: DateTime.now(),
@@ -61,25 +77,10 @@ class PostDetailController extends GetxController {
     );
   }
 
-  Future fetchAll() {
-    return Future.value([fetchPost(), fetchComments()]);
-  }
-
-  Future fetchPost() {
-    return postDetail(PostDetailRequest(id: id)).then((res) {
-      data = PostDetailModel(
-        id,
-        res.uid,
-        res.username,
-        res.isMale,
-        DateTime.now(),
-        res.content,
-        images,
-        res.favorite,
-        0,
-        res.isFavorite,
-      );
-    });
+  void updateFavorite(bool isFavorite) {
+    data.value.isFavorite = isFavorite;
+    data.value.likeCount += isFavorite ? 1 : -1;
+    update();
   }
 
   Future fetchComments() async {

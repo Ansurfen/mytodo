@@ -229,62 +229,6 @@ Future<PostCommentFavoriteCountResponse> postCommentFavoriteCount(
   );
 }
 
-class PostDetailRequest {
-  int id;
-
-  PostDetailRequest({required this.id});
-}
-
-@JsonSerializable()
-class PostDetailResponse extends BaseResponse {
-  @JsonKey(name: "username", defaultValue: '')
-  late String username;
-
-  @JsonKey(name: "favorite", defaultValue: 0)
-  late int favorite;
-
-  @JsonKey(name: "is_favorite", defaultValue: false)
-  late bool isFavorite;
-
-  @JsonKey(name: "uid", defaultValue: 0)
-  late int uid;
-
-  @JsonKey(name: "isMale", defaultValue: false)
-  late bool isMale;
-
-  @JsonKey(name: "images", defaultValue: [])
-  late List<String> images;
-
-  @JsonKey(name: "content", defaultValue: '')
-  late String content;
-
-  PostDetailResponse({
-    required this.username,
-    required this.isFavorite,
-    required this.favorite,
-    required this.uid,
-  }) : super({});
-
-  PostDetailResponse.fromResponse(Response res) : super(res.data) {
-    username = res.data["data"]["username"];
-    uid = res.data["data"]["uid"];
-    favorite = res.data["data"]["favorite"];
-    isMale = res.data["data"]["isMale"];
-    images = res.data["data"]["images"] ?? [];
-    content = res.data["data"]["content"];
-    isFavorite = res.data["data"]["is_favorite"];
-  }
-}
-
-Future<PostDetailResponse> postDetail(PostDetailRequest req) async {
-  return PostDetailResponse.fromResponse(
-    await HTTP.get(
-      '/post/detail/${req.id}',
-      options: Options(headers: {'x-token': Guard.jwt}),
-    ),
-  );
-}
-
 class PostAddCommentRequest {
   int reply;
 
@@ -501,4 +445,32 @@ Future<PostUnFavoriteResponse> postUnFavorite(PostUnFavoriteRequest req) async {
       options: Options(headers: {"x-token": Guard.jwt}),
     ),
   );
+}
+
+Future postFriendRequest({required int page, required int limit}) async {
+  return (await HTTP.get(
+    '/post/friend?page=$page&limit=$limit',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
+}
+
+Future postDetailRequest({required int id}) async {
+  return (await HTTP.get(
+    '/post/detail/$id',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
+}
+
+Future postVisitorsRequest() async {
+  return (await HTTP.get(
+    '/post/visitors',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
+}
+
+Future postHistoryRequest() async {
+  return (await HTTP.get(
+    '/post/history',
+    options: Options(headers: {'Authorization': Guard.jwt}),
+  )).data["data"];
 }

@@ -15,7 +15,8 @@ import 'package:my_todo/utils/pagination.dart';
 
 class PostSnapshotController extends GetxController
     with GetTickerProviderStateMixin {
-  Rx<List<Post>> data = Rx([]);
+  Rx<List<Post>> postMeData = Rx([]);
+  Rx<List<Post>> postFriendData = Rx([]);
   late StreamSubscription<Post> _uploadPost;
   late TabController tabController;
   Pagination<Post> pagination = Pagination();
@@ -27,16 +28,30 @@ class PostSnapshotController extends GetxController
     tabController.addListener(() async {
       if (tabController.index == 0 && tabController.indexIsChanging) {
         var res = await postMeRequest();
-        for (var e in (res["data"] as List)) {
-          data.value.add(Post.fromMap(e)..username = Guard.userName());
+        if (res["data"] == null) {
+          return;
         }
-        data.refresh();
+        for (var e in (res["data"] as List)) {
+          postMeData.value.add(Post.fromJson(e)..username = Guard.userName());
+        }
+        postMeData.refresh();
+      } else {
+        fetchFriend();
       }
     });
     if (Guard.isDevMode()) {
     } else {
-      Future.delayed(Duration.zero, fetch);
+      Future.delayed(Duration.zero, () {
+        fetchFriend();
+      });
       _uploadPost = PostHook.subscribeSnapshot(onData: (post) {});
+
+      postVisitorsRequest().then((res) {
+        Guard.log.i(res);
+      });
+      postHistoryRequest().then((res) {
+        Guard.log.i(res);
+      });
     }
   }
 
@@ -46,13 +61,25 @@ class PostSnapshotController extends GetxController
     _uploadPost.cancel();
   }
 
+  Future fetchFriend() async {
+    postFriendData.value.clear();
+    var res = await postFriendRequest(page: 1, limit: 10);
+    if (res == null) {
+      return;
+    }
+    for (var e in (res as List)) {
+      postFriendData.value.add(Post.fromJson(e));
+    }
+    postFriendData.refresh();
+  }
+
   Future fetch() async {
-    data.value.clear();
+    postMeData.value.clear();
     var res = await postMeRequest();
     for (var e in (res["data"] as List)) {
-      data.value.add(Post.fromMap(e)..username = Guard.userName());
+      postMeData.value.add(Post.fromJson(e)..username = Guard.userName());
     }
-    data.refresh();
+    postMeData.refresh();
   }
 
   void handlePost(BuildContext context) {
@@ -71,6 +98,26 @@ class PostSnapshotController extends GetxController
                 dialogAction(icon: Icons.warning_amber, text: "report".tr),
                 const SizedBox(height: 15),
                 dialogAction(icon: Icons.delete, text: "delete".tr),
+              ],
+            ),
+          ),
+    );
+  }
+
+  void actionByFriend(BuildContext context, Post post) {
+    showCupertinoModalPopup(
+      context: context,
+      builder:
+          (BuildContext context) => CupertinoActionSheet(
+            message: Column(
+              children: [
+                dialogAction(icon: Icons.open_in_new, text: "share".tr),
+                const SizedBox(height: 15),
+                dialogAction(icon: Icons.copy, text: "copy".tr),
+                const SizedBox(height: 15),
+                const Divider(),
+                const SizedBox(height: 15),
+                dialogAction(icon: Icons.warning_amber, text: "report".tr),
               ],
             ),
           ),

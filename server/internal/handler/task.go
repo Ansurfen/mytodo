@@ -1051,7 +1051,7 @@ func TaskStats(c *gin.Context) {
 	}
 
 	var stats []MemberStats
-	err = db.SQL().Raw(`
+	err = db.SQL().Rawf(`
 		SELECT 
 			u.id AS user_id,
 			u.name AS name,

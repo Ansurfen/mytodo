@@ -27,7 +27,7 @@ class Post {
   @JsonKey(name: "text")
   List text;
 
-  @JsonKey(name: "createdAt", fromJson: string2DateTime)
+  @JsonKey(name: "created_at", fromJson: string2DateTime)
   DateTime createAt;
 
   @JsonKey(name: "like_count", defaultValue: 0)
@@ -56,7 +56,7 @@ class Post {
     this.isFavorite,
   );
 
-  factory Post.fromMap(JsonObject json) => _$PostFromJson(json);
+  factory Post.fromJson(JsonObject json) => _$PostFromJson(json);
 
   JsonObject toJson() => _$PostToJson(this);
 }

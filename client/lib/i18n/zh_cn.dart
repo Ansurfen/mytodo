@@ -308,4 +308,6 @@ Map<String, String> get zhCN => {
   "invite_code_empty_desc": "请输入邀请码以加入频道",
   "invite_code_success": "成功加入频道",
   "invite_code_success_desc": "您已成功加入频道",
+
+  "report": "举报",
 };

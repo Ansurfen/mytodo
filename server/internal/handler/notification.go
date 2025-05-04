@@ -150,7 +150,7 @@ func NotificationPublishGet(ctx *gin.Context) {
 		return
 	}
 	var notifications []notificationSnapshot
-	err = db.SQL().Raw(`SELECT
+	err = db.SQL().Rawf(`SELECT
     n.id AS id,
     n.type AS type,
     COALESCE(na.status, 0) AS status,
@@ -233,7 +233,7 @@ func NotificationUnreadCount(c *gin.Context) {
 	}
 
 	var count int64
-	err := db.SQL().Raw(`
+	err := db.SQL().Rawf(`
 		SELECT COUNT(DISTINCT np.id)
 		FROM notification_publish np
 		JOIN notification n ON np.notification_id = n.id

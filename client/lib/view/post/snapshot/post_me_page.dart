@@ -217,7 +217,7 @@ class _PostMePageState extends State<PostMePage> {
                 icon: Icons.rss_feed,
                 desc: "not post, clicks + button to create on bottom bar",
                 what: "what is post?",
-                render: controller.data.value.isNotEmpty,
+                render: controller.postMeData.value.isNotEmpty,
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(
                   top: MediaQuery.sizeOf(context).height * 0.35,
@@ -228,13 +228,13 @@ class _PostMePageState extends State<PostMePage> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: ListView.separated(
-                    itemCount: controller.data.value.length,
+                    itemCount: controller.postMeData.value.length,
                     itemBuilder: (BuildContext context, int index) {
                       return PostCard(
                         more: () {
                           controller.handlePost(context);
                         },
-                        model: controller.data.value[index],
+                        model: controller.postMeData.value[index],
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {

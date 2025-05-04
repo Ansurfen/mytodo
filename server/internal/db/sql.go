@@ -28,7 +28,7 @@ func NewSQL(opt conf.SQL) *TodoDB {
 	return &TodoDB{db}
 }
 
-func (db *TodoDB) Raw(format string, arg ...any) (tx *gorm.DB) {
+func (db *TodoDB) Rawf(format string, arg ...any) (tx *gorm.DB) {
 	sql := fmt.Sprintf(format, arg...)
 	return db.DB.Raw(sql)
 }

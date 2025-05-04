@@ -499,7 +499,7 @@ func UserContacts(ctx *gin.Context) {
 	}
 
 	var contacts []contact
-	err := db.SQL().Raw(`SELECT u.id, u.name, u.about
+	err := db.SQL().Rawf(`SELECT u.id, u.name, u.about
 FROM user_relation ur
 JOIN user u ON u.id = ur.friend_id
 WHERE ur.user_id = %d;

@@ -141,7 +141,7 @@ func TopicFind(ctx *gin.Context) {
 	limit := req.PageSize
 	offest := (req.Page - 1) * req.PageSize
 	var topic []topicFind
-	err = db.SQL().Raw(`SELECT 
+	err = db.SQL().Rawf(`SELECT 
     t.id,
     t.icon,
     t.creator,

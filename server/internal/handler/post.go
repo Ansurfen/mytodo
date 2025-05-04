@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -252,6 +253,178 @@ func PostMe(ctx *gin.Context) {
 	})
 }
 
+type postFriendSnapshot struct {
+	ID           uint           `json:"id"`
+	UserID       uint           `json:"user_id"`
+	Title        string         `json:"title"`
+	Text         datatypes.JSON `json:"text"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	LikeCount    int64          `json:"like_count"`
+	CommentCount int64          `json:"comment_count"`
+	VisitCount   int64          `json:"visit_count"`
+	Username     string         `json:"username"`
+}
+
+func PostFriend(ctx *gin.Context) {
+	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	if err != nil {
+		ctx.JSON(400, gin.H{"msg": "invalid page"})
+		return
+	}
+	limit, err := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	if err != nil {
+		ctx.JSON(400, gin.H{"msg": "invalid limit"})
+		return
+	}
+	offset := (page - 1) * limit
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var relations []model.UserRelation
+	err = db.SQL().Table("user_relation").Where("user_id = ? OR friend_id = ?", u.ID, u.ID).Find(&relations).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	var friendSet = make(map[uint]bool)
+	var friendIds []uint
+	for _, relation := range relations {
+		if relation.UserId != u.ID {
+			friendSet[relation.UserId] = true
+		}
+		if relation.FriendId != u.ID {
+			friendSet[relation.FriendId] = true
+		}
+	}
+	for k := range friendSet {
+		friendIds = append(friendIds, k)
+	}
+
+	var posts []postFriendSnapshot
+	err = db.SQL().Raw(`
+		SELECT 
+			p.id,
+			p.user_id,
+			p.title,
+			p.text,
+			p.created_at,
+			p.updated_at,
+			COALESCE(pl.like_count, 0) as like_count,
+			COALESCE(pc.comment_count, 0) as comment_count,
+			COALESCE(pv.visit_count, 0) as visit_count,
+			u.name as username
+		FROM post p
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as like_count 
+			FROM post_like 
+			WHERE deleted_at IS NULL
+			GROUP BY post_id
+		) pl ON p.id = pl.post_id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as comment_count 
+			FROM post_comment 
+			GROUP BY post_id
+		) pc ON p.id = pc.post_id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as visit_count 
+			FROM post_visit 
+			GROUP BY post_id
+		) pv ON p.id = pv.post_id
+		LEFT JOIN user u ON p.user_id = u.id
+		WHERE p.user_id IN ?
+		ORDER BY p.created_at DESC
+		LIMIT ? OFFSET ?
+	`, friendIds, limit, offset).Scan(&posts).Error
+
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg":  "success",
+		"data": posts,
+	})
+}
+
+type postDetail struct {
+	model.Post
+	CreatedAt  time.Time `json:"created_at"`
+	IsMale     bool      `json:"is_male"`
+	About      string    `json:"about"`
+	LikeCount  int64     `json:"like_count"`
+	VisitCount int64     `json:"visit_count"`
+	Username   string    `json:"username"`
+	Uid        uint      `json:"uid"`
+	IsFavorite bool      `json:"is_favorite"`
+}
+
+func PostDetail(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(400, gin.H{"msg": "invalid id"})
+		return
+	}
+	if post, ok := hasPermissionToReadPost(ctx, uint(id)); ok {
+		u, ok := getUser(ctx)
+		if !ok {
+			return
+		}
+		db.SQL().Table("post_visit").Create(&model.PostVisit{
+			UserId: u.ID,
+			PostId: post.ID,
+		})
+		var postDetail postDetail = postDetail{
+			Post:      post,
+			CreatedAt: post.CreatedAt,
+		}
+		var likeCount int64
+		err = db.SQL().Table("post_like").Where("post_id = ? AND deleted_at IS NULL", post.ID).Count(&likeCount).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		postDetail.LikeCount = likeCount
+		var visitCount int64
+		err = db.SQL().Table("post_visit").Where("post_id = ?", post.ID).Count(&visitCount).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		postDetail.VisitCount = visitCount
+		var user model.User
+		err = db.SQL().Table("user").Where("id = ?", post.UserId).First(&user).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		postDetail.Username = user.Name
+		postDetail.IsMale = user.IsMale
+		postDetail.About = user.About
+		postDetail.Uid = user.ID
+		var isFavorite int64
+		err = db.SQL().Table("post_like").Where("post_id = ? AND user_id = ? AND deleted_at IS NULL", post.ID, u.ID).Count(&isFavorite).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		postDetail.IsFavorite = isFavorite > 0
+		ctx.JSON(200, gin.H{"data": postDetail})
+	} else {
+		ctx.JSON(403, gin.H{"msg": "permission denied"})
+	}
+}
+
 func PostSource(ctx *gin.Context) {
 	file := ctx.Param("file")
 
@@ -325,10 +498,11 @@ func PostSnapshot(ctx *gin.Context) {
 
 type postSnapshot struct {
 	model.Post
-	LikeCount    int64 `json:"like_count"`
-	CommentCount int64 `json:"comment_count"`
-	VisitCount   int64 `json:"visit_count"`
-	IsFavorite   bool  `json:"is_favorite"`
+	CreatedAt    time.Time `json:"created_at"`
+	LikeCount    int64     `json:"like_count"`
+	CommentCount int64     `json:"comment_count"`
+	VisitCount   int64     `json:"visit_count"`
+	IsFavorite   bool      `json:"is_favorite"`
 }
 
 func hasPermissionToReadPost(ctx *gin.Context, postId uint) (post model.Post, ok bool) {
@@ -579,4 +753,102 @@ func PostCommentLike(ctx *gin.Context) {
 		// Return success response
 		ctx.JSON(200, gin.H{"message": "Comment liked successfully"})
 	}
+}
+
+type visitorInfo struct {
+	UserID    uint      `json:"user_id"`
+	Username  string    `json:"username"`
+	VisitTime time.Time `json:"visit_time"`
+}
+
+type historyInfo struct {
+	PostID    uint      `json:"post_id"`
+	UserID    uint      `json:"user_id"`
+	Username  string    `json:"username"`
+	VisitTime time.Time `json:"visit_time"`
+}
+
+func PostVisitors(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	// 获取当前用户的所有帖子ID
+	var postIDs []uint
+	err := db.SQL().Table("post").
+		Select("id").
+		Where("user_id = ?", u.ID).
+		Find(&postIDs).Error
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	if len(postIDs) == 0 {
+		ctx.JSON(200, gin.H{
+			"msg":  "success",
+			"data": []visitorInfo{},
+		})
+		return
+	}
+
+	// 查询访问记录，排除自己
+	var visitors []visitorInfo
+	err = db.SQL().Raw(`
+		SELECT DISTINCT 
+			v.user_id,
+			u.name as username,
+			v.created_at as visit_time
+		FROM post_visit v
+		JOIN user u ON v.user_id = u.id
+		WHERE v.post_id IN ? 
+		AND v.user_id != ?
+		ORDER BY v.created_at DESC
+	`, postIDs, u.ID).Scan(&visitors).Error
+
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"msg":  "success",
+		"data": visitors,
+	})
+}
+
+func PostHistory(ctx *gin.Context) {
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var history []historyInfo
+	err := db.SQL().Raw(`
+		SELECT DISTINCT 
+			v.post_id,
+			p.user_id,
+			u.name as username,
+			v.created_at as visit_time
+		FROM post_visit v
+		JOIN post p ON v.post_id = p.id
+		JOIN user u ON p.user_id = u.id
+		WHERE v.user_id = ? 
+		AND p.user_id != ?
+		ORDER BY v.created_at DESC
+	`, u.ID, u.ID).Scan(&history).Error
+
+	if err != nil {
+		log.WithError(err).Error("running sql")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"msg":  "success",
+		"data": history,
+	})
 }

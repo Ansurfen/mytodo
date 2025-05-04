@@ -72,39 +72,24 @@ class _PostDetailPageState extends State<PostDetailPage> {
           onPressed: Get.back,
           icon: Icons.arrow_back_ios,
         ),
+        title: Obx(() => Text(controller.data.value.title)),
         actions: [
           Row(
             children: [
-              favoriteButton(
-                context,
-                selected: controller.data.isFavorite,
-                onChange: (v) {
-                  if (controller.data.isFavorite) {
-                    postUnFavorite(
-                      PostUnFavoriteRequest(id: controller.data.id),
-                    ).then((res) {
-                      if (res.success) {
-                        setState(() {
-                          controller.data.isFavorite = false;
-                          controller.data.favoriteCnt--;
-                        });
+              Obx(
+                () => favoriteButton(
+                  context,
+                  selected: controller.data.value.isFavorite,
+                  onChange: (v) {
+                    postLikeRequest(postId: controller.data.value.id).then((res) {
+                      if (res) {
+                        controller.updateFavorite(!controller.data.value.isFavorite);
                       }
                     });
-                  } else {
-                    postFavorite(
-                      PostFavoriteRequest(id: controller.data.id),
-                    ).then((res) {
-                      if (res.success) {
-                        setState(() {
-                          controller.data.isFavorite = true;
-                          controller.data.favoriteCnt++;
-                        });
-                      }
-                    });
-                  }
-                },
+                  },
+                ),
               ),
-              Text("${controller.data.favoriteCnt}"),
+              Obx(() => Text("${controller.data.value.likeCount}")),
             ],
           ),
           const SizedBox(width: 10),
@@ -219,35 +204,46 @@ class _PostDetailPageState extends State<PostDetailPage> {
   Widget _postHeader() {
     return Row(
       children: [
-        userProfile(isMale: controller.data.isMale, id: controller.data.uid),
+        Obx(
+          () =>
+              controller.data.value.uid != 0
+                  ? userProfile(
+                    isMale: controller.data.value.isMale,
+                    id: controller.data.value.uid,
+                  )
+                  : const SizedBox.shrink(),
+        ),
         const SizedBox(width: 10),
         Padding(
           padding: EdgeInsets.only(top: 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                Mock.username(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              RawChip(
-                backgroundColor: Theme.of(context).primaryColorLight,
-                materialTapTargetSize: MaterialTapTargetSize.padded,
-                avatar: Icon(
-                  Icons.location_on,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                label: Text(
-                  "unknown".tr,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 12,
+              Obx(
+                () => Text(
+                  controller.data.value.username,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              Obx(() => Text(controller.data.value.about)),
+              // RawChip(
+              //   backgroundColor: Theme.of(context).primaryColorLight,
+              //   materialTapTargetSize: MaterialTapTargetSize.padded,
+              //   avatar: Icon(
+              //     Icons.location_on,
+              //     color: Theme.of(context).colorScheme.primary,
+              //   ),
+              //   label: Text(
+              //     "unknown".tr,
+              //     style: TextStyle(
+              //       color: Theme.of(context).colorScheme.primary,
+              //       fontSize: 12,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -262,7 +258,6 @@ class _PostDetailPageState extends State<PostDetailPage> {
       controller: controller.quillController,
       config: QuillEditorConfig(
         scrollable: false,
-        placeholder: 'Start writing your notes...',
         padding: const EdgeInsets.all(16),
         embedBuilders: [
           ...FlutterQuillEmbeds.editorBuilders(
@@ -296,15 +291,21 @@ class _PostDetailPageState extends State<PostDetailPage> {
           children: [
             Icon(Icons.visibility_outlined, size: 16, color: Colors.grey),
             SizedBox(width: 5),
-            Text(
-              "浏览${Mock.number(max: 1000)}次",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+            Obx(
+              () => Text(
+                "浏览${controller.data.value.visitCount}次",
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
             ),
           ],
         ),
-        Text(
-          DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
-          style: TextStyle(color: Colors.grey),
+        Obx(
+          () => Text(
+            DateFormat(
+              "yyyy-MM-dd HH:mm:ss",
+            ).format(controller.data.value.createdAt),
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       ],
     );

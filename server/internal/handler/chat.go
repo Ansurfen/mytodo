@@ -304,7 +304,7 @@ func ChatSnap(ctx *gin.Context) {
 		return
 	}
 	var messageTopic []messageSnap
-	err := db.SQL().Raw(`SELECT 
+	err := db.SQL().Rawf(`SELECT 
     tj.topic_id AS Id,
     lm.id AS last_message_id,
     lm.message AS last_message,
@@ -344,7 +344,7 @@ ORDER BY
 		return
 	}
 	var messageFriend []messageSnap
-	err = db.SQL().Raw(`SELECT
+	err = db.SQL().Rawf(`SELECT
 	u.name AS name,
     ur.friend_id AS Id,
     lm.id AS last_message_id,

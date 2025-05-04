@@ -318,4 +318,6 @@ Map<String, String> get enUS => {
   "invite_code_empty_desc": "Please enter the invite code to join the topic",
   "invite_code_success": "Successfully joined topic",
   "invite_code_success_desc": "You have successfully joined the topic",
+
+  "report": "Report",
 };
