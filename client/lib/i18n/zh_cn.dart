@@ -285,4 +285,10 @@ Map<String, String> get zhCN => {
   "scan_qr_code": "扫描二维码",
   "scan_qr_code_placeholder": "扫描二维码以完成打卡",
   "scan_qr_code_finish": "您已完成打卡",
+
+  "success_add_friend": "成功添加好友",
+  "add_friend": "添加好友",
+
+  "success_exit_topic": "成功退出频道",
+  "exit_topic": "退出频道",
 };

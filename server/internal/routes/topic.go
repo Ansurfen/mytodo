@@ -21,12 +21,17 @@ func InstallTopicRoute(e *gin.Engine) {
 		topicRouter.POST("/exit", middleware.Auth, handler.TopicExit)
 		topicRouter.POST("/del", middleware.Auth, handler.TopicDel)
 		topicRouter.POST("/edit", middleware.Auth, handler.TopicEdit)
+		topicRouter.POST("/disband", middleware.Auth, handler.TopicDisband)
+		topicRouter.GET("/permission/:topicId", middleware.Auth, handler.TopicPermission)
 		memberRouter := topicRouter.Group("/member")
 		{
 			memberRouter.POST("/invite", middleware.Auth, handler.TopicMemberInvite)
 			memberRouter.POST("/get", handler.TopicMemberGet)
 			memberRouter.POST("/del", middleware.Auth, handler.TopicMemberDel)
 			memberRouter.POST("/commit", middleware.Auth, handler.TopicMemberCommit)
+			memberRouter.POST("/grant_admin", middleware.Auth, handler.TopicGrantAdmin)
+			memberRouter.POST("/revoke_admin", middleware.Auth, handler.TopicRevokeAdmin)
+			memberRouter.POST("/remove", middleware.Auth, handler.TopicRemoveMember)
 		}
 	}
 }

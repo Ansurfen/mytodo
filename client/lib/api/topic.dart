@@ -8,6 +8,7 @@ import 'package:my_todo/api/response.dart';
 import 'package:my_todo/model/dao/topic.dart';
 import 'package:my_todo/model/dto/topic.dart';
 import 'package:my_todo/model/entity/topic.dart';
+import 'package:my_todo/model/topic.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/json.dart';
 import 'package:my_todo/utils/net.dart';
@@ -97,6 +98,13 @@ Future topicFindRequest({required int page, required int pageSize}) async {
     data: {'page': page, 'page_size': pageSize},
     options: Options(headers: {"Authorization": Guard.jwt}),
   )).data["data"];
+}
+
+Future<TopicRole> topicPermissionRequest({required int topicId}) async {
+  return TopicRole.values[(await HTTP.get(
+    '/topic/permission/$topicId',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"]];
 }
 
 Future topicApplyNewRequest({required int topicId}) async {
@@ -234,5 +242,54 @@ Future<GetSubscribedMemberResponse> getSubscribedMember(
 ) async {
   return GetSubscribedMemberResponse.fromResponse(
     await HTTP.get('/topic/member/${req.id}'),
+  );
+}
+
+Future topicExitRequest({required int topicId}) async {
+  return HTTP.post(
+    '/topic/exit',
+    data: {'topic_id': topicId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicDisbandRequest({required int topicId}) async {
+  return HTTP.post(
+    '/topic/disband',
+    data: {'topic_id': topicId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicMemberRemoveRequest({
+  required int topicId,
+  required int userId,
+}) async {
+  return HTTP.post(
+    '/topic/member/remove',
+    data: {'topic_id': topicId, 'user_id': userId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicMemberGrantAdminRequest({
+  required int topicId,
+  required int userId,
+}) async {
+  return HTTP.post(
+    '/topic/member/grant_admin',
+    data: {'topic_id': topicId, 'user_id': userId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
+}
+
+Future topicMemberRevokeAdminRequest({
+  required int topicId,
+  required int userId,
+}) async {
+  return HTTP.post(
+    '/topic/member/revoke_admin',
+    data: {'topic_id': topicId, 'user_id': userId},
+    options: Options(headers: {"Authorization": Guard.jwt}),
   );
 }

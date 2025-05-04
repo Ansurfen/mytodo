@@ -758,29 +758,59 @@ func TopicExit(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+
+	// 开始事务
+	tx := db.SQL().Begin()
+
 	if policy.Role.EQ(model.TopicRoleOwner) {
-		var topic model.Topic
-		err = db.SQL().Table("topic").Where("id = ?", req.TopicId).First(&topic).Error
-		if err != nil {
+		// 如果是所有者，删除整个频道
+		if err := tx.Table("topic_policy").Where("topic_id = ?", req.TopicId).Delete(&model.TopicPolicy{}).Error; err != nil {
+			tx.Rollback()
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
-		err = db.SQL().Table("topic").Delete(&topic).Error
-		if err != nil {
+
+		if err := tx.Table("topic_join").Where("topic_id = ?", req.TopicId).Delete(&model.TopicJoin{}).Error; err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		if err := tx.Table("topic").Delete(&model.Topic{}, req.TopicId).Error; err != nil {
+			tx.Rollback()
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
 	} else {
-		var topicJoin model.TopicJoin
-		err = db.SQL().Table("topic_join").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).First(&topicJoin).Error
-		if err != nil {
+		// 如果是普通成员或管理员，只删除自己的记录
+		if err := tx.Table("topic_policy").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).Delete(&model.TopicPolicy{}).Error; err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		if err := tx.Table("topic_join").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).Delete(&model.TopicJoin{}).Error; err != nil {
+			tx.Rollback()
 			log.WithError(err).Error("running sql")
 			ctx.Abort()
 			return
 		}
 	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		log.WithError(err).Error("fail to commit tx")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "successfully exits topic",
+	})
 }
 
 func TopicCalendar(ctx *gin.Context) {
@@ -950,4 +980,216 @@ func TopicMemberCommit(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "successfully processed invitation",
 	})
+}
+
+// TopicDisband 解散频道
+func TopicDisband(c *gin.Context) {
+	var req api.TopicDelRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 获取当前用户ID
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	// 检查用户是否是频道所有者
+	var policy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ? AND role = ?", req.TopicId, u.ID, model.TopicRoleOwner).First(&policy).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "only owner can disband topic"})
+		return
+	}
+
+	// 开始事务
+	tx := db.SQL().Begin()
+
+	// 删除所有相关记录
+	if err := tx.Table("topic_policy").Where("topic_id = ?", req.TopicId).Delete(&model.TopicPolicy{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	if err := tx.Table("topic_join").Where("topic_id = ?", req.TopicId).Delete(&model.TopicJoin{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	if err := tx.Table("topic").Delete(&model.Topic{}, req.TopicId).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "topic disbanded successfully"})
+}
+
+func TopicPermission(c *gin.Context) {
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	topicIdInt, err := strconv.Atoi(c.Param("topicId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "invalid topic id"})
+		return
+	}
+
+	policy, err := loadTopicPolicy(uint(topicIdInt), u.ID)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "permission denied"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "success", "data": policy.Role})
+}
+
+// TopicGrantAdmin 授予管理员权限
+func TopicGrantAdmin(c *gin.Context) {
+	var req api.TopicMemberDelRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+
+	// 获取当前用户ID
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	// 检查用户是否是频道所有者
+	var policy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ? AND role = ?", req.TopicId, u.ID, model.TopicRoleOwner).First(&policy).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "only owner can grant admin"})
+		return
+	}
+
+	// 检查目标用户是否存在
+	var targetPolicy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ?", req.TopicId, req.UserId).First(&targetPolicy).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "user not found in topic"})
+		return
+	}
+
+	// 更新用户角色为管理员
+	if err := db.SQL().Table("topic_policy").Model(&targetPolicy).Update("role", model.TopicRoleAdmin).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "admin granted successfully"})
+}
+
+// TopicRevokeAdmin 撤销管理员权限
+func TopicRevokeAdmin(c *gin.Context) {
+	var req api.TopicMemberDelRequest
+	if err := c.Bind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 获取当前用户ID
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	// 检查用户是否是频道所有者
+	var policy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ? AND role = ?", req.TopicId, u.ID, model.TopicRoleOwner).First(&policy).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "only owner can revoke admin"})
+		return
+	}
+
+	// 检查目标用户是否存在且是管理员
+	var targetPolicy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ? AND role = ?", req.TopicId, req.UserId, model.TopicRoleAdmin).First(&targetPolicy).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "admin not found"})
+		return
+	}
+
+	// 更新用户角色为普通成员
+	if err := db.SQL().Table("topic_policy").Model(&targetPolicy).Update("role", model.TopicRoleMember).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "admin revoked successfully"})
+}
+
+// TopicRemoveMember 移除成员
+func TopicRemoveMember(c *gin.Context) {
+	var req api.TopicMemberDelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 获取当前用户ID
+	u, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	// 检查当前用户权限
+	var currentPolicy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).First(&currentPolicy).Error; err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "user not in topic"})
+		return
+	}
+
+	// 检查目标用户是否存在
+	var targetPolicy model.TopicPolicy
+	if err := db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ?", req.TopicId, req.UserId).First(&targetPolicy).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "user not found in topic"})
+		return
+	}
+
+	// 权限检查
+	if currentPolicy.Role == model.TopicRoleMember {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "member cannot remove others"})
+		return
+	}
+
+	if currentPolicy.Role == model.TopicRoleAdmin && targetPolicy.Role != model.TopicRoleMember {
+		c.JSON(http.StatusForbidden, gin.H{"msg": "admin can only remove members"})
+		return
+	}
+
+	// 开始事务
+	tx := db.SQL().Begin()
+
+	// 删除用户权限记录
+	if err := tx.Table("topic_policy").Where("topic_id = ? AND user_id = ?", req.TopicId, req.UserId).Delete(&model.TopicPolicy{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	// 删除用户加入记录
+	if err := tx.Table("topic_join").Where("topic_id = ? AND user_id = ?", req.TopicId, req.UserId).Delete(&model.TopicJoin{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "member removed successfully"})
 }

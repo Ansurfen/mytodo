@@ -295,4 +295,10 @@ Map<String, String> get enUS => {
   "scan_qr_code": "Scan QR Code",
   "scan_qr_code_placeholder": "Scan the QR code to commit the task",
   "scan_qr_code_finish": "You have completed the task",
+
+  "success_add_friend": "Successfully added friend",
+  "add_friend": "Add Friend",
+
+  "success_exit_topic": "Successfully exited topic",
+  "exit_topic": "Exit Topic",
 };
