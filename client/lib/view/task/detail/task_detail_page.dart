@@ -11,11 +11,17 @@ import 'package:get/get.dart';
 import 'package:my_todo/api/task.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/config.dart';
+import 'package:my_todo/model/topic.dart';
+import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/picker.dart';
 import 'package:my_todo/view/add/add_post_page.dart';
+import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/view/map/locate/locate_page.dart';
 import 'package:my_todo/view/task/detail/task_detail_controller.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:async';
 
 class TaskInfoPage extends StatefulWidget {
   const TaskInfoPage({super.key});
@@ -88,7 +94,7 @@ class _TaskInfoPageState extends State<TaskInfoPage>
         case ConditionType.click:
           tabViews.add(TaskClickPage(cond: cond));
         case ConditionType.qr:
-          tabViews.add(TaskQRPage());
+          tabViews.add(TaskQRPage(cond: cond));
         case ConditionType.locale:
           tabViews.add(TaskLocalePage(cond: cond));
         case ConditionType.text:
@@ -174,11 +180,6 @@ class TaskClickPage extends StatefulWidget {
 class _TaskClickPage extends State<TaskClickPage> {
   TaskInfoController controller = Get.find<TaskInfoController>();
 
-  String _formatTime(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    return '${date.year}${"year".tr}${date.month}${"month".tr}${date.day}${"day".tr} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.cond.finish) {
@@ -200,7 +201,7 @@ class _TaskClickPage extends State<TaskClickPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              _formatTime(widget.cond.argument["create_at"]),
+              formatTime(widget.cond.argument["create_at"]),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -345,7 +346,7 @@ class _TaskFilePage extends State<TaskFilePage> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${"submit_time".tr} ${_formatTime(widget.cond.argument["create_at"])}',
+                        '${"submit_time".tr} ${formatTime(widget.cond.argument["create_at"])}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -502,11 +503,6 @@ class _TaskFilePage extends State<TaskFilePage> {
       return '${(size / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
     }
   }
-
-  String _formatTime(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    return '${date.year}${"year".tr}${date.month}${"month".tr}${date.day}${"day".tr} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-  }
 }
 
 class TaskTextPage extends StatefulWidget {
@@ -561,7 +557,7 @@ class _TaskTextPage extends State<TaskTextPage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${"submit_time".tr} ${_formatTime(widget.cond.argument["create_at"])}',
+                          '${"submit_time".tr} ${formatTime(widget.cond.argument["create_at"])}',
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall?.copyWith(
@@ -683,60 +679,7 @@ class _TaskTextPage extends State<TaskTextPage> {
                   children: [
                     Obx(
                       () =>
-                          isEditing.value
-                              ? QuillSimpleToolbar(
-                                controller: controller.quillController!,
-                                config: QuillSimpleToolbarConfig(
-                                  embedButtons:
-                                      FlutterQuillEmbeds.toolbarButtons(),
-                                  showClipboardPaste: true,
-                                  customButtons: [
-                                    QuillToolbarCustomButtonOptions(
-                                      icon: const Icon(Icons.add_alarm_rounded),
-                                      onPressed: () {
-                                        controller.quillController!.document
-                                            .insert(
-                                              controller
-                                                  .quillController!
-                                                  .selection
-                                                  .extentOffset,
-                                              TimeStampEmbed(
-                                                DateTime.now().toString(),
-                                              ),
-                                            );
-                                        controller.quillController!
-                                            .updateSelection(
-                                              TextSelection.collapsed(
-                                                offset:
-                                                    controller
-                                                        .quillController!
-                                                        .selection
-                                                        .extentOffset +
-                                                    1,
-                                              ),
-                                              ChangeSource.local,
-                                            );
-                                      },
-                                    ),
-                                  ],
-                                  buttonOptions:
-                                      QuillSimpleToolbarButtonOptions(
-                                        base: QuillToolbarBaseButtonOptions(
-                                          afterButtonPressed: () {
-                                            final isDesktop = {
-                                              TargetPlatform.linux,
-                                              TargetPlatform.windows,
-                                              TargetPlatform.macOS,
-                                            }.contains(defaultTargetPlatform);
-                                            if (isDesktop) {
-                                              editorFocusNode.requestFocus();
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                ),
-                              )
-                              : Container(),
+                          isEditing.value ? quillToolbar(context) : Container(),
                     ),
                     Obx(
                       () =>
@@ -808,49 +751,7 @@ class _TaskTextPage extends State<TaskTextPage> {
       return SafeArea(
         child: Column(
           children: [
-            QuillSimpleToolbar(
-              controller: controller.quillController!,
-              config: QuillSimpleToolbarConfig(
-                embedButtons: FlutterQuillEmbeds.toolbarButtons(),
-                showClipboardPaste: true,
-                customButtons: [
-                  QuillToolbarCustomButtonOptions(
-                    icon: const Icon(Icons.add_alarm_rounded),
-                    onPressed: () {
-                      controller.quillController!.document.insert(
-                        controller.quillController!.selection.extentOffset,
-                        TimeStampEmbed(DateTime.now().toString()),
-                      );
-                      controller.quillController!.updateSelection(
-                        TextSelection.collapsed(
-                          offset:
-                              controller
-                                  .quillController!
-                                  .selection
-                                  .extentOffset +
-                              1,
-                        ),
-                        ChangeSource.local,
-                      );
-                    },
-                  ),
-                ],
-                buttonOptions: QuillSimpleToolbarButtonOptions(
-                  base: QuillToolbarBaseButtonOptions(
-                    afterButtonPressed: () {
-                      final isDesktop = {
-                        TargetPlatform.linux,
-                        TargetPlatform.windows,
-                        TargetPlatform.macOS,
-                      }.contains(defaultTargetPlatform);
-                      if (isDesktop) {
-                        editorFocusNode.requestFocus();
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
+            quillToolbar(context),
             Expanded(
               child: QuillEditor(
                 focusNode: editorFocusNode,
@@ -881,10 +782,68 @@ class _TaskTextPage extends State<TaskTextPage> {
     }
   }
 
-  String _formatTime(int timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    return '${date.year}${"year".tr}${date.month}${"month".tr}${date.day}${"day".tr} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  Widget quillToolbar(BuildContext context) {
+    return Theme(
+      data:
+          ThemeProvider.isDark
+              ? ThemeData.dark().copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: Theme.of(context).primaryColor,
+                  secondary: Theme.of(context).primaryColorLight,
+                ),
+              )
+              : ThemeData.light().copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: Theme.of(context).primaryColor,
+                  secondary: Theme.of(context).primaryColorLight,
+                ),
+              ),
+      child: QuillSimpleToolbar(
+        controller: controller.quillController!,
+        config: QuillSimpleToolbarConfig(
+          embedButtons: FlutterQuillEmbeds.toolbarButtons(),
+          showClipboardPaste: true,
+          customButtons: [
+            QuillToolbarCustomButtonOptions(
+              icon: const Icon(Icons.add_alarm_rounded),
+              onPressed: () {
+                controller.quillController!.document.insert(
+                  controller.quillController!.selection.extentOffset,
+                  TimeStampEmbed(DateTime.now().toString()),
+                );
+                controller.quillController!.updateSelection(
+                  TextSelection.collapsed(
+                    offset:
+                        controller.quillController!.selection.extentOffset + 1,
+                  ),
+                  ChangeSource.local,
+                );
+              },
+            ),
+          ],
+          buttonOptions: QuillSimpleToolbarButtonOptions(
+            base: QuillToolbarBaseButtonOptions(
+              afterButtonPressed: () {
+                final isDesktop = {
+                  TargetPlatform.linux,
+                  TargetPlatform.windows,
+                  TargetPlatform.macOS,
+                }.contains(defaultTargetPlatform);
+                if (isDesktop) {
+                  editorFocusNode.requestFocus();
+                }
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
+}
+
+String formatTime(int timestamp) {
+  final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+  return '${date.year}${"year".tr}${date.month}${"month".tr}${date.day}${"day".tr} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
 }
 
 class TaskLocalePage extends StatefulWidget {
@@ -941,15 +900,179 @@ class _TaskLocalePage extends State<TaskLocalePage> {
 }
 
 class TaskQRPage extends StatefulWidget {
-  const TaskQRPage({super.key});
+  final ConditionItem cond;
+  const TaskQRPage({super.key, required this.cond});
 
   @override
   State<TaskQRPage> createState() => _TaskQRPage();
 }
 
 class _TaskQRPage extends State<TaskQRPage> {
+  Rx<String> qrCode = "".obs;
+  Rx<int> countdown = 30.obs;
+  TaskInfoController controller = Get.find<TaskInfoController>();
+  Timer? _refreshTimer;
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    taskPermissionRequest(controller.model.id).then((v) {
+      if (v.ge(TopicRole.admin)) {
+        controller.role.value = v;
+        _fetchQRCode();
+        _startRefreshTimer();
+        _startCountdownTimer();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startRefreshTimer() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _fetchQRCode();
+      countdown.value = 30;
+    });
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (countdown.value > 0) {
+        countdown.value--;
+      }
+    });
+  }
+
+  Future<void> _fetchQRCode() async {
+    try {
+      final code = await taskQRRequest(controller.model.id);
+      qrCode.value = code;
+    } catch (e) {
+      Get.snackbar('error'.tr, e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Obx(() {
+      if (controller.role.value.ge(TopicRole.admin)) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Obx(
+                () => QrImageView(
+                  data: qrCode.value,
+                  version: QrVersions.auto,
+                  size: 250,
+                  dataModuleStyle: QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.circle,
+                    color: Theme.of(context).primaryColorLight,
+                  ),
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.circle,
+                    color: Theme.of(context).primaryColorLight,
+                  ),
+                  gapless: false,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Obx(
+                () => Text(
+                  '${"refresh_in".tr} ${countdown.value}s',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        if (widget.cond.finish) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  'assets/images/click.svg',
+                  width: 120,
+                  height: 120,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'scan_qr_code_finish'.tr,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${"submit_time".tr} ${formatTime(widget.cond.argument["create_at"])}',
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Icon(
+                    Icons.qr_code,
+                    size: 80,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () async {
+                    await openQRScanner(context).then((value) {
+                      if (value.isNotEmpty) {
+                        Get.snackbar('info'.tr, 'scan_qr_code_placeholder'.tr);
+                        taskCommitRequest(
+                          taskId: controller.model.id,
+                          condId: widget.cond.id,
+                          argument: {"token": value},
+                        ).then((v) {
+                          Guard.log.i(v);
+                        });
+                      }
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: Text(
+                    'scan_qr_code'.tr,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    });
   }
 }

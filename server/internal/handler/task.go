@@ -78,6 +78,16 @@ func TaskNew(ctx *gin.Context) {
 				Type:   model.TaskTypeText,
 				TaskId: task.ID,
 			})
+		case "qr":
+			conds = append(conds, model.TaskCondition{
+				Type:   model.TaskTypeQR,
+				TaskId: task.ID,
+			})
+		case "image":
+			conds = append(conds, model.TaskCondition{
+				Type:   model.TaskTypeImage,
+				TaskId: task.ID,
+			})
 		}
 	}
 	err = tx.Table("task_condition").CreateInBatches(&conds, len(conds)).Error
@@ -91,7 +101,7 @@ func TaskNew(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	ctx.JSON(200, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "successfully create task",
 	})
 }
@@ -230,13 +240,18 @@ func TaskEdit(ctx *gin.Context) {
 }
 
 func TaskQR(ctx *gin.Context) {
-	taskId := ctx.Param("task")
+	taskId, err := strconv.Atoi(ctx.Param("taskId"))
+	if err != nil {
+		log.WithError(err).Error("fail to parse task id")
+		ctx.Abort()
+		return
+	}
 	u, ok := getUser(ctx)
 	if !ok {
 		return
 	}
 	var task model.Task
-	err := db.SQL().Table("task").Where("id = ?", taskId).First(&task).Error
+	err = db.SQL().Table("task").Where("id = ?", taskId).First(&task).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
@@ -258,7 +273,7 @@ func TaskQR(ctx *gin.Context) {
 	now := time.Now()
 	expirationTime := now.Add(30 * time.Second)
 	claims := jwt.StandardClaims{
-		Id:        taskId,
+		Id:        strconv.Itoa(taskId),
 		ExpiresAt: expirationTime.Unix(),
 		IssuedAt:  now.Unix(),
 		Issuer:    "org.my_todo",
@@ -272,7 +287,7 @@ func TaskQR(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
-		"msg":  "",
+		"msg":  "successfully generate qr token",
 		"data": tokenStr,
 	})
 }
@@ -310,7 +325,7 @@ func TaskCommit(ctx *gin.Context) {
 		argument = req.Argument
 		argument["create_at"] = time.Now().Unix()
 	case model.TaskTypeFile:
-
+		// see TaskFileUpload
 	case model.TaskTypeQR:
 		tokenString := req.Argument["token"].(string)
 		claims := jwt.StandardClaims{}
@@ -318,14 +333,21 @@ func TaskCommit(ctx *gin.Context) {
 			return jwtKey, nil
 		})
 		if err != nil {
-
+			log.WithError(err).Error("fail to parse token")
+			ctx.Abort()
+			ctx.JSON(http.StatusOK, gin.H{"msg": "fail to parse token"})
+			return
 		}
 		if claims, ok := token.Claims.(*jwt.StandardClaims); ok && token.Valid {
 			// timeout
 			if claims.ExpiresAt < time.Now().Unix() {
 				ctx.Abort()
+				ctx.JSON(http.StatusOK, gin.H{"msg": "token expired"})
 				return
 			}
+		}
+		argument = map[string]any{
+			"create_at": time.Now().Unix(),
 		}
 	case model.TaskTypeLocate:
 		locale := req.Argument["locate"].(string)
@@ -1025,6 +1047,7 @@ func TaskStats(c *gin.Context) {
 		Finished int64  `json:"finished"`
 		Total    int64  `json:"total"`
 		CommitAt string `json:"commit_at,omitempty"`
+		Role     uint   `json:"role"`
 	}
 
 	var stats []MemberStats
@@ -1034,11 +1057,14 @@ func TaskStats(c *gin.Context) {
 			u.name AS name,
 			COUNT(DISTINCT tc.id) AS total,
 			COUNT(DISTINCT tcm.id) AS finished,
-			MAX(tcm.created_at) AS commit_at
+			MAX(tcm.created_at) AS commit_at,
+			COALESCE(tp.role, 0) AS role
 		FROM 
 			topic_join tj
 		JOIN 
 			user u ON tj.user_id = u.id
+		LEFT JOIN 
+			topic_policy tp ON tp.topic_id = tj.topic_id AND tp.user_id = u.id
 		LEFT JOIN 
 			task_condition tc ON tc.task_id = %d AND tc.deleted_at IS NULL
 		LEFT JOIN 
@@ -1051,7 +1077,7 @@ func TaskStats(c *gin.Context) {
 			AND tj.deleted_at IS NULL
 			AND u.deleted_at IS NULL
 		GROUP BY 
-			u.id, u.name
+			u.id, u.name, tp.role
 	`, taskId, taskId, task.TopicId).Scan(&stats).Error
 
 	if err != nil {
@@ -1076,5 +1102,53 @@ func TaskStats(c *gin.Context) {
 			"progress":         float64(finishedMembers) / float64(totalMembers),
 		},
 		"members": stats,
+	})
+}
+
+func TaskPermission(ctx *gin.Context) {
+	taskId := ctx.Param("taskId")
+	if taskId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "task id is required",
+		})
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+
+	var task model.Task
+	err := db.SQL().Table("task").Where("id = ?", taskId).First(&task).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"msg": "task not found",
+			})
+			return
+		}
+		log.WithError(err).Error("fail to get task")
+		ctx.Abort()
+		return
+	}
+
+	var topic model.Topic
+	err = db.SQL().Table("topic").Where("id = ?", task.TopicId).First(&topic).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get topic")
+		ctx.Abort()
+		return
+	}
+
+	var policy model.TopicPolicy
+	err = db.SQL().Table("topic_policy").Where("topic_id = ? AND user_id = ?", task.TopicId, u.ID).First(&policy).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get topic policy")
+		ctx.Abort()
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg":  "successfully get task permission",
+		"data": policy.Role,
 	})
 }

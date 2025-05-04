@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:my_todo/api/notification.dart';
 import 'package:my_todo/api/task.dart';
 import 'package:my_todo/utils/debounce.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
 import 'package:my_todo/view/task/snapshot/task_card.dart';
 
@@ -78,15 +79,17 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
     ).then((v) {
       for (var e in v) {
         final conds = <ConditionItem>[];
-        for (var elem in (e["conds"] as List)) {
-          conds.add(
-            ConditionItem(
-              id: elem["want"]["id"],
-              type: ConditionType.values[elem["want"]["type"]],
-              finish: elem["valid"],
-              argument: elem["got"] != null ? elem["got"]["argument"] : {},
-            ),
-          );
+        if (e["conds"] != null) {
+          for (var elem in (e["conds"] as List)) {
+            conds.add(
+              ConditionItem(
+                id: elem["want"]["id"],
+                type: ConditionType.values[elem["want"]["type"]],
+                finish: elem["valid"],
+                argument: elem["got"] != null ? elem["got"]["argument"] : {},
+              ),
+            );
+          }
         }
         tasks.add(
           TaskCardModel(

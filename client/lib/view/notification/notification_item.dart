@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/api/user.dart';
+import 'package:my_todo/component/image.dart';
 import 'package:my_todo/model/entity/notify.dart';
 import 'package:my_todo/utils/time.dart';
 
@@ -18,6 +19,7 @@ class NotificationItemModel {
     required this.date,
     required this.readed,
     required this.type,
+    required this.uid,
   });
 
   int id;
@@ -27,6 +29,7 @@ class NotificationItemModel {
   DateTime date;
   bool readed;
   int type;
+  int uid;
 }
 
 class NotificationItem extends StatelessWidget {
@@ -166,7 +169,7 @@ class NotificationItem extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SAvatarExampleChild(name: model.sender),
+                  SAvatarExampleChild(id: model.uid),
                   const Padding(padding: EdgeInsets.only(left: 8)),
                   Expanded(
                     child: Column(
@@ -238,30 +241,16 @@ class NotificationItem extends StatelessWidget {
 }
 
 class SAvatarExampleChild extends StatelessWidget {
-  final String name;
-  const SAvatarExampleChild({super.key, required this.name});
+  final int id;
+  const SAvatarExampleChild({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(10),
-      child: Container(
-        width: 45,
-        height: 45,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Color(0xffFCD8DC),
-        ),
-        child: Center(
-          child: Text(
-            name[0],
-            style: TextStyle(
-              color: Theme.of(context).primaryColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ),
+      child: CircleAvatar(
+        radius: 20,
+        backgroundImage: TodoImage.userProfile(id),
       ),
     );
   }

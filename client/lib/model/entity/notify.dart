@@ -32,12 +32,16 @@ class Notify {
   @JsonKey(name: "sender")
   String sender;
 
+  @JsonKey(name: "uid", defaultValue: 0)
+  int uid;
+
   Notify({
     required this.id,
     required this.type,
     required this.status,
     required this.createdAt,
     required this.sender,
+    required this.uid,
     this.param = '',
     this.title = '',
     this.content = '',

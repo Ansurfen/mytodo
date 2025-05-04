@@ -64,6 +64,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         readed: item.status > 1,
                         type: item.type,
                         id: item.id,
+                        uid: item.uid,
                       ),
                     );
                   },

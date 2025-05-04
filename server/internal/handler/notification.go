@@ -157,7 +157,8 @@ func NotificationPublishGet(ctx *gin.Context) {
     np.created_at AS created_at,
     n.name AS title,
     n.description AS content,
-    u.name AS sender
+    u.name AS sender,
+	u.id AS uid
 FROM
     notification_publish np
 JOIN
@@ -222,6 +223,7 @@ type notificationSnapshot struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
 	Sender    string    `json:"sender"`
+	Uid       uint      `json:"uid"`
 }
 
 func NotificationUnreadCount(c *gin.Context) {

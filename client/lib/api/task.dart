@@ -9,6 +9,7 @@ import 'package:my_todo/api/response.dart';
 import 'package:my_todo/model/dao/task.dart';
 import 'package:my_todo/model/dto/task.dart';
 import 'package:my_todo/model/entity/task.dart';
+import 'package:my_todo/model/topic.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/net.dart';
 import 'package:my_todo/utils/picker.dart';
@@ -46,11 +47,11 @@ Future taskCommitRequest({
   required int condId,
   required Map argument,
 }) async {
-  return HTTP.post(
+  return (await HTTP.post(
     '/task/commit',
     data: {"task_id": taskId, "condition_id": condId, "argument": argument},
     options: Options(headers: {"Authorization": Guard.jwt}),
-  );
+  )).data;
 }
 
 Future<Map<String, dynamic>> taskFileUploadRequest({
@@ -348,4 +349,18 @@ Future<Map<String, dynamic>> taskStatsRequest(int taskId) async {
     options: Options(headers: {"Authorization": Guard.jwt}),
   );
   return response.data;
+}
+
+Future<TopicRole> taskPermissionRequest(int taskId) async {
+  return TopicRole.values[(await HTTP.get(
+    '/task/permission/$taskId',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"]];
+}
+
+Future<String> taskQRRequest(int taskId) async {
+  return (await HTTP.get(
+    '/task/qr/$taskId',
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  )).data["data"];
 }

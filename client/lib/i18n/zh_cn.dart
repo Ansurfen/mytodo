@@ -246,6 +246,8 @@ Map<String, String> get zhCN => {
   "desc": "描述",
 
   "member": "成员",
+  "owner": "所有者",
+  "admin": "管理员",
 
   "topic_apply_join": "申请加入",
   "topic_apply_close": "关闭弹窗",
@@ -276,4 +278,11 @@ Map<String, String> get zhCN => {
   "total_members": "总成员",
   "finished_members": "已完成成员",
   "progress": "进度",
+
+  "text_placeholder": "随便写点啥吧...",
+
+  "refresh_in": "刷新倒计时",
+  "scan_qr_code": "扫描二维码",
+  "scan_qr_code_placeholder": "扫描二维码以完成打卡",
+  "scan_qr_code_finish": "您已完成打卡",
 };

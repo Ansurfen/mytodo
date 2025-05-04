@@ -100,7 +100,7 @@ Map<String, String> get enUS => {
   "year": "Year",
   "month": "Month",
   "day": "Day",
-  
+
   // showcase
   "showcase_back": "Back",
   "showcase_close": "Close",
@@ -256,6 +256,8 @@ Map<String, String> get enUS => {
   "desc": "Description",
 
   "member": "Member",
+  "owner": "Owner",
+  "admin": "Admin",
 
   "topic_apply_join": "Apply to join",
   "topic_apply_close": "Close",
@@ -286,4 +288,11 @@ Map<String, String> get enUS => {
   "total_members": "Total Members",
   "finished_members": "Finished Members",
   "progress": "Progress",
+
+  "text_placeholder": "Write something...",
+
+  "refresh_in": "Refresh in",
+  "scan_qr_code": "Scan QR Code",
+  "scan_qr_code_placeholder": "Scan the QR code to commit the task",
+  "scan_qr_code_finish": "You have completed the task",
 };
