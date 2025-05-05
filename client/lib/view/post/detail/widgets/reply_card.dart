@@ -1,9 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/abc/utils.dart';
+import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
+import 'package:my_todo/model/entity/post.dart';
+import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
 
@@ -16,6 +20,9 @@ class ReplyCard extends StatefulWidget {
   final VoidCallback replyCallback;
   final bool isSelf;
   final String text;
+  final int userId;
+  final PostComment model;
+  final int postId;
 
   const ReplyCard({
     super.key,
@@ -27,6 +34,9 @@ class ReplyCard extends StatefulWidget {
     required this.replyCallback,
     required this.isSelf,
     required this.text,
+    required this.userId,
+    required this.model,
+    required this.postId,
   });
 
   @override
@@ -34,6 +44,16 @@ class ReplyCard extends StatefulWidget {
 }
 
 class _ReplyCardState extends State<ReplyCard> {
+  Rx<bool> isFavorite = false.obs;
+  Rx<int> likeCount = 0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    likeCount.value = widget.model.likeCount;
+    isFavorite.value = widget.model.isFavorite;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,10 +67,15 @@ class _ReplyCardState extends State<ReplyCard> {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              radius: 25,
-              backgroundColor: Theme.of(context).primaryColorLight,
-              backgroundImage: widget.userProfile,
+            InkWell(
+              onTap: () {
+                RouterProvider.toUserProfile(widget.userId);
+              },
+              child: CircleAvatar(
+                radius: 25,
+                backgroundColor: Theme.of(context).primaryColorLight,
+                backgroundImage: widget.userProfile,
+              ),
             ),
             Container(width: 10),
             Column(
@@ -128,7 +153,28 @@ class _ReplyCardState extends State<ReplyCard> {
         ),
         Row(
           children: [
-            favoriteButton(context, onChange: (v) {}),
+            Row(
+              children: [
+                Obx(
+                  () => favoriteButton(
+                    context,
+                    selected: isFavorite.value,
+                    onChange: (v) {
+                      postCommentLikeRequest(
+                        postId: widget.postId,
+                        commentId: widget.model.id,
+                      ).then((ok) {
+                        if (ok != null) {
+                          isFavorite.value = ok;
+                          likeCount.value += ok ? 1 : -1;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                Obx(() => Text("${likeCount.value}")),
+              ],
+            ),
             Container(width: 10),
             IconButton(
               onPressed: () {},

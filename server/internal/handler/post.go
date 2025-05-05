@@ -655,7 +655,13 @@ func PostCommentGet(ctx *gin.Context) {
     CASE 
         WHEN pcl.id IS NOT NULL THEN TRUE 
         ELSE FALSE 
-    END AS liked,
+    END AS is_favorite,
+    -- 当前评论的点赞数
+    (
+        SELECT COUNT(*) 
+        FROM post_comment_like 
+        WHERE comment_id = pc.id AND deleted_at IS NULL
+    ) AS like_count,
     -- 当前评论的回复数
     (
         SELECT COUNT(*) 
@@ -1036,7 +1042,7 @@ func PostCommentLike(ctx *gin.Context) {
 		if err == nil {
 			// If an existing like is found, the user has already liked this post
 			// ctx.JSON(400, gin.H{"error": "You have already liked this comment"})
-			err = db.SQL().Delete(&existingLike).Error
+			err = db.SQL().Table("post_comment_like").Delete(&existingLike).Error
 			if err != nil {
 				log.WithError(err).Error("running sql")
 				ctx.Abort()

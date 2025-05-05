@@ -20,7 +20,6 @@ import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
 import 'package:my_todo/utils/dialog.dart';
-import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -330,6 +329,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
             int key = controller.comments.value.keys.elementAt(index);
             PostComment comment = controller.comments.value[key]!;
             return CommentCard(
+              postId: controller.id,
+              userId: comment.userId,
               text: comment.text,
               layer: index + 1,
               userProfile: TodoImage.userProfile(comment.userId),
@@ -371,7 +372,8 @@ class _PostDetailPageState extends State<PostDetailPage> {
                       ),
                 );
               },
-              like: (v) {},
+              model: comment,
+
               chat: () async {
                 await controller.commentReplyCard(comment.id);
                 showSheetBottom(
@@ -384,14 +386,14 @@ class _PostDetailPageState extends State<PostDetailPage> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           child: CommentCard(
+                            postId: controller.id,
+                            userId: comment.userId,
                             text: comment.text,
                             layer: index + 1,
-                            userProfile: TodoImage.userProfile(
-                              comment.userId,
-                            ),
+                            userProfile: TodoImage.userProfile(comment.userId),
                             username: comment.username,
                             createdAt: comment.createdAt,
-                            like: (bool value) {},
+                            model: comment,
                             chat: () {
                               Get.back();
                               controller.setCommentReply(comment.id);
@@ -418,6 +420,9 @@ class _PostDetailPageState extends State<PostDetailPage> {
                               return Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 10),
                                 child: ReplyCard(
+                                  model: reply,
+                                  postId: controller.id,
+                                  userId: reply.userId,
                                   text: reply.text,
                                   isSelf:
                                       controller.data.value.uid == reply.userId,

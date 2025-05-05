@@ -90,11 +90,14 @@ class PostComment {
   @JsonKey(name: "replies", defaultValue: [], required: false)
   List<PostComment> replies;
 
-  @JsonKey(name: "favorite", defaultValue: 0)
-  int favorite;
+  @JsonKey(name: "reply_count", defaultValue: 0)
+  int replyCount;
 
-  @JsonKey(name: "you_favorite", defaultValue: false)
-  bool youFavorite;
+  @JsonKey(name: "like_count")
+  int likeCount;
+
+  @JsonKey(name: "is_favorite")
+  bool isFavorite;
 
   PostComment({
     required this.id,
@@ -103,11 +106,12 @@ class PostComment {
     required this.replyId,
     required this.username,
     this.replyName = "",
+    this.replyCount = 0,
     required this.createdAt,
     required this.text,
     required this.replies,
-    this.favorite = 0,
-    this.youFavorite = false,
+    required this.likeCount,
+    required this.isFavorite,
   });
 
   factory PostComment.fromJson(JsonObject json) {

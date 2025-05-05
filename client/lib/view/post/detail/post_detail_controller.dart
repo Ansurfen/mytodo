@@ -168,18 +168,8 @@ class PostDetailController extends GetxController {
     if (isCommentReply()) {
       return postCommentNewRequest(postId: id, replyId: 0, text: msg).then((
         cid,
-      ) {
-        comments.value[cid] = PostComment(
-          text: msg,
-          id: cid,
-          username: Guard.userName(),
-          createdAt: DateTime.now(),
-          replies: [],
-          postId: id,
-          userId: Guard.u!.id,
-          replyId: 0,
-        );
-        comments.refresh();
+      ) async {
+        await fetchComments();
       });
     } else {
       return postCommentNewRequest(
@@ -193,7 +183,7 @@ class PostDetailController extends GetxController {
   }
 
   Future commentFavorite(int id) async {
-    return postCommentLikeRequest(postId: id, commentId: id);
+    return postCommentLikeRequest(postId: this.id, commentId: id);
   }
 
   Future commentReplyCard(int id) async {

@@ -41,6 +41,7 @@ PostComment _$PostCommentFromJson(Map<String, dynamic> json) => PostComment(
   replyId: (json['reply_id'] as num?)?.toInt() ?? 0,
   username: json['username'] as String? ?? '',
   replyName: json['reply_name'] as String? ?? '',
+  replyCount: (json['reply_count'] as num?)?.toInt() ?? 0,
   createdAt: DateTime.parse(json['created_at'] as String),
   text: json['text'] as String,
   replies:
@@ -48,8 +49,8 @@ PostComment _$PostCommentFromJson(Map<String, dynamic> json) => PostComment(
           ?.map((e) => PostComment.fromJson(e as Map<String, dynamic>))
           .toList() ??
       [],
-  favorite: (json['favorite'] as num?)?.toInt() ?? 0,
-  youFavorite: json['you_favorite'] as bool? ?? false,
+  likeCount: (json['like_count'] as num).toInt(),
+  isFavorite: json['is_favorite'] as bool,
 );
 
 Map<String, dynamic> _$PostCommentToJson(PostComment instance) =>
@@ -63,6 +64,7 @@ Map<String, dynamic> _$PostCommentToJson(PostComment instance) =>
       'created_at': instance.createdAt.toIso8601String(),
       'text': instance.text,
       'replies': instance.replies,
-      'favorite': instance.favorite,
-      'you_favorite': instance.youFavorite,
+      'reply_count': instance.replyCount,
+      'like_count': instance.likeCount,
+      'is_favorite': instance.isFavorite,
     };

@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/get_utils.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/abc/utils.dart';
+import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/button/like_button.dart';
+import 'package:my_todo/model/entity/post.dart';
+import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/theme/provider.dart';
 
 class CommentCard extends StatefulWidget {
   final String username;
   final DateTime createdAt;
   final ImageProvider userProfile;
-  final ValueChanged<bool> like;
   final VoidCallback chat;
   final VoidCallback more;
   final int layer;
   final String text;
+  final int userId;
+  final PostComment model;
+  final int postId;
 
   const CommentCard({
     super.key,
     required this.userProfile,
     required this.username,
     required this.createdAt,
-    required this.like,
     required this.chat,
     required this.more,
     required this.layer,
     required this.text,
+    required this.userId,
+    required this.model,
+    required this.postId,
   });
 
   @override
@@ -32,6 +39,18 @@ class CommentCard extends StatefulWidget {
 }
 
 class _CommentCardState extends State<CommentCard> {
+  Rx<bool> isFavorite = false.obs;
+  Rx<int> likeCount = 0.obs;
+  Rx<int> replyCount = 0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    likeCount.value = widget.model.likeCount;
+    replyCount.value = widget.model.replyCount;
+    isFavorite.value = widget.model.isFavorite;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -46,6 +65,9 @@ class _CommentCardState extends State<CommentCard> {
         Row(
           children: [
             InkWell(
+              onTap: () {
+                RouterProvider.toUserProfile(widget.model.userId);
+              },
               child: CircleAvatar(
                 radius: 25,
                 backgroundImage: widget.userProfile,
@@ -121,17 +143,43 @@ class _CommentCardState extends State<CommentCard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            favoriteButton(context, onChange: widget.like),
-            IconButton(
-              onPressed: widget.chat,
-              icon: Icon(
-                Icons.chat_bubble_outline,
-                color: ThemeProvider.contrastColor(
-                  context,
-                  light: Colors.black,
-                  dark: Colors.white,
+            Row(
+              children: [
+                Obx(
+                  () => favoriteButton(
+                    context,
+                    selected: isFavorite.value,
+                    onChange: (v) {
+                      postCommentLikeRequest(
+                        postId: widget.postId,
+                        commentId: widget.model.id,
+                      ).then((ok) {
+                        if (ok != null) {
+                          isFavorite.value = ok;
+                          likeCount.value += ok ? 1 : -1;
+                        }
+                      });
+                    },
+                  ),
                 ),
-              ),
+                Obx(() => Text("${likeCount.value}")),
+              ],
+            ),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: widget.chat,
+                  icon: Icon(
+                    Icons.chat_bubble_outline,
+                    color: ThemeProvider.contrastColor(
+                      context,
+                      light: Colors.black,
+                      dark: Colors.white,
+                    ),
+                  ),
+                ),
+                Obx(() => Text("${replyCount.value}")),
+              ],
             ),
             IconButton(
               onPressed: widget.more,
