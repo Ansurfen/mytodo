@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'container/bubble_container.dart';
 
@@ -85,7 +86,7 @@ class _TodoInputState extends State<TodoInput> {
         ),
         Flexible(
           child: NestedBubbleTextFormField(
-            hintText: 'Type a message',
+            hintText: 'type_message'.tr,
             maxLines: null,
             controller: widget.controller.msgController,
             show: widget.showChild,

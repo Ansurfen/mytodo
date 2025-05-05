@@ -12,7 +12,6 @@ import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/router/provider.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/post/component/profile.dart';
-import 'package:my_todo/view/post/detail/post_detail_controller.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:get/get.dart';
 
@@ -27,6 +26,16 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
+  Rx<bool> isLike = false.obs;
+  Rx<int> likeCount = 0.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    isLike.value = widget.model.isFavorite;
+    likeCount.value = widget.model.likeCount;
+  }
+
   @override
   Widget build(BuildContext context) {
     String text = encodeText(widget.model.text);
@@ -82,7 +91,6 @@ class _PostCardState extends State<PostCard> {
           const SizedBox(height: 15),
           GestureDetector(
             onTap: () {
-              Get.lazyPut(() => PostDetailController());
               RouterProvider.toPostDetail(widget.model.id);
             },
             child: Column(
@@ -129,24 +137,21 @@ class _PostCardState extends State<PostCard> {
                 children: [
                   Row(
                     children: [
-                      favoriteButton(
-                        context,
-                        selected: widget.model.isFavorite,
-                        onChange: (v) {
-                          postLikeRequest(postId: widget.model.id).then((v) {
-                            setState(() {
-                              if (v) {
-                                widget.model.likeCount++;
-                                widget.model.isFavorite = true;
-                              } else {
-                                widget.model.likeCount--;
-                                widget.model.isFavorite = false;
+                      Obx(
+                        () => favoriteButton(
+                          context,
+                          selected: isLike.value,
+                          onChange: (v) {
+                            postLikeRequest(postId: widget.model.id).then((ok) {
+                              if (ok != null) {
+                                isLike.value = ok;
+                                likeCount.value += ok ? 1 : -1;
                               }
                             });
-                          });
-                        },
+                          },
+                        ),
                       ),
-                      Text("${widget.model.likeCount}"),
+                      Obx(() => Text("${likeCount.value}")),
                     ],
                   ),
                   Row(

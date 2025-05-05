@@ -1,10 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/abc/utils.dart';
 import 'package:my_todo/component/button/like_button.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/dialog.dart';
 
 class ReplyCard extends StatefulWidget {
   final ImageProvider userProfile;
@@ -13,6 +14,8 @@ class ReplyCard extends StatefulWidget {
   final DateTime createdAt;
   final int layer;
   final VoidCallback replyCallback;
+  final bool isSelf;
+  final String text;
 
   const ReplyCard({
     super.key,
@@ -22,6 +25,8 @@ class ReplyCard extends StatefulWidget {
     required this.createdAt,
     required this.layer,
     required this.replyCallback,
+    required this.isSelf,
+    required this.text,
   });
 
   @override
@@ -37,20 +42,6 @@ class _ReplyCardState extends State<ReplyCard> {
   }
 
   Widget _header() {
-    List<Widget> title = [
-      Text(widget.senderBy, style: TextStyle(fontSize: 12)),
-    ];
-    if (widget.replyBy.isNotEmpty) {
-      title.addAll([
-        Container(width: 5),
-        Text(
-          "reply".tr,
-          style: TextStyle(color: Theme.of(context).primaryColor),
-        ),
-        Container(width: 5),
-        Text(widget.replyBy, style: TextStyle(color: Colors.grey)),
-      ]);
-    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -65,7 +56,22 @@ class _ReplyCardState extends State<ReplyCard> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: title),
+                Text(widget.senderBy, style: TextStyle(fontSize: 12)),
+                Container(height: 5),
+                if (widget.replyBy.isNotEmpty)
+                  Row(
+                    children: [
+                      Text(
+                        "reply".tr,
+                        style: TextStyle(color: Theme.of(context).primaryColor),
+                      ),
+                      Container(width: 5),
+                      Text(
+                        widget.replyBy,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 Container(height: 5),
                 Text(
                   DateFormat("yyyy-MM-dd HH:mm:ss").format(widget.createdAt),
@@ -98,7 +104,7 @@ class _ReplyCardState extends State<ReplyCard> {
               onLongPress: () {
                 showSnack(context, "copy success");
               },
-              child: Text(Mock.text(), softWrap: true),
+              child: Text(widget.text, softWrap: true),
             ),
           ),
         ],
@@ -137,7 +143,34 @@ class _ReplyCardState extends State<ReplyCard> {
             ),
             Container(width: 10),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder:
+                      (context) => CupertinoActionSheet(
+                        message: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            dialogAction(icon: Icons.reply, text: "reply".tr),
+                            const Divider(),
+                            dialogAction(icon: Icons.copy, text: "copy".tr),
+                            const Divider(),
+                            dialogAction(
+                              icon: Icons.warning,
+                              text: "report".tr,
+                            ),
+                            if (widget.isSelf) ...[
+                              const Divider(),
+                              dialogAction(
+                                icon: Icons.delete,
+                                text: "delete".tr,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                );
+              },
               icon: Icon(
                 Icons.more_vert,
                 color: ThemeProvider.contrastColor(

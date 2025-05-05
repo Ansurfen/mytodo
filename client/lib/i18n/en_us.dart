@@ -195,6 +195,7 @@ Map<String, String> get enUS => {
   'sec_ago': "Second ago",
 
   "clipboard": "Clipboard",
+  "clipboard_desc": "The content has been copied to the clipboard",
 
   "remove_member": "Remove Member",
   "remove_member_desc": "Confirm to remove the member",
@@ -320,4 +321,8 @@ Map<String, String> get enUS => {
   "invite_code_success_desc": "You have successfully joined the topic",
 
   "report": "Report",
+  "copy": "Copy",
+  "reply": "Reply",
+
+  "type_message": "Type a message",
 };

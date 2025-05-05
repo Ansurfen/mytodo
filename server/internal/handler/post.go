@@ -232,16 +232,35 @@ func PostMe(ctx *gin.Context) {
 	}
 
 	var posts []postSnapshot
-	err = db.SQL().Table("post").
-		Select("post.*, "+
-			"COALESCE((SELECT COUNT(*) FROM post_like WHERE post_like.post_id = post.id), 0) AS like_count, "+
-			"COALESCE((SELECT COUNT(*) FROM post_comment WHERE post_comment.post_id = post.id), 0) AS comment_count, "+
-			"COALESCE((SELECT COUNT(*) FROM post_visit WHERE post_visit.post_id = post.id), 0) AS visit_count, "+
-			"EXISTS(SELECT 1 FROM post_like WHERE post_like.post_id = post.id AND post_like.user_id = ? AND post_like.deleted_at IS NULL) AS is_favorite", u.ID).
-		Where("post.user_id = ? AND post.created_at >= ?", u.ID, createdAt).
-		Limit(limit).
-		Offset(offset).
-		Find(&posts).Error
+	err = db.SQL().Raw(`
+		SELECT 
+			p.*,
+			COALESCE(pl.like_count, 0) as like_count,
+			COALESCE(pc.comment_count, 0) as comment_count,
+			COALESCE(pv.visit_count, 0) as visit_count,
+			EXISTS(SELECT 1 FROM post_like WHERE post_id = p.id AND user_id = ? AND deleted_at IS NULL) as is_favorite
+		FROM post p
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as like_count 
+			FROM post_like 
+			WHERE deleted_at IS NULL
+			GROUP BY post_id
+		) pl ON p.id = pl.post_id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as comment_count 
+			FROM post_comment 
+			GROUP BY post_id
+		) pc ON p.id = pc.post_id
+		LEFT JOIN (
+			SELECT post_id, COUNT(*) as visit_count 
+			FROM post_visit 
+			GROUP BY post_id
+		) pv ON p.id = pv.post_id
+		WHERE p.user_id = ? AND p.created_at >= ?
+		ORDER BY p.created_at DESC
+		LIMIT ? OFFSET ?
+	`, u.ID, u.ID, createdAt, limit, offset).Scan(&posts).Error
+
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
@@ -264,6 +283,7 @@ type postFriendSnapshot struct {
 	CommentCount int64          `json:"comment_count"`
 	VisitCount   int64          `json:"visit_count"`
 	Username     string         `json:"username"`
+	IsMale       bool           `json:"is_male"`
 }
 
 func PostFriend(ctx *gin.Context) {
@@ -317,7 +337,8 @@ func PostFriend(ctx *gin.Context) {
 			COALESCE(pl.like_count, 0) as like_count,
 			COALESCE(pc.comment_count, 0) as comment_count,
 			COALESCE(pv.visit_count, 0) as visit_count,
-			u.name as username
+			u.name as username,
+			u.is_male as is_male
 		FROM post p
 		LEFT JOIN (
 			SELECT post_id, COUNT(*) as like_count 
@@ -595,14 +616,207 @@ func PostLike(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Post liked successfully", "data": true})
 }
 
-func PostCommentGet(ctx *gin.Context) {
-	postId, _ := strconv.Atoi(ctx.Param("post_id"))
-	if _, ok := hasPermissionToReadPost(ctx, uint(postId)); ok {
-		var comments []model.PostComment
-		err := db.SQL().Table("post_comment").Where("post_id = ?", postId).Find(&comments).Error
-		if err != nil {
+type postComment struct {
+	model.PostComment
+	CreatedAt  time.Time `json:"created_at"`
+	Username   string    `json:"username"`
+	ReplyName  string    `json:"reply_name"`
+	ReplyCount int64     `json:"reply_count"`
+	LikeCount  int64     `json:"like_count"`
+	IsFavorite bool      `json:"is_favorite"`
+}
 
+func PostCommentGet(ctx *gin.Context) {
+	var req api.PostCommentGetRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	limit := req.PageSize
+	offset := (req.Page - 1) * limit
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	if _, ok := hasPermissionToReadPost(ctx, req.PostId); ok {
+		var comments []postComment
+		err := db.SQL().Raw(`SELECT 
+    pc.id,
+    pc.user_id,
+    u.name AS username,
+    pc.post_id,
+    pc.text,
+    pc.reply_id,
+    pc.created_at,
+    pc.updated_at, 
+    -- 当前用户是否点赞了该评论
+    CASE 
+        WHEN pcl.id IS NOT NULL THEN TRUE 
+        ELSE FALSE 
+    END AS liked,
+    -- 当前评论的回复数
+    (
+        SELECT COUNT(*) 
+        FROM post_comment 
+        WHERE reply_id = pc.id
+    ) AS reply_count
+FROM 
+    post_comment pc
+JOIN 
+    user u ON pc.user_id = u.id
+LEFT JOIN 
+    post_comment_like pcl 
+    ON pcl.comment_id = pc.id AND pcl.user_id = ?
+WHERE 
+    pc.post_id = ?
+    AND pc.reply_id = 0  -- 只查顶级评论
+ORDER BY 
+    pc.created_at ASC
+LIMIT ? OFFSET ?; `, u.ID, req.PostId, limit, offset).Scan(&comments).Error
+
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
 		}
+
+		var total int64
+		err = db.SQL().Table("post_comment").Where("post_id = ?", req.PostId).Count(&total).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg": "success",
+			"data": gin.H{
+				"comments": comments,
+				"total":    total,
+			},
+		})
+	}
+}
+
+func PostCommentReplyGet(ctx *gin.Context) {
+	var req api.PostCommentReplyGetRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	limit := req.PageSize
+	offset := (req.Page - 1) * limit
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	if _, ok := hasPermissionToReadPost(ctx, req.PostId); ok {
+		var replies []postComment
+		err := db.SQL().Raw(`
+WITH RECURSIVE comment_tree AS (
+    -- 基础层：找到指定评论的直接回复
+    SELECT 
+        c.id,
+        c.user_id,
+        c.post_id,
+        c.text,
+        c.reply_id,
+        c.created_at,
+        c.updated_at,
+        u.name AS username,
+        ru.name AS reply_name,
+        COALESCE(lc.like_count, 0) AS like_count,
+        EXISTS (
+            SELECT 1 
+            FROM post_comment_like 
+            WHERE comment_id = c.id 
+              AND user_id = ? 
+              AND deleted_at IS NULL
+        ) AS is_favorite,
+        c.id AS root_reply_id, -- 初始根回复 ID 就是自己
+        1 AS level
+    FROM post_comment c
+    LEFT JOIN user u ON c.user_id = u.id
+    LEFT JOIN post_comment rc ON c.reply_id = rc.id
+    LEFT JOIN user ru ON rc.user_id = ru.id
+    LEFT JOIN (
+        SELECT comment_id, COUNT(*) AS like_count 
+        FROM post_comment_like 
+        WHERE deleted_at IS NULL 
+        GROUP BY comment_id
+    ) lc ON c.id = lc.comment_id
+    WHERE c.post_id = ? AND c.reply_id = ?
+
+    UNION ALL
+
+    -- 递归层：查找所有子评论
+    SELECT 
+        c.id,
+        c.user_id,
+        c.post_id,
+        c.text,
+        c.reply_id,
+        c.created_at,
+        c.updated_at,
+        u.name AS username,
+        ru.name AS reply_name,
+        COALESCE(lc.like_count, 0) AS like_count,
+        EXISTS (
+            SELECT 1 
+            FROM post_comment_like 
+            WHERE comment_id = c.id 
+              AND user_id = ? 
+              AND deleted_at IS NULL
+        ) AS is_favorite,
+        ct.root_reply_id,
+        ct.level + 1
+    FROM post_comment c
+    JOIN comment_tree ct ON c.reply_id = ct.id
+    LEFT JOIN user u ON c.user_id = u.id
+    LEFT JOIN post_comment rc ON c.reply_id = rc.id
+    LEFT JOIN user ru ON rc.user_id = ru.id
+    LEFT JOIN (
+        SELECT comment_id, COUNT(*) AS like_count 
+        FROM post_comment_like 
+        WHERE deleted_at IS NULL 
+        GROUP BY comment_id
+    ) lc ON c.id = lc.comment_id
+    WHERE c.post_id = ?
+)
+SELECT *
+FROM comment_tree
+ORDER BY root_reply_id, level, created_at ASC
+LIMIT ? OFFSET ?;
+		`, u.ID, req.PostId, req.CommentId, u.ID, req.PostId, limit, offset).Scan(&replies).Error
+
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		var total int64
+		err = db.SQL().Table("post_comment").Where("post_id = ? AND reply_id = ?", req.PostId, req.CommentId).Count(&total).Error
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"msg": "success",
+			"data": gin.H{
+				"replies": replies,
+				"total":   total,
+			},
+		})
+	} else {
+		ctx.JSON(500, gin.H{
+			"msg": "error",
+		})
 	}
 }
 
@@ -619,6 +833,19 @@ func PostCommentNew(ctx *gin.Context) {
 		return
 	}
 	if post, ok := hasPermissionToReadPost(ctx, req.PostId); ok {
+		// 如果是回复评论，验证被回复的评论是否存在且属于同一个帖子
+		if req.ReplyId != 0 {
+			var replyComment model.PostComment
+			err = db.SQL().Table("post_comment").
+				Where("id = ? AND post_id = ?", req.ReplyId, req.PostId).
+				First(&replyComment).Error
+			if err != nil {
+				log.WithError(err).Error("reply comment not found")
+				ctx.JSON(400, gin.H{"msg": "reply comment not found"})
+				return
+			}
+		}
+
 		comment := model.PostComment{
 			UserId:  u.ID,
 			PostId:  post.ID,
@@ -631,6 +858,39 @@ func PostCommentNew(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
+
+		// 获取新创建的评论的完整信息
+		var newComment postComment
+		err = db.SQL().Raw(`
+			SELECT 
+				c.*,
+				u.name as username,
+				ru.name as reply_name,
+				COALESCE(lc.like_count, 0) as like_count,
+				EXISTS(SELECT 1 FROM post_comment_like WHERE comment_id = c.id AND user_id = ? AND deleted_at IS NULL) as is_favorite
+			FROM post_comment c
+			LEFT JOIN user u ON c.user_id = u.id
+			LEFT JOIN post_comment rc ON c.reply_id = rc.id
+			LEFT JOIN user ru ON rc.user_id = ru.id
+			LEFT JOIN (
+				SELECT comment_id, COUNT(*) as like_count 
+				FROM post_comment_like 
+				WHERE deleted_at IS NULL
+				GROUP BY comment_id
+			) lc ON c.id = lc.comment_id
+			WHERE c.id = ?
+		`, u.ID, comment.ID).Scan(&newComment).Error
+
+		if err != nil {
+			log.WithError(err).Error("running sql")
+			ctx.Abort()
+			return
+		}
+
+		ctx.JSON(200, gin.H{
+			"msg":  "success",
+			"data": newComment,
+		})
 	}
 }
 
@@ -681,24 +941,77 @@ func PostCommentDel(ctx *gin.Context) {
 	if !ok {
 		return
 	}
+
+	// 开始事务
+	tx := db.SQL().Begin()
+	if tx.Error != nil {
+		log.WithError(tx.Error).Error("start transaction failed")
+		ctx.Abort()
+		return
+	}
+
+	// 获取评论信息
 	var comment model.PostComment
-	err = db.SQL().Table("post_comment").Where("id = ?", req.CommentId).First(&comment).Error
+	err = tx.Table("post_comment").Where("id = ?", req.CommentId).First(&comment).Error
 	if err != nil {
-		log.WithError(err).Error("running sql")
-		ctx.Abort()
+		tx.Rollback()
+		log.WithError(err).Error("comment not found")
+		ctx.JSON(400, gin.H{"msg": "comment not found"})
 		return
 	}
-	if comment.ID == 0 || comment.UserId != u.ID {
+
+	// 验证权限
+	if comment.UserId != u.ID {
+		tx.Rollback()
 		log.WithError(err).Error("permission denied")
+		ctx.JSON(403, gin.H{"msg": "permission denied"})
+		return
+	}
+
+	// 如果是主评论且需要删除回复
+	if comment.ReplyId == 0 && req.DeleteReplies {
+		// 删除所有回复
+		err = tx.Table("post_comment").Where("reply_id = ?", comment.ID).Delete(&model.PostComment{}).Error
+		if err != nil {
+			tx.Rollback()
+			log.WithError(err).Error("delete replies failed")
+			ctx.Abort()
+			return
+		}
+	}
+
+	// 删除评论
+	err = tx.Table("post_comment").Delete(&comment).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("delete comment failed")
 		ctx.Abort()
 		return
 	}
-	err = db.SQL().Delete(&comment).Error
-	if comment.ID == 0 || comment.UserId != u.ID {
-		log.WithError(err).Error("running sql")
+
+	// 删除相关的点赞记录
+	err = tx.Table("post_comment_like").Where("comment_id = ?", comment.ID).Delete(&model.PostCommentLike{}).Error
+	if err != nil {
+		tx.Rollback()
+		log.WithError(err).Error("delete likes failed")
 		ctx.Abort()
 		return
 	}
+
+	// 提交事务
+	if err := tx.Commit().Error; err != nil {
+		log.WithError(err).Error("commit transaction failed")
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"msg": "success",
+		"data": gin.H{
+			"comment_id":      comment.ID,
+			"is_main_comment": comment.ReplyId == 0,
+		},
+	})
 }
 
 func PostCommentLike(ctx *gin.Context) {
@@ -729,6 +1042,7 @@ func PostCommentLike(ctx *gin.Context) {
 				ctx.Abort()
 				return
 			}
+			ctx.JSON(http.StatusOK, gin.H{"msg": "success", "data": false})
 			return
 		} else if err != gorm.ErrRecordNotFound {
 			// If an error other than "record not found" occurred
@@ -751,7 +1065,7 @@ func PostCommentLike(ctx *gin.Context) {
 		}
 
 		// Return success response
-		ctx.JSON(200, gin.H{"message": "Comment liked successfully"})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "success", "data": true})
 	}
 }
 

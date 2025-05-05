@@ -66,14 +66,14 @@ class PostComment {
   @JsonKey(name: "id")
   int id;
 
-  @JsonKey(name: "pid")
-  int pid;
+  @JsonKey(name: "post_id")
+  int postId;
 
-  @JsonKey(name: "uid")
-  int uid;
+  @JsonKey(name: "user_id")
+  int userId;
 
-  @JsonKey(name: "reply", defaultValue: 0)
-  int reply;
+  @JsonKey(name: "reply_id", defaultValue: 0)
+  int replyId;
 
   @JsonKey(name: "username", defaultValue: '')
   String username;
@@ -84,8 +84,8 @@ class PostComment {
   @JsonKey(name: "created_at")
   DateTime createdAt;
 
-  @JsonKey(name: "content")
-  List<String> content;
+  @JsonKey(name: "text")
+  String text;
 
   @JsonKey(name: "replies", defaultValue: [], required: false)
   List<PostComment> replies;
@@ -93,37 +93,27 @@ class PostComment {
   @JsonKey(name: "favorite", defaultValue: 0)
   int favorite;
 
-  @JsonKey(name: "images", defaultValue: [])
-  List<String> images;
-
   @JsonKey(name: "you_favorite", defaultValue: false)
   bool youFavorite;
 
   PostComment({
-    this.id = 0,
-    this.pid = 0,
-    this.uid = 0,
-    this.reply = 0,
+    required this.id,
+    required this.postId,
+    required this.userId,
+    required this.replyId,
     required this.username,
     this.replyName = "",
     required this.createdAt,
-    required this.content,
+    required this.text,
     required this.replies,
-    required this.images,
     this.favorite = 0,
     this.youFavorite = false,
   });
 
   factory PostComment.fromJson(JsonObject json) {
     var v = _$PostCommentFromJson(json);
-    v.images = [];
     return v;
   }
 
   JsonObject toJson() => _$PostCommentToJson(this);
-
-  @override
-  String toString() {
-    return "id: $id, pid: $pid, uid: $uid, reply: $reply, replyName: $replyName, created: $createdAt, content: $content, replies: $replies, favorite: $favorite";
-  }
 }

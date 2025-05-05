@@ -3,9 +3,7 @@ import 'package:get/get_utils/get_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:my_todo/abc/utils.dart';
 import 'package:my_todo/component/button/like_button.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/theme/provider.dart';
-import 'package:my_todo/utils/clipboard.dart';
 
 class CommentCard extends StatefulWidget {
   final String username;
@@ -14,6 +12,8 @@ class CommentCard extends StatefulWidget {
   final ValueChanged<bool> like;
   final VoidCallback chat;
   final VoidCallback more;
+  final int layer;
+  final String text;
 
   const CommentCard({
     super.key,
@@ -23,6 +23,8 @@ class CommentCard extends StatefulWidget {
     required this.like,
     required this.chat,
     required this.more,
+    required this.layer,
+    required this.text,
   });
 
   @override
@@ -68,7 +70,7 @@ class _CommentCardState extends State<CommentCard> {
           ],
         ),
         Text(
-          "#${1.toString()}",
+          "#${widget.layer.toString()}",
           style: TextStyle(
             color: Colors.grey,
             fontSize: 24,
@@ -94,7 +96,7 @@ class _CommentCardState extends State<CommentCard> {
               onLongPress: () {
                 showSnack(context, "copy success");
               },
-              child: Text(Mock.text(), softWrap: true),
+              child: Text(widget.text, softWrap: true),
             ),
           ),
         ],

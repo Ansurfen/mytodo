@@ -84,7 +84,7 @@ Future webShareUri(BuildContext context, Uri uri) {
             onPressed: () {
               TodoClipboard.set(uri.toString());
               Navigator.of(context).pop();
-              Get.snackbar("clipboard".tr, "clipboard_tip".tr);
+              Get.snackbar("clipboard".tr, "clipboard_desc".tr);
             },
             icon: const Icon(Icons.filter_none),
           ),

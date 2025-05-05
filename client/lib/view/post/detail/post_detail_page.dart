@@ -19,6 +19,8 @@ import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/theme/color.dart';
 import 'package:my_todo/theme/provider.dart';
+import 'package:my_todo/utils/dialog.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/image.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -79,17 +81,19 @@ class _PostDetailPageState extends State<PostDetailPage> {
               Obx(
                 () => favoriteButton(
                   context,
-                  selected: controller.data.value.isFavorite,
+                  selected: controller.isFavorite.value,
                   onChange: (v) {
-                    postLikeRequest(postId: controller.data.value.id).then((res) {
-                      if (res) {
-                        controller.updateFavorite(!controller.data.value.isFavorite);
+                    postLikeRequest(postId: controller.data.value.id).then((
+                      ok,
+                    ) {
+                      if (ok != null) {
+                        controller.updateFavorite(!controller.isFavorite.value);
                       }
                     });
                   },
                 ),
               ),
-              Obx(() => Text("${controller.data.value.likeCount}")),
+              Obx(() => Text("${controller.likeCount.value}")),
             ],
           ),
           const SizedBox(width: 10),
@@ -317,459 +321,141 @@ class _PostDetailPageState extends State<PostDetailPage> {
       desc: "try_send_comment".tr,
       what: "",
       render: true,
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: controller.comments.value.length,
-        itemBuilder: (BuildContext context, int index) {
-          int key = controller.comments.value.keys.elementAt(index);
-          return CommentCard(
-            userProfile: TodoImage.userProfile(1),
-            username: Mock.username(),
-            createdAt: DateTime.now(),
-            more: () {},
-            like: (v) {},
-            chat: () {
-              showSheetBottom(
-                context,
-                title: "comment".tr,
-                childPadding: EdgeInsets.zero,
-                child: Expanded(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: CommentCard(
-                          userProfile: TodoImage.userProfile(1),
-                          username: Mock.username(),
-                          createdAt: DateTime.now(),
-                          like: (bool value) {},
-                          chat: () {},
-                          more: () {},
-                        ),
-                      ),
-                      Container(
-                        height: 10,
-                        color: ThemeProvider.contrastColor(
-                          context,
-                          light: CupertinoColors.lightBackgroundGray,
-                          dark: CupertinoColors.darkBackgroundGray,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (ctx, idx) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: ReplyCard(
-                                senderBy: Mock.username(),
-                                userProfile: TodoImage.userProfile(1),
-                                replyBy: Mock.username(),
-                                createdAt: DateTime.now(),
-                                layer: 1,
-                                replyCallback: () {},
+      child: Obx(
+        () => ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.comments.value.length,
+          itemBuilder: (BuildContext context, int index) {
+            int key = controller.comments.value.keys.elementAt(index);
+            PostComment comment = controller.comments.value[key]!;
+            return CommentCard(
+              text: comment.text,
+              layer: index + 1,
+              userProfile: TodoImage.userProfile(comment.userId),
+              username: comment.username,
+              createdAt: comment.createdAt,
+              more: () {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder:
+                      (context) => CupertinoActionSheet(
+                        message: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            dialogAction(
+                              icon: Icons.reply,
+                              text: "reply".tr,
+                              onTap: () {
+                                Get.back();
+                                controller.setCommentReply(comment.id);
+                              },
+                            ),
+                            const Divider(),
+                            dialogAction(icon: Icons.copy, text: "copy".tr),
+                            const Divider(),
+                            dialogAction(
+                              icon: Icons.warning,
+                              text: "report".tr,
+                            ),
+                            if (comment.userId ==
+                                controller.data.value.uid) ...[
+                              const Divider(),
+                              dialogAction(
+                                icon: Icons.delete,
+                                text: "delete".tr,
                               ),
-                            );
-                          },
-                          separatorBuilder: (ctx, idx) {
-                            return todoDivider(context);
-                          },
-                          itemCount: 10,
+                            ],
+                          ],
                         ),
                       ),
-                    ],
+                );
+              },
+              like: (v) {},
+              chat: () async {
+                await controller.commentReplyCard(comment.id);
+                showSheetBottom(
+                  context,
+                  title: "comment".tr,
+                  childPadding: EdgeInsets.zero,
+                  child: Expanded(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: CommentCard(
+                            text: comment.text,
+                            layer: index + 1,
+                            userProfile: TodoImage.userProfile(
+                              comment.userId,
+                            ),
+                            username: comment.username,
+                            createdAt: comment.createdAt,
+                            like: (bool value) {},
+                            chat: () {
+                              Get.back();
+                              controller.setCommentReply(comment.id);
+                            },
+                            more: () {},
+                          ),
+                        ),
+                        Container(
+                          height: 10,
+                          color: ThemeProvider.contrastColor(
+                            context,
+                            light: CupertinoColors.lightBackgroundGray,
+                            dark: CupertinoColors.darkBackgroundGray,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (ctx, idx) {
+                              PostComment reply =
+                                  controller.replies[comment.id]![idx];
+                              return Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: ReplyCard(
+                                  text: reply.text,
+                                  isSelf:
+                                      controller.data.value.uid == reply.userId,
+                                  senderBy: reply.username,
+                                  userProfile: TodoImage.userProfile(
+                                    reply.userId,
+                                  ),
+                                  replyBy: reply.replyName,
+                                  createdAt: reply.createdAt,
+                                  layer: idx + 1,
+                                  replyCallback: () {
+                                    controller.setCommentReply(reply.id);
+                                    Get.back();
+                                  },
+                                ),
+                              );
+                            },
+                            separatorBuilder: (ctx, idx) {
+                              return todoDivider(context);
+                            },
+                            itemCount:
+                                controller.replies.isNotEmpty
+                                    ? controller.replies[comment.id]!.length
+                                    : 0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-          return commentCard(controller.comments.value[key]!);
-        },
-        separatorBuilder: (BuildContext context, int index) {
-          return todoDivider(context);
-        },
+                );
+              },
+            );
+          },
+          separatorBuilder: (BuildContext context, int index) {
+            return todoDivider(context);
+          },
+        ),
       ),
-    );
-  }
-
-  Widget replayCard(bool isParent, int parent, PostComment model) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: CircleAvatar(
-            backgroundImage: TodoImage.userProfile(model.uid),
-            radius: 20,
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    model.replyName.isNotEmpty
-                        ? Row(
-                          children: [
-                            Text(model.username),
-                            const Icon(
-                              Icons.play_arrow_rounded,
-                              size: 18,
-                              color: Colors.grey,
-                            ),
-                            Text(model.replyName),
-                          ],
-                        )
-                        : Text(model.username),
-                    IconButton(
-                      onPressed: () {
-                        controller.handleCommentReply(context);
-                      },
-                      icon: Icon(
-                        Icons.more_horiz,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  constraints: const BoxConstraints(minHeight: 40),
-                  child: Text(model.content[0]),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("04-01 · IP 属地上海"),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Get.back();
-                            setState(() {
-                              if (!isParent) {
-                                replaySubID = model.uid;
-                              }
-                              controller.setCommentReply(parent);
-                            });
-                          },
-                          icon: Icon(
-                            Icons.chat_bubble_outline,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                        favoriteButton(context, onChange: (v) {}),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget commentCard(PostComment model) {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: GestureDetector(
-                    onTap: () {
-                      // RouterProvider.viewUserProfile
-                    },
-                    child: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: TodoImage.userProfile(model.uid),
-                      backgroundColor: Theme.of(context).primaryColorLight,
-                    ),
-                  ),
-                ),
-                model.replies.isNotEmpty
-                    ? Column(
-                      children: [
-                        Container(color: Colors.grey, height: 40, width: 2),
-                        const Icon(
-                          Icons.more_vert,
-                          size: 18,
-                          color: Colors.grey,
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              constraints: BoxConstraints(
-                                minWidth: double.infinity,
-                                minHeight:
-                                    MediaQuery.sizeOf(context).height - 50,
-                              ),
-                              backgroundColor: Colors.transparent,
-                              builder: (BuildContext context) {
-                                return Container(
-                                  height:
-                                      MediaQuery.of(context).size.height / 2,
-                                  clipBehavior: Clip.antiAlias,
-                                  constraints: BoxConstraints(
-                                    minWidth: double.infinity,
-                                    minHeight:
-                                        MediaQuery.sizeOf(context).height - 50,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: ThemeProvider.contrastColor(
-                                      context,
-                                      light: HexColor.fromInt(0xf5f5f5),
-                                      dark: HexColor.fromInt(0x1c1c1e),
-                                    ),
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(10.0),
-                                      topRight: Radius.circular(10.0),
-                                    ),
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      refreshContainer(
-                                        context: context,
-                                        onLoad: () {},
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            children: [
-                                              const SizedBox(height: 45),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 15,
-                                                    ),
-                                                child: replayCard(
-                                                  true,
-                                                  model.id,
-                                                  model,
-                                                ),
-                                              ),
-                                              Container(
-                                                height: 10,
-                                                color: Colors.grey.withOpacity(
-                                                  0.1,
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 15,
-                                                      vertical: 5,
-                                                    ),
-                                                child: Align(
-                                                  alignment: Alignment.topLeft,
-                                                  child: Text(
-                                                    "reply".tr,
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 15,
-                                                      vertical: 5,
-                                                    ),
-                                                child: ListView.separated(
-                                                  shrinkWrap: true,
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  itemBuilder: (
-                                                    BuildContext context,
-                                                    int index,
-                                                  ) {
-                                                    return replayCard(
-                                                      false,
-                                                      model.id,
-                                                      model.replies[index],
-                                                    );
-                                                  },
-                                                  itemCount:
-                                                      model.replies.length,
-                                                  separatorBuilder: (
-                                                    BuildContext context,
-                                                    int index,
-                                                  ) {
-                                                    return const Padding(
-                                                      padding: EdgeInsets.only(
-                                                        left: 50,
-                                                      ),
-                                                      child: Divider(),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 40,
-                                        width: double.infinity,
-                                        color: ThemeProvider.contrastColor(
-                                          context,
-                                          light: HexColor.fromInt(0xf5f5f5),
-                                          dark: HexColor.fromInt(0x1c1c1e),
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            "comment_reply".tr,
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              color:
-                                                  Theme.of(
-                                                    context,
-                                                  ).colorScheme.onPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: Text(
-                            "view_reply".tr,
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColorLight,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                    : Container(),
-              ],
-            ),
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(model.username),
-                        IconButton(
-                          onPressed: () {
-                            controller.handleComment(context);
-                          },
-                          icon: Icon(
-                            Icons.more_horiz,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      constraints: const BoxConstraints(minHeight: 50),
-                      child: Text(model.content[0]),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  controller.setCommentReply(model.id);
-                                });
-                              },
-                              icon: Icon(
-                                Icons.messenger_outline,
-                                size: 18,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                            Text(
-                              "${model.replies.length}",
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            favoriteButton(
-                              context,
-                              selected: model.youFavorite,
-                              onChange: (v) {
-                                if (model.youFavorite) {
-                                  postCommentUnFavorite(
-                                    PostCommentUnFavoriteRequest(id: model.id),
-                                  ).then((res) {
-                                    if (res.success) {
-                                      setState(() {
-                                        model.youFavorite = false;
-                                        model.favorite--;
-                                      });
-                                    }
-                                  });
-                                } else {
-                                  postCommentFavorite(
-                                    PostCommentFavoriteRequest(id: model.id),
-                                  ).then((res) {
-                                    if (res.success) {
-                                      setState(() {
-                                        model.youFavorite = true;
-                                        model.favorite++;
-                                      });
-                                    }
-                                  });
-                                }
-                              },
-                            ),
-                            Text(
-                              "${model.favorite}",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            TodoShare.shareUri(
-                              context,
-                              Uri.parse(Get.currentRoute),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.share,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -788,7 +474,7 @@ class _PostDetailPageState extends State<PostDetailPage> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 5),
-            child: Text("回复 ${controller.selectedComment}:"),
+            child: Text("${"reply".tr} ${controller.selectedComment}:"),
           ),
           IconButton(
             onPressed: () {

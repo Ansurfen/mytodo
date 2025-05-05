@@ -30,7 +30,8 @@ type PostCommentNewRequest struct {
 }
 
 type PostCommentDelRequest struct {
-	CommentId uint `json:"post_id"`
+	CommentId     uint `json:"comment_id"`
+	DeleteReplies bool `json:"delete_replies"`
 }
 
 type PostCommentEditRequest struct {
@@ -41,4 +42,17 @@ type PostCommentEditRequest struct {
 type PostCommentLikeRequest struct {
 	PostId    uint `json:"post_id"`
 	CommentId uint `json:"comment_id"`
+}
+
+type PostCommentGetRequest struct {
+	PostId   uint `json:"post_id"`
+	Page     int  `json:"page"`
+	PageSize int  `json:"page_size"`
+}
+
+type PostCommentReplyGetRequest struct {
+	PostId    uint `json:"post_id"`
+	CommentId uint `json:"comment_id"`
+	Page      int  `json:"page"`
+	PageSize  int  `json:"page_size"`
 }

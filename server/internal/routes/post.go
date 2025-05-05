@@ -25,7 +25,8 @@ func InstallPostRoute(e *gin.Engine) {
 		postRouter.GET("/history", middleware.Auth, handler.PostHistory)
 		commentRouter := postRouter.Group("/comment")
 		{
-			commentRouter.GET("/get/:post_id", middleware.Auth, handler.PostCommentGet)
+			commentRouter.POST("/get", middleware.Auth, handler.PostCommentGet)
+			commentRouter.POST("/reply/get", middleware.Auth, handler.PostCommentReplyGet)
 			commentRouter.POST("/new", middleware.Auth, handler.PostCommentNew)
 			commentRouter.POST("/del", middleware.Auth, handler.PostCommentDel)
 			commentRouter.POST("/edit", middleware.Auth, handler.PostCommentEdit)

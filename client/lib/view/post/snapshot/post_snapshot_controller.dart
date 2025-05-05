@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/hook/post.dart';
 import 'package:my_todo/model/entity/post.dart';
+import 'package:my_todo/utils/clipboard.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/pagination.dart';
@@ -27,16 +28,9 @@ class PostSnapshotController extends GetxController
     tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     tabController.addListener(() async {
       if (tabController.index == 0 && tabController.indexIsChanging) {
-        var res = await postMeRequest();
-        if (res["data"] == null) {
-          return;
-        }
-        for (var e in (res["data"] as List)) {
-          postMeData.value.add(Post.fromJson(e)..username = Guard.userName());
-        }
-        postMeData.refresh();
+        await fetchMe();
       } else {
-        fetchFriend();
+        await fetchFriend();
       }
     });
     if (Guard.isDevMode()) {
@@ -52,7 +46,7 @@ class PostSnapshotController extends GetxController
       postHistoryRequest().then((res) {
         Guard.log.i(res);
       });
-    }
+    } 
   }
 
   @override
@@ -73,16 +67,18 @@ class PostSnapshotController extends GetxController
     postFriendData.refresh();
   }
 
-  Future fetch() async {
+  Future fetchMe() async {
     postMeData.value.clear();
     var res = await postMeRequest();
     for (var e in (res["data"] as List)) {
-      postMeData.value.add(Post.fromJson(e)..username = Guard.userName());
+      postMeData.value.add(Post.fromJson(e)
+        ..username = Guard.userName()
+        ..isMale = Guard.u!.isMale );
     }
     postMeData.refresh();
   }
 
-  void handlePost(BuildContext context) {
+  void handlePost(BuildContext context, Post post) {
     showCupertinoModalPopup(
       context: context,
       builder:
@@ -91,7 +87,15 @@ class PostSnapshotController extends GetxController
               children: [
                 dialogAction(icon: Icons.open_in_new, text: "share".tr),
                 const SizedBox(height: 15),
-                dialogAction(icon: Icons.copy, text: "copy".tr),
+                dialogAction(
+                  icon: Icons.copy,
+                  text: "copy".tr,
+                  onTap: () {
+                    TodoClipboard.set(post.text.toString());
+                    Navigator.of(context).pop();
+                    Get.snackbar("clipboard".tr, "clipboard_desc".tr);
+                  },
+                ),
                 const SizedBox(height: 15),
                 const Divider(),
                 const SizedBox(height: 15),
@@ -113,7 +117,15 @@ class PostSnapshotController extends GetxController
               children: [
                 dialogAction(icon: Icons.open_in_new, text: "share".tr),
                 const SizedBox(height: 15),
-                dialogAction(icon: Icons.copy, text: "copy".tr),
+                dialogAction(
+                  icon: Icons.copy,
+                  text: "copy".tr,
+                  onTap: () {
+                    TodoClipboard.set(post.text.toString());
+                    Navigator.of(context).pop();
+                    Get.snackbar("clipboard".tr, "clipboard_desc".tr);
+                  },
+                ),
                 const SizedBox(height: 15),
                 const Divider(),
                 const SizedBox(height: 15),

@@ -8,13 +8,11 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:my_todo/api/post.dart';
 import 'package:my_todo/config.dart';
-import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/entity/image.dart';
 import 'package:my_todo/model/entity/post.dart';
 import 'package:my_todo/model/post.dart';
 import 'package:my_todo/utils/dialog.dart';
 import 'package:my_todo/utils/guard.dart';
-import 'package:my_todo/mock/post.dart' as mock;
 
 class PostDetailController extends GetxController {
   List<MImage> images = [];
@@ -38,6 +36,8 @@ class PostDetailController extends GetxController {
   Rx<Map<int, PostComment>> comments = Rx({});
   bool showReply = false;
   final QuillController quillController = QuillController.basic();
+  Rx<bool> isFavorite = false.obs;
+  Rx<int> likeCount = 0.obs;
 
   @override
   Future<void> onInit() async {
@@ -47,7 +47,6 @@ class PostDetailController extends GetxController {
     var res = (await postDetailRequest(id: id)) as Map<String, dynamic>;
 
     data.value = PostDetail.fromJson(res);
-    
 
     quillController.document = Document.fromJson(
       (data.value.text).map((v) {
@@ -67,35 +66,38 @@ class PostDetailController extends GetxController {
         return v;
       }).toList(),
     );
+    isFavorite.value = data.value.isFavorite;
+    likeCount.value = data.value.likeCount;
+    await fetchComments();
     update();
-    comments.value[1] = PostComment(
-      username: Mock.username(),
-      createdAt: DateTime.now(),
-      content: [Mock.text()],
-      replies: [],
-      images: [],
-    );
   }
 
   void updateFavorite(bool isFavorite) {
-    data.value.isFavorite = isFavorite;
-    data.value.likeCount += isFavorite ? 1 : -1;
-    update();
+    this.isFavorite.value = isFavorite;
+    likeCount.value += isFavorite ? 1 : -1;
   }
 
+  int total = 0;
   Future fetchComments() async {
     comments.value.clear();
     if (Guard.isOffline()) {
-      for (var e in mock.comments) {
-        comments.value[e.id] = e;
-      }
+      // for (var e in mock.comments) {
+      //   comments.value[e.id] = e;
+      // }
     } else {
-      return getPostComment(
-        GetPostCommentRequest(pid: id, page: 1, pageSize: 10),
-      ).then((res) {
-        for (var e in res.comments) {
-          comments.value[e.id] = e;
+      postCommentGetRequest(postId: id, page: 1, pageSize: 10).then((res) {
+        if (res["comments"] != null) {
+          for (var e in res["comments"]) {
+            PostComment comment = PostComment.fromJson(e);
+            if (comment.replyId == 0) {
+              comments.value[comment.id] = comment;
+            } else {
+              comments.value[comment.replyId]?.replies.add(comment);
+            }
+          }
         }
+        total = res["total"];
+        comments.refresh();
       });
     }
   }
@@ -163,43 +165,87 @@ class PostDetailController extends GetxController {
   void freeReplyReply() {}
 
   Future postMessage(String msg) async {
-    if (!isCommentReply()) {
-      return postAddComment(
-        PostAddCommentRequest(id: id, reply: 0, content: msg),
-      ).then((res) {
-        int id = int.parse(res.id);
-        comments.value[id] = PostComment(
-          content: [msg],
-          id: id,
-          images: [],
-          username: "",
+    if (isCommentReply()) {
+      return postCommentNewRequest(postId: id, replyId: 0, text: msg).then((
+        cid,
+      ) {
+        comments.value[cid] = PostComment(
+          text: msg,
+          id: cid,
+          username: Guard.userName(),
           createdAt: DateTime.now(),
           replies: [],
+          postId: id,
+          userId: Guard.u!.id,
+          replyId: 0,
         );
+        comments.refresh();
       });
     } else {
-      return postAddCommentReply(
-        PostAddCommentReplyRequest(id: selectedComment, reply: 0, content: msg),
+      return postCommentNewRequest(
+        postId: id,
+        replyId: selectedComment,
+        text: msg,
       ).then((res) {
-        int id = int.parse(res.id);
-        if (comments.value[id]?.replies == null) {
-          comments.value[id]?.replies = [];
-        }
-        comments.value[id]?.replies.add(
-          PostComment(
-            content: [msg],
-            id: id,
-            images: [],
-            username: "",
-            createdAt: DateTime.now(),
-            replies: [],
-          ),
-        );
+        Guard.log.i(res);
       });
     }
   }
 
   Future commentFavorite(int id) async {
-    return postCommentFavorite(PostCommentFavoriteRequest(id: id));
+    return postCommentLikeRequest(postId: id, commentId: id);
   }
+
+  Future commentReplyCard(int id) async {
+    if (replies.isNotEmpty) {
+      replies.clear();
+    }
+    return postCommentReplyGetRequest(
+      postId: this.id,
+      commentId: id,
+      page: 1,
+      pageSize: 10,
+    ).then((res) {
+      if (res["replies"] != null) {
+        // 创建一个临时map来存储所有评论
+        Map<int, PostComment> commentMap = {};
+
+        // 首先将所有评论放入map中
+        for (var e in res["replies"]) {
+          PostComment comment = PostComment.fromJson(e);
+          commentMap[comment.id] = comment;
+        }
+
+        // 构建评论树
+        for (var comment in commentMap.values) {
+          if (comment.replyId == id) {
+            // 这是直接回复，添加到replies中
+            if (replies[comment.replyId] == null) {
+              replies[comment.replyId] = [];
+            }
+            comment.replyName = "";
+            replies[comment.replyId]?.add(comment);
+          } else {
+            // 这是子回复，找到其父评论并添加
+            var parentId = comment.replyId;
+            while (parentId != id) {
+              var parent = commentMap[parentId];
+              if (parent == null) break;
+              parentId = parent.replyId;
+            }
+            if (parentId == id) {
+              // 找到了根评论，添加到对应的replies中
+              if (replies[parentId] == null) {
+                replies[parentId] = [];
+              }
+              replies[parentId]?.add(comment);
+            }
+          }
+        }
+        replies.refresh();
+      }
+    });
+  }
+
+  RxMap<int, List<PostComment>> replies = <int, List<PostComment>>{}.obs;
 }

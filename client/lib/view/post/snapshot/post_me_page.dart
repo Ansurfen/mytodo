@@ -211,7 +211,7 @@ class _PostMePageState extends State<PostMePage> {
           child: refreshContainer(
             context: context,
             onLoad: () {},
-            onRefresh: controller.fetch,
+            onRefresh: controller.fetchMe,
             child: Obx(
               () => EmptyContainer(
                 icon: Icons.rss_feed,
@@ -230,11 +230,12 @@ class _PostMePageState extends State<PostMePage> {
                   child: ListView.separated(
                     itemCount: controller.postMeData.value.length,
                     itemBuilder: (BuildContext context, int index) {
+                      final post = controller.postMeData.value[index];
                       return PostCard(
                         more: () {
-                          controller.handlePost(context);
+                          controller.handlePost(context, post);
                         },
-                        model: controller.postMeData.value[index],
+                        model: post,
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {

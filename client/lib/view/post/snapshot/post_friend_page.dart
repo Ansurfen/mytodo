@@ -50,7 +50,7 @@ class _PostFriendPageState extends State<PostFriendPage> {
           child: refreshContainer(
             context: context,
             onLoad: () {},
-            onRefresh: () {},
+            onRefresh: controller.fetchFriend,
             child: Obx(
               () => EmptyContainer(
                 icon: Icons.rss_feed,
@@ -72,7 +72,10 @@ class _PostFriendPageState extends State<PostFriendPage> {
                       var post = controller.postFriendData.value[index];
                       return PostCard(
                         more: () {
-                          controller.actionByFriend(context, post);
+                          controller.actionByFriend(
+                            context,
+                            controller.postFriendData.value[index],
+                          );
                         },
                         model: post,
                       );

@@ -185,6 +185,7 @@ Map<String, String> get zhCN => {
   'sec_ago': "秒前",
 
   "clipboard": "剪贴板",
+  "clipboard_desc": "内容已复制到剪贴板",
 
   "remove_member": "移除成员",
   "remove_member_desc": "确定移除该成员",
@@ -310,4 +311,8 @@ Map<String, String> get zhCN => {
   "invite_code_success_desc": "您已成功加入频道",
 
   "report": "举报",
+  "copy": "复制",
+  "reply": "回复",
+
+  "type_message": "输入消息",
 };
