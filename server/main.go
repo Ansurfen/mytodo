@@ -104,6 +104,7 @@ func init() {
 }
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(middleware.CORS())
 	routes.InstallUserRoute(r)
@@ -112,7 +113,11 @@ func main() {
 	routes.InstallNotificationRoute(r)
 	routes.InstallTaskRoute(r)
 	routes.InstallPostRoute(r)
-
+	r.GET("/hello", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
+			"message": "hello",
+		})
+	})
 	r.POST("/upload", func(ctx *gin.Context) {
 		file, err := ctx.FormFile("file")
 		if err != nil {

@@ -58,7 +58,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     return NotificationItem(
                       model: NotificationItemModel(
                         sender: item.sender,
-                        sub: item.title,
+                        title: item.title,
                         msg: item.content,
                         date: item.createdAt,
                         readed: item.status > 1,

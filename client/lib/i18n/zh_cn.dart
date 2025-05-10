@@ -315,4 +315,28 @@ Map<String, String> get zhCN => {
   "reply": "回复",
 
   "type_message": "输入消息",
+
+  "day_1": "一",
+  "day_2": "二",
+  "day_3": "三",
+  "day_4": "四",
+  "day_5": "五",
+  "day_6": "六",
+  "day_7": "日",
+
+  "month_1": "一月",
+  "month_2": "二月",
+  "month_3": "三月",
+  "month_4": "四月",
+  "month_5": "五月",
+  "month_6": "六月",
+  "month_7": "七月",
+  "month_8": "八月",
+  "month_9": "九月",
+  "month_10": "十月",
+  "month_11": "十一月",
+  "month_12": "十二月",
+
+  "Make Friend": "好友申请",
+  "Topic Apply": "频道申请",
 };

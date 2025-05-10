@@ -19,7 +19,8 @@ enum CalendarView {
 enum ToolBoxView {
   add("add", Icons.add),
   invite("invite", Icons.share),
-  member("member", Icons.group);
+  member("member", Icons.group),
+  exit("exit", Icons.exit_to_app);
 
   const ToolBoxView(this.text, this.icon);
 

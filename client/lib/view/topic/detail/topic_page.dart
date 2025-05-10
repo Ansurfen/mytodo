@@ -10,6 +10,7 @@ import 'package:my_todo/abc/events_planner_multi_columns_view.dart';
 import 'package:my_todo/abc/events_planner_multi_columns_view2.dart';
 import 'package:my_todo/abc/events_planner_one_day_view.dart';
 import 'package:my_todo/abc/events_planner_three_days_view.dart';
+import 'package:my_todo/api/topic.dart';
 import 'package:my_todo/component/scaffold.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/model/user.dart';
@@ -95,12 +96,17 @@ class _TopicPageState extends State<TopicPage> {
             ),
             PopupMenuButton(
               icon: Icon(
-                FontAwesomeIcons.toolbox,
+                calendarMode.icon,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
+              onSelected:
+                  (value) => setState(() {
+                    calendarMode = value;
+                    controller.calendarMode = value;
+                  }),
               color: Theme.of(context).colorScheme.primary,
               itemBuilder: (BuildContext context) {
-                return ToolBoxView.values.map((mode) {
+                return CalendarView.values.map((mode) {
                   return PopupMenuItem(
                     value: mode,
                     child: ListTile(
@@ -121,20 +127,26 @@ class _TopicPageState extends State<TopicPage> {
             ),
             PopupMenuButton(
               icon: Icon(
-                calendarMode.icon,
+                Icons.more_vert,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
-              onSelected:
-                  (value) => setState(() {
-                    calendarMode = value;
-                    controller.calendarMode = value;
-                  }),
               color: Theme.of(context).colorScheme.primary,
               itemBuilder: (BuildContext context) {
-                return CalendarView.values.map((mode) {
+                return ToolBoxView.values.map((mode) {
                   return PopupMenuItem(
                     value: mode,
                     child: ListTile(
+                      onTap: () {
+                        if (mode == ToolBoxView.exit) {
+                          topicExitRequest(topicId: controller.id).then((_) {
+                            Get.back();
+                            Get.snackbar(
+                              "success".tr,
+                              "exit_topic_success".tr,
+                            );
+                          });
+                        }
+                      },
                       leading: Icon(
                         mode.icon,
                         color: darkMode ? Colors.white : Colors.black,

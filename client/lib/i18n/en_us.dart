@@ -325,4 +325,25 @@ Map<String, String> get enUS => {
   "reply": "Reply",
 
   "type_message": "Type a message",
+
+  "day_1": "M",
+  "day_2": "T",
+  "day_3": "W",
+  "day_4": "T",
+  "day_5": "F",
+  "day_6": "S",
+  "day_7": "S",
+
+  "month_1": "jan.",
+  "month_2": "feb.",
+  "month_3": "mar.",
+  "month_4": "apr.",
+  "month_5": "may.",
+  "month_6": "jun.",
+  "month_7": "jul.",
+  "month_8": "aug.",
+  "month_9": "sep.",
+  "month_10": "oct.",
+  "month_11": "nov.",
+  "month_12": "dec.",
 };

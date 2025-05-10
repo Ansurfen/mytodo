@@ -412,6 +412,7 @@ class SearchTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoSearchTextField(
+      placeholder: "search".tr,
       onChanged: (String value) {
         fieldValue('The text has changed to: $value');
       },

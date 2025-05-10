@@ -120,6 +120,7 @@ class _ChatItemState extends State<ChatItem> {
                 )
                 : CircleAvatar(
                   radius: 25,
+                  backgroundColor: Theme.of(context).primaryColorLight,
                   child: SvgPicture.asset(widget.icon),
                 ),
         title: Text(

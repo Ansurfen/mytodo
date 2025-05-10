@@ -14,7 +14,7 @@ class NotificationItemModel {
   NotificationItemModel({
     required this.id,
     required this.sender,
-    required this.sub,
+    required this.title,
     required this.msg,
     required this.date,
     required this.readed,
@@ -24,7 +24,7 @@ class NotificationItemModel {
 
   int id;
   String sender;
-  String sub;
+  String title;
   String msg;
   DateTime date;
   bool readed;
@@ -152,7 +152,7 @@ class NotificationItem extends StatelessWidget {
             context: context,
             builder:
                 (BuildContext context) => CupertinoActionSheet(
-                  title: Text(model.sub),
+                  title: Text(model.title.tr),
                   message: Text(message),
                   actions: actions,
                 ),
@@ -171,42 +171,32 @@ class NotificationItem extends StatelessWidget {
                 children: [
                   SAvatarExampleChild(id: model.uid),
                   const Padding(padding: EdgeInsets.only(left: 8)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          model.sender,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight:
-                                model.readed
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                            fontSize: 17,
+                  Padding(
+                    padding: EdgeInsets.only( top: 8),
+                    child: Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            model.sender,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
-                        Text(
-                          model.sub,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16,
+                          const SizedBox(height: 4),
+                          Text(
+                            model.title.tr,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 17,
+                            ),
                           ),
-                        ),
-                        Text(
-                          model.msg,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            color:
-                                model.readed
-                                    ? Theme.of(context).primaryColor
-                                    : Theme.of(context).colorScheme.onPrimary,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -249,7 +239,7 @@ class SAvatarExampleChild extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(10),
       child: CircleAvatar(
-        radius: 20,
+        radius: 25,
         backgroundImage: TodoImage.userProfile(id),
       ),
     );

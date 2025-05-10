@@ -92,16 +92,41 @@ class Gateway extends Interceptor {
   }
 
   @override
-  void onError(DioException err, ErrorInterceptorHandler handler) {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     EasyLoading.dismiss();
     showException(err);
+    if (err.response?.statusCode == 401 &&
+        err.response?.data["msg"] == "token expired" &&
+        err.requestOptions.extra["_retry"] != true) {
+      Guard.log.i(err.response?.data["data"]);
+      Guard.jwt = err.response?.data["data"];
+
+      err.requestOptions.extra["_retry"] = true;
+      final retry = await HTTP._dio.request(
+        err.requestOptions.path,
+        options: Options(
+          headers:
+              err.requestOptions.headers..addAll({"Authorization": Guard.jwt}),
+        ),
+      );
+      if (retry.statusCode == 200) {
+        return handler.resolve(retry);
+      } else {
+        return handler.reject(
+          DioException(requestOptions: err.requestOptions, error: err.error),
+        );
+      }
+    }
     if (kDebugMode) {
       Guard.log.e(err.stackTrace);
       print(
         'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',
       );
     }
-    return super.onError(err, handler);
+    return handler.next(err);
   }
 }
 

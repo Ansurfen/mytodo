@@ -207,6 +207,16 @@ func UserSignUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
+	err = db.SQL().Table("user_relation").Create(&model.UserRelation{
+		UserId:   user.ID,
+		FriendId: user.ID,
+	}).Error
+	if err != nil {
+		log.WithError(err).Error("creating user relation")
+		ctx.Abort()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "服务器内部错误"})
+		return
+	}
 	if user.ID != 0 {
 		ctx.Abort()
 		ctx.JSON(http.StatusConflict, gin.H{"msg": "user already exists"})

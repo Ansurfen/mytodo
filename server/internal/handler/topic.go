@@ -1102,7 +1102,15 @@ func TopicSubscribe(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
-
+	err = db.SQL().Table("topic_policy").Create(&model.TopicPolicy{
+		TopicId: topic.ID,
+		UserId:  u.ID,
+		Role:    model.TopicRoleMember,
+	}).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"msg": "success"})
 }
 

@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"mytodo/internal/db"
 	"mytodo/internal/model"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -21,8 +24,33 @@ func Auth(ctx *gin.Context) {
 	}
 
 	_, claims, err := ParseToken(jwt)
+
 	if err != nil {
-		log.WithError(err).Error("fail to parse jwt")
+		if claims.ExpiresAt < time.Now().Unix() {
+			log.Error("token expired")
+			id, err := strconv.ParseUint(claims.Id, 10, 64)
+			if err != nil {
+				log.WithError(err).Error("fail to parse id")
+				ctx.Abort()
+				return
+			}
+			jwt, err = ReleaseToken(uint(id))
+			if err != nil {
+				log.WithError(err).Error("releasing token")
+				ctx.Abort()
+				return
+			}
+			err = db.Rdb().Set(context.TODO(), fmt.Sprintf("user_%d", id), jwt, 7*24*time.Hour).Err()
+			if err != nil {
+				log.WithError(err).Error("setting cache")
+				ctx.Abort()
+				return
+			}
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg": "token expired", "data": jwt})
+			return
+		}
+
+		log.Error("invalid token")
 		ctx.Abort()
 		return
 	}

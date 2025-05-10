@@ -23,54 +23,54 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: 123456
 
-  rabbitmq:
-    image: rabbitmq:management
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    environment:
-      RABBITMQ_DEFAULT_USER: root
-      RABBITMQ_DEFAULT_PASS: 123456
+  # rabbitmq:
+  #   image: rabbitmq:management
+  #   ports:
+  #     - "15672:15672"
+  #     - "5672:5672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: root
+  #     RABBITMQ_DEFAULT_PASS: 123456
 
-  es:
-    image: elasticsearch:8.10.2
-    container_name: es
-    restart: always
-    network_mode: es
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    privileged: true
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    volumes:
-      - /home/es/data:/usr/share/elasticsearch/data
-      - /home/es/plugins:/usr/share/elasticsearch/plugins
-      - /home/es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+  # es:
+  #   image: elasticsearch:8.10.2
+  #   container_name: es
+  #   restart: always
+  #   network_mode: es
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   privileged: true
+  #   environment:
+  #     - discovery.type=single-node
+  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m
+  #   volumes:
+  #     - /home/es/data:/usr/share/elasticsearch/data
+  #     - /home/es/plugins:/usr/share/elasticsearch/plugins
+  #     - /home/es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
   
-  kibana:
-    image: kibana:8.10.2
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - NODE_OPTIONS=--openssl-legacy-provider
-    volumes:
-      - /home/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
-    networks:
-      - es
-    depends_on:
-      - es
+  # kibana:
+  #   image: kibana:8.10.2
+  #   ports:
+  #     - "5601:5601"
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #     - NODE_OPTIONS=--openssl-legacy-provider
+  #   volumes:
+  #     - /home/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+  #   networks:
+  #     - es
+  #   depends_on:
+  #     - es
 
-  etcd:
-    image: bitnami/etcd
-    ports:
-      - "2379:2379"
-      - "2380:2380"
-    environment:
-      - ALLOW_NONE_AUTHENTICATION=yes
-      - ETCD_ADVERTISE_CLIENT_URLS=https://etcd-server:2379
+  # etcd:
+  #   image: bitnami/etcd
+  #   ports:
+  #     - "2379:2379"
+  #     - "2380:2380"
+  #   environment:
+  #     - ALLOW_NONE_AUTHENTICATION=yes
+  #     - ETCD_ADVERTISE_CLIENT_URLS=https://etcd-server:2379
 
   minio:
     image: minio/minio
@@ -104,5 +104,5 @@ services:
     restart: always
 
 networks:
-  es:
+  backend:
     driver: bridge
