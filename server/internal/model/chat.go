@@ -23,7 +23,7 @@ type Message struct {
 	Message       string      `gorm:"type:text" json:"message"`
 	SentBy        uint        `gorm:"type:int" json:"sentBy"`
 	MessageType   MessageType `gorm:"type:tinyint;default:0" json:"message_type"`
-	VoiceDuration uint        `json:"voice_message_duration"`
+	VoiceDuration uint        `gorm:"type:int" json:"voice_duration"`
 	Status        string      `gorm:"size:50" json:"status"`
 	ReplyId       uint        `gorm:"type:int" json:"reply_id"`
 
@@ -39,7 +39,7 @@ type MessageReply struct {
 
 	Message       string      `gorm:"type:text" json:"message"`
 	MessageType   MessageType `gorm:"type:tinyint;default:0" json:"message_type"`
-	VoiceDuration uint        `json:"voice_message_duration"`
+	VoiceDuration uint        `gorm:"type:int" json:"voice_duration"`
 }
 
 type MessageTopicReply struct {

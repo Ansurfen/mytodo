@@ -19,7 +19,7 @@ class TaskInfoController extends GetxController {
   late final int id;
   TextEditingController textAreaController = TextEditingController();
   Rx<String> qrCode = "".obs;
-  WebSocketChannel? qrChannel;
+
   List<TFile> images = [];
   late TaskCardModel model;
   QuillController? quillController;
@@ -32,24 +32,6 @@ class TaskInfoController extends GetxController {
     taskPermissionRequest(model.id).then((v) {
       role.value = v;
     });
-  }
-
-  @override
-  void dispose() {
-    if (qrChannel != null) {
-      qrChannel!.sink.close();
-    }
-    super.dispose();
-  }
-
-  void qrListen(String key) {
-    qrChannel = WS.listen(
-      "/event/qr",
-      onInit: key,
-      callback: (v) {
-        qrCode.value = v;
-      },
-    );
   }
 
   void initTextService() {

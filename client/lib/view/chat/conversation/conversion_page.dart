@@ -26,6 +26,9 @@ import 'package:my_todo/view/chat/conversation/conversion_controller.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../../../utils/guard.dart';
 
 class ConversionPage extends StatefulWidget {
   const ConversionPage({super.key});
@@ -38,6 +41,32 @@ class _ConversionPageState extends State<ConversionPage> {
   AppTheme theme = LightTheme();
 
   ConversionController controller = getx.Get.find<ConversionController>();
+
+  final Map<String, String> _localAudioFiles = {};
+
+  Future<String> _downloadAudioFile(String url, String filename) async {
+    // 如果已经下载过，直接返回本地路径
+    if (_localAudioFiles.containsKey(url)) {
+      return _localAudioFiles[url]!;
+    }
+
+    try {
+      // 获取临时目录
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/$filename';
+      
+      // 下载文件
+      await Dio().download(url, filePath);
+      
+      // 缓存文件路径
+      _localAudioFiles[url] = filePath;
+      
+      return filePath;
+    } catch (e) {
+      print('Error downloading audio file: $e');
+      return url; // 如果下载失败，返回原始URL
+    }
+  }
 
   void _showHideTypingIndicator() {
     controller.chatController.setTypingIndicator =
@@ -102,13 +131,14 @@ class _ConversionPageState extends State<ConversionPage> {
               Map<String, dynamic> reply = v["reply_message"];
               String replyMessage = reply["message"];
               MessageType replyType = convert(reply["message_type"]);
-              if (replyType == MessageType.image) {
+              if (replyType == MessageType.image ||
+                  replyType == MessageType.voice) {
                 if (controller.chatsnapshot.isTopic) {
                   replyMessage =
-                      "${TodoConfig.baseUri}/chat/topic/image/$replyMessage";
+                      "${TodoConfig.baseUri}/chat/topic/file/$replyMessage";
                 } else {
                   replyMessage =
-                      "${TodoConfig.baseUri}/chat/friend/image/$replyMessage";
+                      "${TodoConfig.baseUri}/chat/friend/file/$replyMessage";
                 }
               }
               message = Message(
@@ -153,8 +183,30 @@ class _ConversionPageState extends State<ConversionPage> {
                 messageType: MessageType.image,
                 message:
                     controller.chatsnapshot.isTopic
-                        ? '${TodoConfig.baseUri}/chat/topic/image/${v["message"]}'
-                        : '${TodoConfig.baseUri}/chat/friend/image/${v["message"]}',
+                        ? '${TodoConfig.baseUri}/chat/topic/file/${v["message"]}'
+                        : '${TodoConfig.baseUri}/chat/friend/file/${v["message"]}',
+                createdAt: DateTime.parse(v["createdAt"]),
+                sentBy: v["sentBy"].toString(),
+                reaction: Reaction(
+                  reactions: reactions,
+                  reactedUserIds: reactedUserIds,
+                ),
+              ),
+            );
+          case 2:
+            controller.chatController.addMessage(
+              Message(
+                id: v["id"].toString(),
+                messageType: MessageType.voice,
+                message: await _downloadAudioFile(
+                  controller.chatsnapshot.isTopic
+                      ? '${TodoConfig.baseUri}/chat/topic/file/${v["message"]}'
+                      : '${TodoConfig.baseUri}/chat/friend/file/${v["message"]}',
+                  v["message"],
+                ),
+                voiceMessageDuration: Duration(
+                  seconds: v["voice_duration"] as int,
+                ),
                 createdAt: DateTime.parse(v["createdAt"]),
                 sentBy: v["sentBy"].toString(),
                 reaction: Reaction(
@@ -677,150 +729,6 @@ Future<List<int>> _getBlobData(String blobUrl) async {
 
   return completer.future;
 }
-
-Future<void> sendJsonData(Map<String, dynamic> jsonData) async {
-  Dio dio = Dio(); // 创建 Dio 实例
-
-  if (kIsWeb) {
-    switch (jsonData["message_type"]) {
-      case "text":
-        Map<String, dynamic> reply = jsonData["reply_message"];
-        Response response = await HTTP.post(
-          '/chat/topic/new',
-          data: {
-            "topic_id": 1,
-            "message": jsonData["message"],
-            "message_type": "text",
-            "reply_id": int.parse(reply["id"]),
-            "reply_to": int.parse(reply["replyTo"]),
-            "reply_by": int.parse(reply["replyBy"]),
-            "reply_type": reply["message_type"],
-          },
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-            },
-          ),
-        );
-        print(response.data);
-      case "image":
-        final blobData = await _getBlobData(jsonData["message"]);
-        try {
-          final filename = uuid.v1();
-          final formData = FormData.fromMap({
-            'file': MultipartFile.fromBytes(
-              blobData,
-              filename: '$filename.png',
-            ),
-          });
-
-          Response response = await HTTP.post(
-            '/chat/topic/upload',
-            data: formData,
-            options: Options(
-              headers: {
-                'Authorization':
-                    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-              },
-            ),
-          );
-          await dio.post(
-            'http://localhost:8080/chat/topic/new',
-            data: {"topic_id": 1, "message": filename, "message_type": "image"},
-            options: Options(
-              headers: {
-                'Authorization':
-                    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-              },
-            ),
-          );
-          print('Upload success: ${response.data}');
-        } catch (e) {
-          print('Error: $e');
-        }
-        return;
-    }
-  } else {
-    switch (jsonData["message_type"]) {
-      case "text":
-        Response response = await HTTP.post(
-          '/chat/topic/new',
-          data: {
-            "topic_id": 1,
-            "message": jsonData["message"],
-            "message_type": "text",
-          },
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-            },
-          ),
-        );
-        print(response.data);
-      case "image":
-        try {
-          final filePath = jsonData["message"];
-          File file = File(filePath);
-          if (!await file.exists()) {
-            print("文件不存在");
-            return;
-          }
-          MultipartFile fileToSend = await MultipartFile.fromFile(
-            filePath,
-            filename: 'img.png',
-          );
-
-          FormData formData = FormData.fromMap({'file': fileToSend});
-
-          Response response = await HTTP.post(
-            '/chat/topic/upload',
-            data: formData,
-            options: Options(
-              headers: {
-                'Authorization':
-                    'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDA3MTU2OTMsImp0aSI6IjEiLCJpYXQiOjE3NDAxMTA4OTMsImlzcyI6Im9yZy5teV90b2RvIiwic3ViIjoidXNlciB0b2tlbiJ9.jNVj_jTEf4k1eutJ5rXZXXt2pxNeIeJvA8zqnCtRU-U', // 设置 Authorization 头
-              },
-            ),
-          );
-
-          // 处理响应
-          if (response.statusCode == 200) {
-            print('文件上传成功: ${response.data}');
-          } else {
-            print('上传失败, 状态码: ${response.statusCode}');
-          }
-        } catch (e) {
-          print('上传时出错: $e');
-        }
-        return;
-    }
-  }
-
-  try {
-    Response response = await dio.post(
-      'http://192.168.0.106:8080/test',
-      data: jsonData, // 直接传递 Map，Dio 会自动将其编码为 JSON
-      options: Options(
-        headers: {
-          'Content-Type': 'application/json',
-        }, // 确保 Content-Type 是 application/json
-      ),
-    );
-
-    // 处理响应
-    if (response.statusCode == 200) {
-      print('Request successful: ${response.data}');
-    } else {
-      print('Request failed with status: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('Error: $e');
-  }
-}
-
-var uuid = Uuid();
 
 class BubbleChat extends StatelessWidget {
   final Widget child;

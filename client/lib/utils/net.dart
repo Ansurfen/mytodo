@@ -4,10 +4,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:my_todo/config.dart';
 import 'package:my_todo/utils/dialog.dart';
-
 import 'package:my_todo/utils/guard.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 class HTTP {
   static final Dio _dio = Dio(
@@ -133,14 +134,12 @@ class Gateway extends Interceptor {
 class WS {
   static Future init() async {
     final channel = WebSocketChannel.connect(
-      Uri.parse("ws://localhost:8080/qr"),
+      Uri.parse("${TodoConfig.wsUri}/qr"),
     );
     channel.stream.listen((data) {
-      // channel.sink.add("hello world!");
       if (kDebugMode) {
         print(data);
       }
-      // channel.sink.close();
     });
     channel.sink.add("hello world!");
   }
@@ -150,9 +149,28 @@ class WS {
     String? onInit,
     ValueChanged<dynamic>? callback,
   }) {
-    final channel = WebSocketChannel.connect(
-      Uri.parse("ws://localhost:8080$route"),
-    );
+    final uri = "${TodoConfig.wsUri}$route";
+    final headers = {
+      'Authorization': Guard.jwt,
+    };
+
+    WebSocketChannel channel;
+    if (kIsWeb) {
+      // Web 平台使用原生 WebSocket
+      final webUri = Uri.parse(uri).replace(
+        queryParameters: {
+          'token': Guard.jwt,
+        },
+      );
+      channel = WebSocketChannel.connect(webUri);
+    } else {
+      // 移动平台使用 io.dart
+      channel = IOWebSocketChannel.connect(
+        uri,
+        headers: headers,
+      );
+    }
+
     if (onInit != null) {
       channel.sink.add(onInit);
     }

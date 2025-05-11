@@ -42,21 +42,23 @@ type ChatReactionRequest struct {
 }
 
 type ChatTopicUploadRequest struct {
-	Image     *multipart.FileHeader `form:"image"`
-	TopicId   string                `form:"topic_id"`
-	ReplyId   string                `form:"reply_id"`
-	ReplyBy   string                `form:"reply_by"`
-	ReplyTo   string                `form:"reply_to"`
-	ReplyType string                `form:"reply_type"`
+	File          *multipart.FileHeader `form:"file"`
+	TopicId       string                `form:"topic_id"`
+	ReplyId       string                `form:"reply_id"`
+	ReplyBy       string                `form:"reply_by"`
+	ReplyTo       string                `form:"reply_to"`
+	ReplyType     string                `form:"reply_type"`
+	VoiceDuration uint                  `form:"voice_duration"`
 }
 
 type ChatFriendUploadRequest struct {
-	Image     *multipart.FileHeader `form:"image"`
-	FriendId  string                `form:"friend_id"`
-	ReplyId   string                `form:"reply_id"`
-	ReplyBy   string                `form:"reply_by"`
-	ReplyTo   string                `form:"reply_to"`
-	ReplyType string                `form:"reply_type"`
+	File          *multipart.FileHeader `form:"file"`
+	FriendId      string                `form:"friend_id"`
+	ReplyId       string                `form:"reply_id"`
+	ReplyBy       string                `form:"reply_by"`
+	ReplyTo       string                `form:"reply_to"`
+	ReplyType     string                `form:"reply_type"`
+	VoiceDuration uint                  `form:"voice_duration"`
 }
 
 type ChatTopicReadRequest struct {

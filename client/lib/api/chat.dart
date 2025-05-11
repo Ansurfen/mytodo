@@ -176,7 +176,7 @@ Future chatGet({
   )).data["data"];
 }
 
-Future chatImageUpload({
+Future chatFileUpload({
   required bool isTopic,
   required String id,
   required String replyId,
@@ -184,19 +184,21 @@ Future chatImageUpload({
   required String replyTo,
   required String replyType,
   required MultipartFile file,
+  required int voiceDuration,
 }) async {
   String url = "/chat/friend/upload";
   if (isTopic) {
     url = "/chat/topic/upload";
   }
   FormData formData = FormData();
-  formData.files.add(MapEntry("image", file));
+  formData.files.add(MapEntry("file", file));
   formData.fields.addAll(
     {
       "reply_id": replyId,
       "reply_by": replyBy,
       "reply_to": replyTo,
       "reply_type": replyType,
+      "voice_duration": voiceDuration.toString(),
     }.entries,
   );
   if (isTopic) {

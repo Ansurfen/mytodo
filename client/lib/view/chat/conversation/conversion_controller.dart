@@ -102,7 +102,7 @@ class ConversionController extends getx.GetxController {
             filePath,
             filename: 'img.png',
           );
-          await chatImageUpload(
+          await chatFileUpload(
             file: fileToSend,
             isTopic: chatsnapshot.isTopic,
             id: chatsnapshot.id.toString(),
@@ -110,6 +110,33 @@ class ConversionController extends getx.GetxController {
             replyBy: reply["replyTo"],
             replyTo: reply["replyBy"],
             replyType: reply["message_type"],
+            voiceDuration: 0,
+          );
+        } catch (e) {
+          debugPrint('上传时出错: $e');
+        }
+      case 'voice':
+        try {
+          Guard.log.i(jsonData);
+          final filePath = jsonData["message"];
+          File file = File(filePath);
+          if (!await file.exists()) {
+            debugPrint("文件不存在");
+            return;
+          }
+          MultipartFile fileToSend = await MultipartFile.fromFile(
+            filePath,
+            filename: 'voice.m4a',
+          );
+          await chatFileUpload(
+            file: fileToSend,
+            isTopic: chatsnapshot.isTopic,
+            id: chatsnapshot.id.toString(),
+            replyId: reply["id"],
+            replyBy: reply["replyTo"],
+            replyTo: reply["replyBy"],
+            replyType: reply["message_type"],
+            voiceDuration: 0,
           );
         } catch (e) {
           debugPrint('上传时出错: $e');

@@ -33,6 +33,7 @@ func ChatTopicNew(ctx *gin.Context) {
 		return
 	}
 
+	var msg model.MessageTopic
 	if req.ReplyId != 0 {
 		reply := model.MessageReply{
 			MessageId: req.ReplyId,
@@ -47,7 +48,7 @@ func ChatTopicNew(ctx *gin.Context) {
 			log.WithError(err).Error("fail to create message_reply")
 			return
 		}
-		msg := model.MessageTopic{
+		msg = model.MessageTopic{
 			TopicId: req.TopicId,
 			Message: model.Message{
 				SentBy:        user.ID,
@@ -72,7 +73,7 @@ func ChatTopicNew(ctx *gin.Context) {
 			return
 		}
 	} else {
-		msg := model.MessageTopic{
+		msg = model.MessageTopic{
 			TopicId: req.TopicId,
 			Message: model.Message{
 				SentBy:        user.ID,
@@ -89,6 +90,38 @@ func ChatTopicNew(ctx *gin.Context) {
 			return
 		}
 	}
+
+	// 获取发送者信息
+	var sender model.User
+	err = db.SQL().Table("user").Where("id = ?", user.ID).First(&sender).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get sender info")
+		return
+	}
+
+	// 获取群组所有成员
+	var members []model.TopicJoin
+	err = db.SQL().Table("topic_join").Where("topic_id = ?", req.TopicId).Find(&members).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get topic members")
+		return
+	}
+
+	// 构建WebSocket消息
+	wsMsg := map[string]interface{}{
+		"type": "topic",
+		"message": map[string]interface{}{
+			"topic_id":    req.TopicId,
+			"message":     req.Message,
+			"sender_name": sender.Name,
+			"created_at":  msg.CreatedAt.Format(time.RFC3339),
+		},
+	}
+
+	// 广播消息给所有群组成员
+	for _, member := range members {
+		db.WS().Send(fmt.Sprintf("user_%d", member.UserId), wsMsg)
+	}
 }
 
 func ChatFriendNew(ctx *gin.Context) {
@@ -104,6 +137,7 @@ func ChatFriendNew(ctx *gin.Context) {
 		return
 	}
 
+	var msg model.MessageFriend
 	if req.ReplyId != 0 {
 		reply := model.MessageReply{
 			MessageId: req.ReplyId,
@@ -118,7 +152,7 @@ func ChatFriendNew(ctx *gin.Context) {
 			log.WithError(err).Error("fail to create message_reply")
 			return
 		}
-		msg := model.MessageFriend{
+		msg = model.MessageFriend{
 			FriendId: req.FriendId,
 			Message: model.Message{
 				SentBy:        user.ID,
@@ -143,7 +177,7 @@ func ChatFriendNew(ctx *gin.Context) {
 			return
 		}
 	} else {
-		msg := model.MessageFriend{
+		msg = model.MessageFriend{
 			FriendId: req.FriendId,
 			Message: model.Message{
 				SentBy:        user.ID,
@@ -160,6 +194,30 @@ func ChatFriendNew(ctx *gin.Context) {
 			return
 		}
 	}
+
+	// 获取发送者信息
+	var sender model.User
+	err = db.SQL().Table("user").Where("id = ?", user.ID).First(&sender).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get sender info")
+		return
+	}
+
+	// 构建WebSocket消息
+	wsMsg := map[string]interface{}{
+		"type": "friend",
+		"message": map[string]interface{}{
+			"friend_id":   req.FriendId,
+			"message":     req.Message,
+			"sender_name": sender.Name,
+			"created_at":  msg.CreatedAt.Format(time.RFC3339),
+		},
+	}
+
+	// 发送消息给接收者
+	db.WS().Send(fmt.Sprintf("user_%d", req.FriendId), wsMsg)
+	// 发送消息给发送者（用于同步）
+	db.WS().Send(fmt.Sprintf("user_%d", user.ID), wsMsg)
 }
 
 func convertMessageType(t string) model.MessageType {
@@ -509,6 +567,27 @@ func ChatFriendReaction(ctx *gin.Context) {
 	}
 }
 
+func getAudioDuration(data io.ReadSeeker) (uint, error) {
+	// 获取文件大小
+	size, err := data.Seek(0, io.SeekEnd)
+	if err != nil {
+		return 0, err
+	}
+
+	// 重置文件指针到开始位置
+	_, err = data.Seek(0, io.SeekStart)
+	if err != nil {
+		return 0, err
+	}
+
+	// 估算音频时长（假设 m4a 文件的平均比特率为 128kbps）
+	// 时长（秒）= 文件大小（字节）* 8 / 比特率（bps）
+	bitrate := 128 * 1024 // 128kbps
+	duration := float64(size) * 8 / float64(bitrate)
+
+	return uint(duration), nil
+}
+
 func ChatTopicUpload(ctx *gin.Context) {
 	var req api.ChatTopicUploadRequest
 	err := ctx.Bind(&req)
@@ -518,21 +597,36 @@ func ChatTopicUpload(ctx *gin.Context) {
 		return
 	}
 
-	data, err := req.Image.Open()
+	data, err := req.File.Open()
 	if err != nil {
 		log.WithError(err).Error("fail to open file")
 		ctx.Abort()
 		return
 	}
 	defer data.Close()
-	filename := uuid.New().String() + filepath.Ext(req.Image.Filename)
-	// _, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/topic/%s%s", uuid.New(), filepath.Ext(file.Filename)), data, file.Size, minio.PutObjectOptions{})
-	_, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/topic/%s", filename), data, req.Image.Size, minio.PutObjectOptions{})
+
+	// 如果是语音文件，获取时长
+	voiceDuration := req.VoiceDuration
+	if req.File.Filename == "voice.m4a" {
+		duration, err := getAudioDuration(data)
+		if err != nil {
+			log.WithError(err).Error("fail to get audio duration")
+			ctx.Abort()
+			return
+		}
+		voiceDuration = duration
+		// 重置文件指针到开始位置
+		data.Seek(0, io.SeekStart)
+	}
+
+	filename := uuid.New().String() + filepath.Ext(req.File.Filename)
+	_, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/topic/%s", filename), data, req.File.Size, minio.PutObjectOptions{})
 	if err != nil {
 		log.WithError(err).Error("fail to upload file")
 		ctx.Abort()
 		return
 	}
+
 	u, ok := getUser(ctx)
 	if !ok {
 		return
@@ -545,21 +639,63 @@ func ChatTopicUpload(ctx *gin.Context) {
 	}
 	replyId, _ := strconv.Atoi(req.ReplyId)
 
-	err = db.SQL().Table("message_topic").Create(&model.MessageTopic{
+	messageType := model.MessageTypeImage
+	if req.File.Filename == "voice.m4a" {
+		messageType = model.MessageTypeVoice
+	}
+
+	msg := model.MessageTopic{
 		TopicId: uint(topicId),
 		Message: model.Message{
 			SentBy:        u.ID,
 			Message:       filename,
-			MessageType:   model.MessageTypeImage,
-			VoiceDuration: 0,
+			MessageType:   messageType,
+			VoiceDuration: voiceDuration,
 			ReplyId:       uint(replyId),
 		},
-	}).Error
+	}
+
+	err = db.SQL().Table("message_topic").Create(&msg).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
+
+	// 获取发送者信息
+	var sender model.User
+	err = db.SQL().Table("user").Where("id = ?", u.ID).First(&sender).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get sender info")
+		return
+	}
+
+	// 获取群组所有成员
+	var members []model.TopicJoin
+	err = db.SQL().Table("topic_join").Where("topic_id = ?", req.TopicId).Find(&members).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get topic members")
+		return
+	}
+
+	// 构建WebSocket消息
+	wsMsg := map[string]interface{}{
+		"type": "topic",
+		"message": map[string]interface{}{
+			"topic_id":               req.TopicId,
+			"message":                filename,
+			"sender_name":            sender.Name,
+			"created_at":             msg.CreatedAt.Format(time.RFC3339),
+			"message_type":           messageType,
+			"voice_message_duration": voiceDuration,
+		},
+	}
+
+	// 广播消息给所有群组成员
+	for _, member := range members {
+		db.WS().Send(fmt.Sprintf("user_%d", member.UserId), wsMsg)
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
@@ -572,52 +708,101 @@ func ChatFriendUpload(ctx *gin.Context) {
 		return
 	}
 
-	data, err := req.Image.Open()
+	data, err := req.File.Open()
 	if err != nil {
 		log.WithError(err).Error("fail to open file")
 		ctx.Abort()
 		return
 	}
 	defer data.Close()
-	filename := uuid.New().String() + filepath.Ext(req.Image.Filename)
-	// _, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/topic/%s%s", uuid.New(), filepath.Ext(file.Filename)), data, file.Size, minio.PutObjectOptions{})
-	_, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/friend/%s", filename), data, req.Image.Size, minio.PutObjectOptions{})
+
+	// 如果是语音文件，获取时长
+	voiceDuration := req.VoiceDuration
+	if req.File.Filename == "voice.m4a" {
+		duration, err := getAudioDuration(data)
+		if err != nil {
+			log.WithError(err).Error("fail to get audio duration")
+			ctx.Abort()
+			return
+		}
+		voiceDuration = duration
+		// 重置文件指针到开始位置
+		data.Seek(0, io.SeekStart)
+	}
+
+	filename := uuid.New().String() + filepath.Ext(req.File.Filename)
+	_, err = db.OSS().PutObject(context.TODO(), "chat", fmt.Sprintf("/friend/%s", filename), data, req.File.Size, minio.PutObjectOptions{})
 	if err != nil {
 		log.WithError(err).Error("fail to upload file")
 		ctx.Abort()
 		return
 	}
+
 	u, ok := getUser(ctx)
 	if !ok {
 		return
 	}
-	topicId, err := strconv.Atoi(req.FriendId)
+	friendId, err := strconv.Atoi(req.FriendId)
 	if err != nil {
-		log.WithError(err).Error("fail to parse topic id")
+		log.WithError(err).Error("fail to parse friend id")
 		ctx.Abort()
 		return
 	}
 	replyId, _ := strconv.Atoi(req.ReplyId)
 
-	err = db.SQL().Table("message_friend").Create(&model.MessageFriend{
-		FriendId: uint(topicId),
+	messageType := model.MessageTypeImage
+	if req.File.Filename == "voice.m4a" {
+		messageType = model.MessageTypeVoice
+	}
+
+	msg := model.MessageFriend{
+		FriendId: uint(friendId),
 		Message: model.Message{
 			SentBy:        u.ID,
 			Message:       filename,
-			MessageType:   model.MessageTypeImage,
-			VoiceDuration: 0,
+			MessageType:   messageType,
+			VoiceDuration: voiceDuration,
 			ReplyId:       uint(replyId),
 		},
-	}).Error
+	}
+
+	err = db.SQL().Table("message_friend").Create(&msg).Error
 	if err != nil {
 		log.WithError(err).Error("running sql")
 		ctx.Abort()
 		return
 	}
+
+	// 获取发送者信息
+	var sender model.User
+	err = db.SQL().Table("user").Where("id = ?", u.ID).First(&sender).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get sender info")
+		return
+	}
+
+	// 构建WebSocket消息
+	wsMsg := map[string]interface{}{
+		"type": "friend",
+		"message": map[string]interface{}{
+			"friend_id":              req.FriendId,
+			"message":                filename,
+			"sender_name":            sender.Name,
+			"created_at":             msg.CreatedAt.Format(time.RFC3339),
+			"message_type":           messageType,
+			"voice_message_duration": voiceDuration,
+		},
+	}
+
+	// 发送消息给接收者
+	db.WS().Send(fmt.Sprintf("user_%s", req.FriendId), wsMsg)
+	// 发送消息给发送者（用于同步）
+	db.WS().Send(fmt.Sprintf("user_%d", u.ID), wsMsg)
+
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
-func ChatTopicImage(ctx *gin.Context) {
+func ChatTopicFile(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
 	obj, err := db.OSS().GetObject(context.TODO(), "chat", fmt.Sprintf("/topic/%s", filename), minio.GetObjectOptions{})
@@ -626,8 +811,13 @@ func ChatTopicImage(ctx *gin.Context) {
 	}
 	defer obj.Close()
 
-	ctx.Header("Content-Type", "image/png")
-	ctx.Header("Content-Disposition", "inline; filename=profile.png")
+	if filepath.Ext(filename) == ".m4a" {
+		ctx.Header("Content-Type", "audio/m4a")
+		ctx.Header("Content-Disposition", "inline; filename=profile.m4a")
+	} else {
+		ctx.Header("Content-Type", "image/png")
+		ctx.Header("Content-Disposition", "inline; filename=profile.png")
+	}
 
 	_, err = io.Copy(ctx.Writer, obj)
 	if err != nil {
@@ -637,7 +827,7 @@ func ChatTopicImage(ctx *gin.Context) {
 	}
 }
 
-func ChatFriendImage(ctx *gin.Context) {
+func ChatFriendFile(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
 	obj, err := db.OSS().GetObject(context.TODO(), "chat", fmt.Sprintf("/friend/%s", filename), minio.GetObjectOptions{})
@@ -646,8 +836,13 @@ func ChatFriendImage(ctx *gin.Context) {
 	}
 	defer obj.Close()
 
-	ctx.Header("Content-Type", "image/png")
-	ctx.Header("Content-Disposition", "inline; filename=profile.png")
+	if filepath.Ext(filename) == ".m4a" {
+		ctx.Header("Content-Type", "audio/m4a")
+		ctx.Header("Content-Disposition", "inline; filename=profile.m4a")
+	} else {
+		ctx.Header("Content-Type", "image/png")
+		ctx.Header("Content-Disposition", "inline; filename=profile.png")
+	}
 
 	_, err = io.Copy(ctx.Writer, obj)
 	if err != nil {

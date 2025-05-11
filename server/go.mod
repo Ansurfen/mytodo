@@ -5,6 +5,7 @@ go 1.23.5
 require (
 	github.com/brianvoe/gofakeit/v7 v7.2.1
 	github.com/caarlos0/log v0.4.8
+	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
@@ -12,11 +13,11 @@ require (
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/issue9/identicon/v2 v2.1.2
 	github.com/minio/minio-go/v7 v7.0.87
 	github.com/o1egl/govatar v0.4.1
 	github.com/relvacode/iso8601 v1.6.0
-	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.5
