@@ -23,6 +23,19 @@ import (
 
 var topicProfile = identicon.New(identicon.Style2, 128, color.RGBA{R: 255, G: 0, B: 0, A: 100}, color.RGBA{R: 0, G: 255, B: 255, A: 100})
 
+// TopicNew godoc
+// @Summary      Create new topic
+// @Description  Create a new topic with name, description and other details
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicNewRequest true "Topic details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/new [post]
 func TopicNew(ctx *gin.Context) {
 	var req api.TopicNewRequest
 	err := ctx.BindJSON(&req)
@@ -99,6 +112,17 @@ func TopicNew(ctx *gin.Context) {
 	})
 }
 
+// TopicGet godoc
+// @Summary      Get user's topics
+// @Description  Get all topics that the current user is a member of
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/get [get]
 func TopicGet(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -130,6 +154,19 @@ func TopicGet(ctx *gin.Context) {
 	})
 }
 
+// TopicFind godoc
+// @Summary      Find public topics
+// @Description  Search for public topics with pagination
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicFindRequest true "Search parameters"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/find [post]
 func TopicFind(ctx *gin.Context) {
 	var req api.TopicFindRequest
 	err := ctx.BindJSON(&req)
@@ -184,6 +221,19 @@ LIMIT %d OFFSET %d;
 	})
 }
 
+// TopicApplyNew godoc
+// @Summary      Apply to join topic
+// @Description  Submit an application to join a topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicApplyNewRequest true "Application details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/apply/new [post]
 func TopicApplyNew(ctx *gin.Context) {
 	var req api.TopicApplyNewRequest
 	err := ctx.BindJSON(&req)
@@ -479,6 +529,19 @@ func TopicDel(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
+// TopicJoin godoc
+// @Summary      Join topic
+// @Description  Join a topic using invite code
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicJoinRequest true "Join details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/join [post]
 func TopicJoin(ctx *gin.Context) {
 	var req api.TopicJoinRequest
 	err := ctx.BindJSON(&req)
@@ -532,6 +595,19 @@ func TopicJoin(ctx *gin.Context) {
 	})
 }
 
+// TopicMemberGet godoc
+// @Summary      Get topic members
+// @Description  Get list of members in a topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        topic_id path int true "Topic ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/{topic_id}/members [get]
 func TopicMemberGet(ctx *gin.Context) {
 	var req api.TopicMemberGetRequest
 	err := ctx.BindJSON(&req)

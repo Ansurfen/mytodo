@@ -95,14 +95,31 @@ services:
       - "9100:9100"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ~/todo/prom/data:/prometheus/data
-      - ~/todo/prom/config:/etc/prometheus
-      - ~/todo/prom/rules:/prometheus/rules
+      - /home/prom/data:/prometheus/data
+      - /home/prom/config:/etc/prometheus
+      - /home/prom/rules:/prometheus/rules
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.enable-lifecycle
     restart: always
 
-networks:
-  backend:
-    driver: bridge
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - /home/grafana/data:/var/lib/grafana
+      - /home/grafana/config:/etc/grafana
+      - /home/grafana/logs:/var/log/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: always
+    depends_on:
+      - prometheus
+
+# networks:
+#   backend:
+#     driver: bridge

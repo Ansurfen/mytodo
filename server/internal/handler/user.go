@@ -25,6 +25,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserSign godoc
+// @Summary      Sign in or sign up user
+// @Description  Authenticate user with email and password, create new user if not exists
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body api.UserLoginRequest true "Login credentials"
+// @Success      200  {object}  api.UserSignResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/sign [post]
 func UserSign(ctx *gin.Context) {
 	var req api.UserLoginRequest
 	err := ctx.BindJSON(&req)
@@ -127,6 +138,19 @@ func UserSign(ctx *gin.Context) {
 	ctx.JSON(200, res)
 }
 
+// UserLogin godoc
+// @Summary      Login user
+// @Description  Authenticate existing user with email and password
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body api.UserLoginRequest true "Login credentials"
+// @Success      200  {object}  api.UserSignResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/login [post]
 func UserLogin(ctx *gin.Context) {
 	var req api.UserLoginRequest
 	err := ctx.BindJSON(&req)
@@ -190,6 +214,18 @@ var errorCodeMap = map[error]int{
 	gorm.ErrRecordNotFound: http.StatusNotFound,   // 404 记录不存在
 }
 
+// UserSignUp godoc
+// @Summary      Register new user
+// @Description  Create a new user account with email and password
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body api.UserSignUpRequest true "Registration details"
+// @Success      200  {object}  api.UserSignResponse
+// @Failure      400  {object}  map[string]string
+// @Failure      409  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/signup [post]
 func UserSignUp(ctx *gin.Context) {
 	var req api.UserSignUpRequest
 	err := ctx.BindJSON(&req)
@@ -382,6 +418,17 @@ func UserVerifyOTP(ctx *gin.Context) {
 	})
 }
 
+// UserDetail godoc
+// @Summary      Get user details
+// @Description  Get detailed information about the current user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  model.SwaggerUser
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/detail [get]
 func UserDetail(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -449,6 +496,19 @@ func UserOnline(ctx *gin.Context) {
 	ctx.JSON(200, api.UserOnlineResponse{Users: keys})
 }
 
+// UserEdit godoc
+// @Summary      Edit user profile
+// @Description  Update user profile information
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.UserEditRequest true "User profile update"
+// @Success      200  {object}  model.SwaggerUser
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/edit [post]
 func UserEdit(ctx *gin.Context) {
 	var req api.UserEditRequest
 	err := ctx.Bind(&req)
@@ -528,6 +588,19 @@ type contact struct {
 	About string `json:"about"`
 }
 
+// FriendNew godoc
+// @Summary      Add new friend
+// @Description  Send friend request to another user
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.FriendNewRequest true "Friend request details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/new [post]
 func FriendNew(ctx *gin.Context) {
 	var req api.FriendNewRequest
 	err := ctx.BindJSON(&req)

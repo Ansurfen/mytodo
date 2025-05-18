@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"mytodo/internal/conf"
 
@@ -32,4 +33,20 @@ func SetOSS(o *TodoOSS) {
 
 func OSS() *TodoOSS {
 	return oss
+}
+
+func (o *TodoOSS) MakeBuckets(buckets ...string) error {
+	for _, bucket := range buckets {
+		exist, err := o.BucketExists(context.Background(), bucket)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			err = o.MakeBucket(context.Background(), bucket, minio.MakeBucketOptions{})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

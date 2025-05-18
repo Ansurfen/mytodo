@@ -59,6 +59,6 @@ starter:
     version: 1.0.0
   profile: ii1 # govatar | ii1 | ii2
 server:
-  name:
-  host: 192.168.138.47
+  name: todo-server
+  host: 192.168.138.42
   port: 8080

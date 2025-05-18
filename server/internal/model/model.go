@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -30,3 +31,6 @@ func (m *Model) Exist() bool {
 }
 
 type NullString = sql.NullString
+
+// JSONMap is a type alias for datatypes.JSONMap
+type JSONMap = datatypes.JSONMap

@@ -9,10 +9,34 @@ import (
 	"mytodo/internal/model"
 	"mytodo/internal/routes"
 
+	_ "mytodo/docs" // 这里会导入swagger文档
+
 	"github.com/caarlos0/log"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @title           MyTodo API
+// @version         1.0
+// @description     A todo list service API in Go using Gin framework.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
 
 var cfg conf.TodoConf
 
@@ -22,60 +46,11 @@ func init() {
 	db.SetSQL(db.NewSQL(cfg.SQL))
 	db.SetRdb(db.NewRdb(cfg.Redis))
 	db.SetOSS(db.NewOSS(cfg.Minio))
-	exist, err := db.OSS().BucketExists(context.TODO(), "user")
+	err := db.OSS().MakeBuckets("user", "chat", "topic", "post", "task")
 	if err != nil {
-		log.WithError(err).Fatal("verifying bucket")
-	}
-	if !exist {
-		err = db.OSS().MakeBucket(context.TODO(), "user", minio.MakeBucketOptions{})
-		if err != nil {
-			log.WithError(err).Fatal("fail to create bucket")
-		}
+		panic(err)
 	}
 
-	exist, err = db.OSS().BucketExists(context.TODO(), "chat")
-	if err != nil {
-		log.WithError(err).Fatal("verifying bucket")
-	}
-	if !exist {
-		err = db.OSS().MakeBucket(context.TODO(), "chat", minio.MakeBucketOptions{})
-		if err != nil {
-			log.WithError(err).Fatal("fail to create bucket")
-		}
-	}
-
-	exist, err = db.OSS().BucketExists(context.TODO(), "topic")
-	if err != nil {
-		log.WithError(err).Fatal("verifying bucket")
-	}
-	if !exist {
-		err = db.OSS().MakeBucket(context.TODO(), "topic", minio.MakeBucketOptions{})
-		if err != nil {
-			log.WithError(err).Fatal("fail to create bucket")
-		}
-	}
-
-	exist, err = db.OSS().BucketExists(context.TODO(), "post")
-	if err != nil {
-		log.WithError(err).Fatal("verifying bucket")
-	}
-	if !exist {
-		err = db.OSS().MakeBucket(context.TODO(), "post", minio.MakeBucketOptions{})
-		if err != nil {
-			log.WithError(err).Fatal("fail to create bucket")
-		}
-	}
-
-	exist, err = db.OSS().BucketExists(context.TODO(), "task")
-	if err != nil {
-		log.WithError(err).Fatal("verifying bucket")
-	}
-	if !exist {
-		err = db.OSS().MakeBucket(context.TODO(), "task", minio.MakeBucketOptions{})
-		if err != nil {
-			log.WithError(err).Fatal("fail to create bucket")
-		}
-	}
 	db.SQL().AutoMigrate(
 		model.User{},
 		model.UserRelation{},
@@ -107,17 +82,22 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(middleware.CORS())
+	r.Use(middleware.Prometheus())
+
+	// 先注册 metrics 端点
+	r.GET("/internal/metrics", func(c *gin.Context) {
+		promhttp.Handler().ServeHTTP(c.Writer, c.Request)
+	})
+
+	// Swagger API文档路由
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	routes.InstallUserRoute(r)
 	routes.InstallChatRoute(r)
 	routes.InstallTopicRoute(r)
 	routes.InstallNotificationRoute(r)
 	routes.InstallTaskRoute(r)
 	routes.InstallPostRoute(r)
-	r.GET("/hello", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "hello",
-		})
-	})
 	r.POST("/upload", func(ctx *gin.Context) {
 		file, err := ctx.FormFile("file")
 		if err != nil {
@@ -133,26 +113,4 @@ func main() {
 		db.OSS().PutObject(context.TODO(), "chat", file.Filename, src, file.Size, minio.PutObjectOptions{})
 	})
 	r.Run(fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port))
-}
-
-type Message struct {
-	Id           string `json:"id"`
-	Message      string `json:"message"`
-	CreatedAt    string `json:"createdAt"`
-	SentBy       string `json:"sentBy"`
-	ReplyMessage struct {
-		Message       string `json:"message"`
-		ReplyBy       string `json:"replyBy"`
-		ReplyTo       string `json:"replyTo"`
-		MessageType   string `json:"message_type"`
-		Id            string `json:"messageId"`
-		VoiceDuration uint   `json:"voiceMessageDuration"`
-	} `json:"reply_message"`
-	Reaction struct {
-		Reactions      []string `json:"reactions"`
-		ReactedUserIds []string `json:"reactedUserIds"`
-	}
-	MessageType   string `json:"message_type"`
-	VoiceDuration uint   `json:"voice_message_duration"`
-	Status        string `json:"status"`
 }

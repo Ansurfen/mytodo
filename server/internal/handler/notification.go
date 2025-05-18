@@ -12,6 +12,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// NotificationNew godoc
+// @Summary      Create new notification
+// @Description  Create a new notification with type, name and description
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.NotificationNewRequest true "Notification details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/new [post]
 func NotificationNew(ctx *gin.Context) {
 	var req api.NotificationNewRequest
 	err := ctx.BindJSON(&req)
@@ -41,6 +54,17 @@ func NotificationNew(ctx *gin.Context) {
 	})
 }
 
+// NotificationGet godoc
+// @Summary      Get notifications
+// @Description  Get all notifications created by the current user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  []model.SwaggerNotification
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/get [get]
 func NotificationGet(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -59,6 +83,20 @@ func NotificationGet(ctx *gin.Context) {
 	})
 }
 
+// NotificationDel godoc
+// @Summary      Delete notification
+// @Description  Delete a notification by ID
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.NotificationDelRequest true "Notification ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/del [post]
 func NotificationDel(ctx *gin.Context) {
 	var req api.NotificationDelRequest
 	err := ctx.BindJSON(&req)
@@ -91,6 +129,20 @@ func NotificationDel(ctx *gin.Context) {
 	}
 }
 
+// NotificationPublishNew godoc
+// @Summary      Publish notification
+// @Description  Publish a notification to multiple users
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.NotificationPublishNewRequest true "Publish details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/publish/new [post]
 func NotificationPublishNew(ctx *gin.Context) {
 	var req api.NotificationPublishNewRequest
 	err := ctx.BindJSON(&req)
@@ -133,6 +185,19 @@ func NotificationPublishNew(ctx *gin.Context) {
 	}
 }
 
+// NotificationPublishGet godoc
+// @Summary      Get published notifications
+// @Description  Get notifications published to the current user with pagination
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.NotificationPublishGetRequest true "Pagination parameters"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/publish/get [post]
 func NotificationPublishGet(ctx *gin.Context) {
 	var req api.NotificationPublishGetRequest
 	err := ctx.BindJSON(&req)

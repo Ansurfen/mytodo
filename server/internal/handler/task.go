@@ -26,6 +26,29 @@ import (
 	"gorm.io/gorm"
 )
 
+// SwaggerDetailedTask 用于Swagger文档展示
+type SwaggerDetailedTask struct {
+	ID         uint        `json:"id"`
+	CreatedAt  string      `json:"createdAt"`
+	UpdatedAt  string      `json:"updatedAt"`
+	DeletedAt  string      `json:"deletedAt"`  // 直接用string
+	Conditions interface{} `json:"conditions"` // object
+}
+
+
+// TaskNew godoc
+// @Summary      Create new task
+// @Description  Create a new task with conditions and parameters
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TaskNewRequest true "Task details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/new [post]
 func TaskNew(ctx *gin.Context) {
 	var req api.TaskNewRequest
 	err := ctx.BindJSON(&req)
@@ -106,6 +129,20 @@ func TaskNew(ctx *gin.Context) {
 	})
 }
 
+// TaskDel godoc
+// @Summary      Delete task
+// @Description  Delete an existing task by ID
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TaskDelRequest true "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/del [post]
 func TaskDel(ctx *gin.Context) {
 	var req api.TaskDelRequest
 	err := ctx.BindJSON(&req)
@@ -138,6 +175,20 @@ func TaskDel(ctx *gin.Context) {
 	}
 }
 
+// TaskEdit godoc
+// @Summary      Edit task
+// @Description  Update an existing task's details and conditions
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TaskEditRequest true "Updated task details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/edit [post]
 func TaskEdit(ctx *gin.Context) {
 	var req api.TaskEditRequest
 	err := ctx.BindJSON(&req)
@@ -294,6 +345,19 @@ func TaskQR(ctx *gin.Context) {
 
 var jwtKey = []byte("my_todo_qr")
 
+// TaskCommit godoc
+// @Summary      Commit task completion
+// @Description  Submit task completion with required conditions
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TaskCommitRequest true "Task completion details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/commit [post]
 func TaskCommit(ctx *gin.Context) {
 	var req api.TaskCommitRequest
 	err := ctx.BindJSON(&req)
@@ -412,6 +476,19 @@ func TaskCommit(ctx *gin.Context) {
 	}
 }
 
+// TaskGet godoc
+// @Summary      Get task details
+// @Description  Get detailed information about a specific task
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        task_id path int true "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/{task_id} [get]
 func TaskGet(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -748,6 +825,20 @@ func TaskLocate(ctx *gin.Context) {
 	}
 }
 
+// TaskFileUpload godoc
+// @Summary      Upload task file
+// @Description  Upload a file for task completion
+// @Tags         tasks
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     Bearer
+// @Param        file formData file true "File to upload"
+// @Param        task_id formData int true "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/file/upload [post]
 func TaskFileUpload(ctx *gin.Context) {
 	// 获取用户信息
 	u, ok := getUser(ctx)

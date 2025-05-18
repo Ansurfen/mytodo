@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 60s
+  evaluation_interval: 60s
+
+# 告警规则
+rule_files:
+  # 这里匹配指定目录下所有的.rules文件
+  - /prometheus/rules/*.rules
+
+scrape_configs:
+  # - job_name: prometheus
+  #   static_configs:
+  #     # prometheus自带了对自身的exporter监控程序，所以不需额外安装exporter就可配置采集项
+  #     - targets: ["localhost:9090"]
+  #       labels:
+  #         instance: prometheus
+
+  - job_name: node
+    metrics_path: /internal/metrics
+    static_configs:
+      # 注意，这里的ip需要配宿主机器的ip地址，因为prometheus是通过docker的方式部署的
+      - targets: ["192.168.138.42:8080"]
+        labels:
+          instance: node

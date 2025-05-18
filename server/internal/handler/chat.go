@@ -20,6 +20,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// ChatTopicNew godoc
+// @Summary      Send new message to topic
+// @Description  Send a new message to a topic chat, optionally as a reply to another message
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatTopicNewRequest true "Message details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/new [post]
 func ChatTopicNew(ctx *gin.Context) {
 	var req api.ChatTopicNewRequest
 	err := ctx.BindJSON(&req)
@@ -124,6 +137,19 @@ func ChatTopicNew(ctx *gin.Context) {
 	}
 }
 
+// ChatFriendNew godoc
+// @Summary      Send new message to friend
+// @Description  Send a new message to a friend chat, optionally as a reply to another message
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatFriendNewRequest true "Message details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/new [post]
 func ChatFriendNew(ctx *gin.Context) {
 	var req api.ChatFriendNewRequest
 	err := ctx.BindJSON(&req)
@@ -234,6 +260,21 @@ func convertMessageType(t string) model.MessageType {
 	return 0
 }
 
+// ChatTopicGet godoc
+// @Summary      Get topic messages
+// @Description  Get messages from a topic chat with pagination
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        topic_id path int true "Topic ID"
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Messages per page" default(20)
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/{topic_id} [get]
 func ChatTopicGet(ctx *gin.Context) {
 	var req api.ChatTopicGetRequest
 	err := ctx.BindJSON(&req)
@@ -295,6 +336,21 @@ func ChatTopicGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"code": 200, "msg": "", "data": messages})
 }
 
+// ChatFriendGet godoc
+// @Summary      Get friend messages
+// @Description  Get messages from a friend chat with pagination
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        friend_id path int true "Friend ID"
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Messages per page" default(20)
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/{friend_id} [get]
 func ChatFriendGet(ctx *gin.Context) {
 	var req api.ChatFriendGetRequest
 	err := ctx.BindJSON(&req)
@@ -588,6 +644,20 @@ func getAudioDuration(data io.ReadSeeker) (uint, error) {
 	return uint(duration), nil
 }
 
+// ChatTopicUpload godoc
+// @Summary      Upload file to topic
+// @Description  Upload a file (image, audio, video) to a topic chat
+// @Tags         chat
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     Bearer
+// @Param        file formData file true "File to upload"
+// @Param        topic_id formData int true "Topic ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/upload [post]
 func ChatTopicUpload(ctx *gin.Context) {
 	var req api.ChatTopicUploadRequest
 	err := ctx.Bind(&req)
@@ -699,6 +769,20 @@ func ChatTopicUpload(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
+// ChatFriendUpload godoc
+// @Summary      Upload file to friend
+// @Description  Upload a file (image, audio, video) to a friend chat
+// @Tags         chat
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     Bearer
+// @Param        file formData file true "File to upload"
+// @Param        friend_id formData int true "Friend ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/upload [post]
 func ChatFriendUpload(ctx *gin.Context) {
 	var req api.ChatFriendUploadRequest
 	err := ctx.Bind(&req)

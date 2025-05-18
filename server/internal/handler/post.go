@@ -26,6 +26,23 @@ import (
 
 func PostSearch(ctx *gin.Context) {}
 
+// PostNew godoc
+// @Summary      Create a new post
+// @Description  Create a new post with title, text and optional files
+// @Tags         posts
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        title  formData  string  true  "Post title"
+// @Param        text   formData  string  true  "Post text in JSON format"
+// @Param        files  formData  file    false  "Post files"
+// @Param        indexs formData  []int   false  "File indexes"
+// @Param        types  formData  []string false "File types"
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}  "Post created successfully"
+// @Failure      400  {object}  map[string]string       "Invalid request"
+// @Failure      401  {object}  map[string]string       "Unauthorized"
+// @Failure      500  {object}  map[string]string       "Internal server error"
+// @Router       /post/new [post]
 func PostNew(ctx *gin.Context) {
 	var req api.PostNewRequest
 	err := ctx.Bind(&req)
@@ -180,6 +197,20 @@ func PostDel(ctx *gin.Context) {
 	}
 }
 
+// PostGet godoc
+// @Summary      Get a post by ID
+// @Description  Get detailed information about a specific post including comments and like count
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Post ID"
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}  "Post details"
+// @Failure      400  {object}  map[string]string       "Invalid post ID"
+// @Failure      401  {object}  map[string]string       "Unauthorized"
+// @Failure      403  {object}  map[string]string       "Permission denied"
+// @Failure      500  {object}  map[string]string       "Internal server error"
+// @Router       /post/{id} [get]
 func PostGet(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	if post, ok := hasPermissionToReadPost(ctx, uint(id)); ok {
