@@ -16,13 +16,16 @@ class User {
   @JsonKey(name: "email")
   String email;
 
+  @JsonKey(name: "about", defaultValue: "")
+  String? about;
+
   @JsonKey(name: "telephone", defaultValue: "")
   String? telephone;
 
   @JsonKey(name: "is_male", defaultValue: true)
   bool isMale = true;
 
-  User(this.id, this.name, this.email, {this.telephone});
+  User(this.id, this.name, this.email, {this.telephone, this.about});
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

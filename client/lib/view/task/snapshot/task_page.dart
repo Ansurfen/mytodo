@@ -242,9 +242,9 @@ class _TaskPageState extends State<TaskPage>
                           },
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          itemCount: controller.tasks.length,
+                          itemCount: controller.filteredTasks.length,
                           itemBuilder: (ctx, idx) {
-                            var task = controller.tasks[idx];
+                            var task = controller.filteredTasks[idx];
                             final ValueKey<ExpansionTileCardState> k = ValueKey(
                               ExpansionTileCardState(),
                             );
@@ -301,73 +301,53 @@ class _TaskPageState extends State<TaskPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SearchTextField(),
+                SearchTextField(
+                  onChanged: (value) {
+                    controller.setSearchQuery(value);
+                  },
+                ),
                 Container(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 8.0), // 右边添加间隔
+                        padding: const EdgeInsets.only(right: 8.0),
                         child: TextField(
                           controller: startDateController,
                           readOnly: true,
                           onTap: () async {
                             DateTime? dateTime = await todoSelectDate(
                               context,
-                              initialDate: DateFormat(
-                                'MM/dd/yyyy',
-                              ).parse(startDateController.text),
+                              initialDate: DateFormat('MM/dd/yyyy').parse(startDateController.text),
                             );
                             if (dateTime != null) {
-                              // 检查选择的日期是否晚于结束日期
-                              DateTime? endDate = DateFormat(
-                                'MM/dd/yyyy',
-                              ).parse(endDateController.text);
-                              if (dateTime.isAtSameMomentAs(endDate) ||
-                                  dateTime.isBefore(endDate)) {
-                                // 如果选择的startDate比endDate早，更新startDateController
-                                startDateController.text = DateFormat(
-                                  'MM/dd/yyyy',
-                                ).format(dateTime);
+                              DateTime? endDate = DateFormat('MM/dd/yyyy').parse(endDateController.text);
+                              if (dateTime.isAtSameMomentAs(endDate) || dateTime.isBefore(endDate)) {
+                                startDateController.text = DateFormat('MM/dd/yyyy').format(dateTime);
+                                controller.setDateRange(dateTime, endDate);
                               } else {
-                                showToast(
-                                  "Start Date cannot be later than End Date.",
-                                );
+                                showToast("Start Date cannot be later than End Date.");
                               }
                             }
                           },
                           decoration: InputDecoration(
-                            labelStyle: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                            ),
+                            labelStyle: TextStyle(color: Theme.of(context).primaryColor),
                             floatingLabelStyle: TextStyle(color: Colors.grey),
                             labelText: "start_date".tr,
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 2,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 2),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 12.0,
-                            ), // 缩小内边距
+                            contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
                           ),
                           style: TextStyle(fontSize: 16),
                         ),
@@ -375,33 +355,22 @@ class _TaskPageState extends State<TaskPage>
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0), // 左边添加间隔
+                        padding: const EdgeInsets.only(left: 8.0),
                         child: TextField(
                           controller: endDateController,
                           readOnly: true,
                           onTap: () async {
                             DateTime? dateTime = await todoSelectDate(
                               context,
-                              initialDate: DateFormat(
-                                'MM/dd/yyyy',
-                              ).parse(endDateController.text),
+                              initialDate: DateFormat('MM/dd/yyyy').parse(endDateController.text),
                             );
                             if (dateTime != null) {
-                              // 检查选择的日期是否早于开始日期
-                              DateTime? startDate = DateFormat(
-                                'MM/dd/yyyy',
-                              ).parse(startDateController.text);
-                              if (dateTime.isAtSameMomentAs(startDate) ||
-                                  dateTime.isAfter(startDate)) {
-                                // 如果选择的endDate比startDate晚，更新endDateController
-                                endDateController.text = DateFormat(
-                                  'MM/dd/yyyy',
-                                ).format(dateTime);
+                              DateTime? startDate = DateFormat('MM/dd/yyyy').parse(startDateController.text);
+                              if (dateTime.isAtSameMomentAs(startDate) || dateTime.isAfter(startDate)) {
+                                endDateController.text = DateFormat('MM/dd/yyyy').format(dateTime);
+                                controller.setDateRange(startDate, dateTime);
                               } else {
-                                // 如果endDate比startDate早，提示用户
-                                showToast(
-                                  "End Date cannot be earlier than Start Date.",
-                                );
+                                showToast("End Date cannot be earlier than Start Date.");
                               }
                             }
                           },
@@ -412,133 +381,17 @@ class _TaskPageState extends State<TaskPage>
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 2,
-                              ),
+                              borderSide: BorderSide(color: Colors.grey, width: 2),
                             ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 12.0,
-                            ), // 缩小内边距
-                          ),
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Container(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          right: 8.0,
-                        ), // 在 TextField 之间添加间隔
-                        child: TextField(
-                          controller: startTimeController,
-                          readOnly: true,
-                          onTap: () async {
-                            TimeOfDay? time = await todoSelectTime(context);
-                            // TODO check valid
-                            if (time != null) {
-                              startTimeController.text = time.format(context);
-                            }
-                          },
-                          decoration: InputDecoration(
-                            hintText: "start_time".tr,
-                            hintStyle: TextStyle(color: Colors.grey),
-                            floatingLabelStyle: TextStyle(color: Colors.grey),
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 2,
-                              ),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 12.0,
-                            ), // 调整内边距
-                          ),
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0), // 添加左间隔
-                        child: TextField(
-                          controller: endTimeController,
-                          readOnly: true,
-                          onTap: () async {
-                            TimeOfDay? time = await todoSelectTime(context);
-                            if (time != null) {
-                              endTimeController.text = time.format(context);
-                            }
-                          },
-                          decoration: InputDecoration(
-                            hintText: "end_time".tr,
-                            hintStyle: TextStyle(color: Colors.grey),
-                            floatingLabelStyle: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            floatingLabelBehavior: FloatingLabelBehavior.auto,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.5,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 2,
-                              ),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 12.0,
-                            ), // 调整内边距
+                            contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
                           ),
                           style: TextStyle(fontSize: 16),
                         ),
@@ -561,19 +414,13 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          filterRunning.value = !filterRunning.value;
+                          controller.toggleFilterRunning(!controller.filterRunning.value);
                         },
                         child: Row(
                           children: [
-                            filterRunning.value
-                                ? Icon(
-                                  Icons.check_box,
-                                  color: Theme.of(context).primaryColor,
-                                )
-                                : Icon(
-                                  Icons.check_box_outline_blank,
-                                  color: Colors.grey,
-                                ),
+                            controller.filterRunning.value
+                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
+                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
                             Text(
                               "filter_running".tr,
                               style: TextStyle(color: Colors.grey),
@@ -585,19 +432,13 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          filterFinish.value = !filterFinish.value;
+                          controller.toggleFilterFinish(!controller.filterFinish.value);
                         },
                         child: Row(
                           children: [
-                            filterFinish.value
-                                ? Icon(
-                                  Icons.check_box,
-                                  color: Theme.of(context).primaryColor,
-                                )
-                                : Icon(
-                                  Icons.check_box_outline_blank,
-                                  color: Colors.grey,
-                                ),
+                            controller.filterFinish.value
+                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
+                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
                             Text(
                               "filter_finish".tr,
                               style: TextStyle(color: Colors.grey),
@@ -609,19 +450,13 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          filterTimeout.value = !filterTimeout.value;
+                          controller.toggleFilterTimeout(!controller.filterTimeout.value);
                         },
                         child: Row(
                           children: [
-                            filterTimeout.value
-                                ? Icon(
-                                  Icons.check_box,
-                                  color: Theme.of(context).primaryColor,
-                                )
-                                : Icon(
-                                  Icons.check_box_outline_blank,
-                                  color: Colors.grey,
-                                ),
+                            controller.filterTimeout.value
+                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
+                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
                             Text(
                               "filter_timeout".tr,
                               style: TextStyle(color: Colors.grey),
@@ -720,7 +555,12 @@ Future<TimeOfDay?> todoSelectTime(
 }
 
 class SearchTextField extends StatefulWidget {
-  const SearchTextField({super.key});
+  final Function(String) onChanged;
+  
+  const SearchTextField({
+    super.key,
+    required this.onChanged,
+  });
 
   @override
   _SearchTextFieldState createState() => _SearchTextFieldState();
@@ -736,6 +576,15 @@ class _SearchTextFieldState extends State<SearchTextField> {
     _focusNode.addListener(() {
       setState(() {});
     });
+    // 初始化时设置搜索文本
+    _controller.text = Get.find<TaskController>().searchQuery.value;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -743,6 +592,7 @@ class _SearchTextFieldState extends State<SearchTextField> {
     return TextField(
       controller: _controller,
       focusNode: _focusNode,
+      onChanged: widget.onChanged,
       style: TextStyle(fontSize: 14),
       decoration: InputDecoration(
         hintText: "search".tr,

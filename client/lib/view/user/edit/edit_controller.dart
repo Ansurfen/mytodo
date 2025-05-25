@@ -25,6 +25,12 @@ class EditController extends GetxController {
   TextEditingController telephoneController = TextEditingController(
     text: Guard.u?.telephone,
   );
+  TextEditingController aboutController = TextEditingController(
+    text: Guard.u?.about,
+  );
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   ImageProvider<Object>? profileImage() {
     if (Guard.isLogin() && _profileImage == null) {
@@ -77,12 +83,23 @@ class EditController extends GetxController {
     user.name = nameController.text;
     user.telephone = telephoneController.text;
     user.email = emailController.text;
+    user.about = aboutController.text;
 
     userEditRequest(u: user, profile: tFile)
         .then((v) {
           userDetailRequest().then((v) {
             Guard.setUser(v);
           });
+        })
+        .onError((error, stackTrace) {
+          showTipDialog(context, content: error.toString());
+        });
+  }
+
+  void editPassword(BuildContext context) {
+    userEditPasswordRequest(password: passwordController.text)
+        .then((v) {
+          showTipDialog(context, content: 'password_edited'.tr);
         })
         .onError((error, stackTrace) {
           showTipDialog(context, content: error.toString());

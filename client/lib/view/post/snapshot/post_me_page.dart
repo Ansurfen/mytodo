@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:my_todo/api/post.dart';
 import 'package:my_todo/component/container/empty_container.dart';
+import 'package:my_todo/component/image.dart';
 import 'package:my_todo/component/refresh.dart';
 import 'package:my_todo/mock/provider.dart';
 import 'package:my_todo/router/provider.dart';
@@ -57,37 +59,27 @@ class _PostMePageState extends State<PostMePage> {
               ),
               InkWell(
                 onTap: () {
-                  List<UserView> users = List.generate(
-                    Mock.number(min: 5, max: 100),
-                    (idx) {
-                      return UserView(
-                        id: idx,
-                        name: Mock.username(),
-                        time: Mock.dateTime(),
-                      );
-                    },
-                  );
                   showSheetBottom(
                     context,
                     title: "views".tr,
                     child: Expanded(
-                      child: ListView.separated(
+                      child: Obx(() => ListView.separated(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        itemCount: users.length,
+                        itemCount: controller.visitors.length,
                         itemBuilder: (ctx, idx) {
-                          final user = users[idx];
+                          final visitor = controller.visitors[idx];
                           final date = DateFormat(
                             'MM/dd/yyyy',
-                          ).format(user.time);
-                          final time = DateFormat('HH:mm:ss').format(user.time);
+                          ).format(visitor.visitTime);
+                          final time = DateFormat('HH:mm:ss').format(visitor.visitTime);
 
                           // 判断是否需要显示日期标题
                           bool showDateHeader =
                               idx == 0 ||
                               DateFormat(
                                     'MM/dd/yyyy',
-                                  ).format(users[idx - 1].time) !=
+                                  ).format(controller.visitors[idx - 1].visitTime) !=
                                   date;
 
                           return Column(
@@ -123,17 +115,19 @@ class _PostMePageState extends State<PostMePage> {
                                 child: ListTile(
                                   leading: InkWell(
                                     onTap: () {
-                                      RouterProvider.toUserProfile(user.id);
+                                      RouterProvider.toUserProfile(visitor.userId);
                                     },
-                                    child: CircleAvatar(),
+                                    child: CircleAvatar(
+                                      backgroundImage: TodoImage.userProfile(visitor.userId),
+                                    ),
                                   ),
                                   title: Text(
-                                    user.name,
+                                    visitor.username,
                                     maxLines: 1,
                                     style: TextStyle(fontSize: 12),
                                   ),
                                   trailing: Text(
-                                    time, // 只显示时间
+                                    time,
                                     style: TextStyle(fontSize: 12),
                                   ),
                                 ),
@@ -144,28 +138,118 @@ class _PostMePageState extends State<PostMePage> {
                         separatorBuilder: (BuildContext context, int index) {
                           return Container(height: 5);
                         },
-                      ),
+                      )),
                     ),
                   );
                 },
                 child: Column(
                   children: [
                     Text(
-                      Mock.number().toString(),
+                      controller.views.value.toString(),
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text("views".tr, style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  Text(
-                    Mock.number().toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text("history".tr, style: TextStyle(color: Colors.grey)),
-                ],
+              InkWell(
+                onTap: () {
+                  showSheetBottom(
+                    context,
+                    title: "history".tr,
+                    child: Expanded(
+                      child: Obx(() => ListView.separated(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: controller.history.length,
+                        itemBuilder: (ctx, idx) {
+                          final item = controller.history[idx];
+                          final date = DateFormat(
+                            'MM/dd/yyyy',
+                          ).format(item.visitTime);
+                          final time = DateFormat('HH:mm:ss').format(item.visitTime);
+
+                          // 判断是否需要显示日期标题
+                          bool showDateHeader =
+                              idx == 0 ||
+                              DateFormat(
+                                    'MM/dd/yyyy',
+                                  ).format(controller.history[idx - 1].visitTime) !=
+                                  date;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 仅当是新的日期时，显示日期标题
+                              if (showDateHeader)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 16,
+                                    bottom: 4,
+                                    top: 8,
+                                  ),
+                                  child: Text(
+                                    date,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  color: ThemeProvider.contrastColor(
+                                    context,
+                                    light: Colors.grey.shade50,
+                                    dark: CupertinoColors.darkBackgroundGray,
+                                  ),
+                                ),
+                                child: ListTile(
+                                  leading: InkWell(
+                                    onTap: () {
+                                      RouterProvider.toUserProfile(item.userId);
+                                    },
+                                    child: CircleAvatar(
+                                      backgroundImage: TodoImage.userProfile(item.userId),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    item.username,
+                                    maxLines: 1,
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  subtitle: Text(
+                                    "Post ID: ${item.postId}",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  trailing: Text(
+                                    time,
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return Container(height: 5);
+                        },
+                      )),
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    Text(
+                      controller.historyCount.value.toString(),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text("history".tr, style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
               ),
             ],
           ),

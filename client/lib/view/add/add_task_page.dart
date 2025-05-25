@@ -610,33 +610,14 @@ class _AddTaskPageState extends State<AddTaskPage>
                     leading: Icon(Icons.qr_code),
                     title: Text("condition_qr".tr),
                   ),
-                  SettingsTile.navigation(
-                    onPressed: (context) {
-                      showSheetBottom(
-                        context,
-                        title: "condition_file".tr,
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("enable".tr),
-                                Obx(
-                                  () => CupertinoSwitch(
-                                    activeTrackColor:
-                                        Theme.of(context).primaryColor,
-                                    value: controller.taskCondFile.value,
-                                    onChanged: (bool v) {
-                                      controller.taskCondFile.value = v;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
+                  SettingsTile.switchTile(
+                    initialValue: controller.taskCondFile.value,
+                    onToggle: (v) {
+                      setState(() {
+                        controller.taskCondFile.value = v;
+                      });
                     },
+                    activeSwitchColor: Theme.of(context).primaryColor,
                     leading: Icon(Icons.drive_folder_upload),
                     title: Text("condition_file".tr),
                   ),

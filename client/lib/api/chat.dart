@@ -256,3 +256,12 @@ Future chatRead({
     options: Options(headers: {'Authorization': Guard.jwt}),
   );
 }
+
+Future chatTopicOnlineCount({
+  required int topicId,
+}) async {
+  return await HTTP.post(
+    '/chat/topic/online_count',
+    data: {"topic_id": topicId},
+  );
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:infinite_calendar_view/src/controller/events_controller.dart';
 import 'package:intl/intl.dart';
 

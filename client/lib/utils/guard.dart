@@ -217,7 +217,7 @@ class Guard {
     } else {
       locale = Locale(languageCode, countryCode);
     }
-    language = "language.${locale.languageCode}${locale.countryCode}";
+    language = "language_${locale.languageCode}${locale.countryCode}";
     return locale;
   }
 

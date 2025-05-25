@@ -21,6 +21,10 @@ class PostSnapshotController extends GetxController
   late StreamSubscription<Post> _uploadPost;
   late TabController tabController;
   Pagination<Post> pagination = Pagination();
+  Rx<int> views = Rx(0);
+  Rx<int> historyCount = Rx(0);
+  RxList<PostVistor> visitors = <PostVistor>[].obs;
+  RxList<PostHistory> history = <PostHistory>[].obs;
 
   @override
   void onInit() {
@@ -41,10 +45,12 @@ class PostSnapshotController extends GetxController
       _uploadPost = PostHook.subscribeSnapshot(onData: (post) {});
 
       postVisitorsRequest().then((res) {
-        Guard.log.i(res);
+        visitors.value = (res as List).map((e) => PostVistor.fromJson(e)).toList();
+        views.value = visitors.length;
       });
       postHistoryRequest().then((res) {
-        Guard.log.i(res);
+        history.value = (res as List).map((e) => PostHistory.fromJson(e)).toList();
+        historyCount.value = history.length;
       });
     } 
   }
@@ -133,6 +139,49 @@ class PostSnapshotController extends GetxController
               ],
             ),
           ),
+    );
+  }
+}
+
+class PostHistory {
+  final int postId;
+  final int userId;
+  final String username;
+  final DateTime visitTime;
+
+  PostHistory({
+    required this.postId,
+    required this.userId,
+    required this.username,
+    required this.visitTime,
+  });
+
+  factory PostHistory.fromJson(Map<String, dynamic> json) {
+    return PostHistory(
+      postId: json['post_id'] as int,
+      userId: json['user_id'] as int,
+      username: json['username'] as String,
+      visitTime: DateTime.parse(json['visit_time'] as String),
+    );
+  }
+}
+
+class PostVistor {
+  final int userId;
+  final String username;
+  final DateTime visitTime;
+
+  PostVistor({
+    required this.userId,
+    required this.username,
+    required this.visitTime,
+  });
+
+  factory PostVistor.fromJson(Map<String, dynamic> json) {
+    return PostVistor(
+      userId: json['user_id'] as int,
+      username: json['username'] as String,
+      visitTime: DateTime.parse(json['visit_time'] as String),
     );
   }
 }

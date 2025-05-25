@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-
+import 'package:my_todo/api/task.dart';
+import 'package:my_todo/view/task/snapshot/task_card.dart';
 import 'utils.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_calendar_view/infinite_calendar_view.dart';
@@ -74,7 +75,75 @@ class EventsMonthsView extends StatelessWidget {
       height: height,
       child: DefaultMonthDayEvent(
         event: event,
-        onTap: () => showSnack(context, "Tap : ${event.title}"),
+        onTap: () async {
+          try {
+            final taskId = int.parse(event.data.toString());
+            final response = await taskDetailRequest(taskId);
+            if (response != null) {
+              final task = response['task'];
+              final conditions = response['conditions'] as List;
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text(task['name'] ?? ''),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("${"description".tr}: ${task['description'] ?? ''}"),
+                      const SizedBox(height: 8),
+                      Text("${"start_at".tr}: ${task['start_at']}"),
+                      const SizedBox(height: 8),
+                      Text("${"end_at".tr}: ${task['end_at']}"),
+                      const SizedBox(height: 16),
+                      Text("${"conditions".tr}:"),
+                      ...conditions.map((condition) {
+                        String typeStr;
+                        switch (condition['type']) {
+                          case 0:
+                            typeStr = 'click';
+                            break;
+                          case 1:
+                            typeStr = 'file';
+                            break;
+                          case 2:
+                            typeStr = 'image';
+                            break;
+                          case 3:
+                            typeStr = 'qr';
+                            break;
+                          case 4:
+                            typeStr = 'locale';
+                            break;
+                          case 5:
+                            typeStr = 'text';
+                            break;
+                          case 6:
+                            typeStr = 'timer';
+                            break;
+                          default:
+                            typeStr = 'unknown';
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16, top: 4),
+                          child: Text("• ${ConditionType.fromString(typeStr).toString()}"),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text("close".tr),
+                    ),
+                  ],
+                ),
+              );
+            }
+          } catch (e) {
+            showSnack(context, "error_loading_task".tr);
+          }
+        },
       ),
     );
   }

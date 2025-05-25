@@ -34,6 +34,15 @@ class TaskInfoController extends GetxController {
     });
   }
 
+  // 更新条件状态
+  void updateConditionStatus(int condId, bool status) {
+    final index = model.cond.indexWhere((cond) => cond.id == condId);
+    if (index != -1) {
+      model.cond[index].finish = status;
+      update(); // 通知UI更新
+    }
+  }
+
   void initTextService() {
     quillController = () {
       return QuillController.basic(

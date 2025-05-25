@@ -315,8 +315,7 @@ class _ConversionPageState extends State<ConversionPage> {
                 return "offline".tr;
               }
             }
-            // TODO: xx person online
-            return "${Mock.number()} ${"online".tr}";
+            return "${controller.onlineCount.value} ${"online".tr}";
           }(),
           userStatusTextStyle: const TextStyle(color: Colors.grey),
           actions: [

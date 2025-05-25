@@ -339,4 +339,28 @@ Map<String, String> get zhCN => {
 
   "Make Friend": "好友申请",
   "Topic Apply": "频道申请",
+
+  "about": "关于",
+
+  "password_required": "密码不能为空",
+  "password_not_match": "两次输入的密码不一致",
+  "password_edited": "密码已修改",
+
+  "calendar_view_agenda": "列表",
+  "calendar_view_day": "一天",
+  "calendar_view_day3": "三天",
+  "calendar_view_day3Draggable": "三天 - 可拖拽",
+  "calendar_view_month": "月",
+  "calendar_view_multiColumn2": "多列1",
+  "calendar_view_multiColumn1": "多列2",
+  "calendar_view_day7": "七天",
+
+  "invite": "邀请",
+  "exit": "退出",
+
+  "start_at": "开始时间",
+  "end_at": "结束时间",
+  "conditions": "条件",
+
+  "close": "关闭",
 };

@@ -34,7 +34,21 @@ class TaskCardModel {
   @JsonKey(name: "conds", fromJson: parseCondition)
   List<ConditionItem> cond;
 
-  TaskCardModel(this.id, this.icon, this.name, this.description, this.cond);
+  @JsonKey(name: "start_at")
+  DateTime startAt;
+
+  @JsonKey(name: "end_at")
+  DateTime endAt;
+
+  TaskCardModel(
+    this.id,
+    this.icon,
+    this.name,
+    this.description,
+    this.cond,
+    this.startAt,
+    this.endAt,
+  );
 
   factory TaskCardModel.fromJson(JsonObject json) =>
       _$TaskCardModelFromJson(json);
@@ -171,7 +185,10 @@ class _TaskCardState extends State<TaskCard>
     return ExpansionTileCard(
       key: key,
       elevation: 0,
-      baseColor: Colors.transparent,
+      baseColor:
+          widget.model.endAt.isAfter(DateTime.now())
+              ? Colors.transparent
+              : Theme.of(context).primaryColorLight.withOpacity(0.5),
       expandedColor: Colors.transparent,
       borderRadius: BorderRadius.zero,
       leading: CircleAvatar(

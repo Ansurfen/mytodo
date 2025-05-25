@@ -346,4 +346,28 @@ Map<String, String> get enUS => {
   "month_10": "oct.",
   "month_11": "nov.",
   "month_12": "dec.",
+
+  "about": "About",
+
+  "password_required": "Password is required",
+  "password_not_match": "Password do not match",
+  "password_edited": "Password edited",
+
+  "calendar_view_agenda": "List",
+  "calendar_view_day": "One Day",
+  "calendar_view_day3": "Three days",
+  "calendar_view_day3Draggable": "Three days - Draggable events",
+  "calendar_view_month": "Month",
+  "calendar_view_multiColumn2": "Multi columns 1",
+  "calendar_view_multiColumn1": "Multi columns 2",
+  "calendar_view_day7": "Seven days",
+
+  "invite": "Invite",
+  "exit": "Exit",
+
+  "start_at": "Start At",
+  "end_at": "End At",
+  "conditions": "Conditions",
+
+  "close": "Close",
 };

@@ -18,6 +18,7 @@ class ConversionController extends getx.GetxController {
   Map<String, VideoPlayerController> videoplayers = {};
   late Chatsnapshot chatsnapshot;
   late ChatController chatController;
+  getx.Rx<int> onlineCount = 0.obs;
 
   @override
   void onInit() {
@@ -31,6 +32,9 @@ class ConversionController extends getx.GetxController {
     );
     Future.delayed(Duration.zero, () {
       if (chatsnapshot.isTopic) {
+        chatTopicOnlineCount(topicId: chatsnapshot.id).then((v) {
+          onlineCount.value = v["count"];
+        });
         topicMemberGetRequest(id: chatsnapshot.id).then((v) {
           List<ChatUser> chatusers = [];
           for (var e in v) {

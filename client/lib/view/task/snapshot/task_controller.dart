@@ -13,6 +13,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   late final AnimationController animationController;
   Animation<double>? topBarAnimation;
   RxList<TaskCardModel> tasks = <TaskCardModel>[].obs;
+  RxList<TaskCardModel> filteredTasks = <TaskCardModel>[].obs;
   Pagination<TaskCardModel> pagination = Pagination();
   Rx<bool> showMask = false.obs;
   late Future<bool> getData;
@@ -29,6 +30,102 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
         yearlyTotal: 0,
       ).obs;
   RxInt unreadCount = 0.obs;
+
+  // 添加过滤条件
+  Rx<bool> filterFinish = false.obs;
+  Rx<bool> filterTimeout = false.obs;
+  Rx<bool> filterRunning = false.obs;
+  Rx<DateTime?> startDate = Rx<DateTime?>(null);
+  Rx<DateTime?> endDate = Rx<DateTime?>(null);
+  Rx<String> searchQuery = ''.obs;
+
+  void applyFilters() {
+    // 如果没有激活任何过滤条件，显示所有任务
+    if (searchQuery.value.isEmpty &&
+        startDate.value == null &&
+        endDate.value == null &&
+        !filterFinish.value &&
+        !filterTimeout.value &&
+        !filterRunning.value) {
+      filteredTasks.value = List.from(tasks);
+      return;
+    }
+
+    filteredTasks.value =
+        tasks.where((task) {
+          // 搜索过滤
+          if (searchQuery.value.isNotEmpty) {
+            if (!task.name.toLowerCase().contains(
+                  searchQuery.value.toLowerCase(),
+                ) &&
+                !task.description.toLowerCase().contains(
+                  searchQuery.value.toLowerCase(),
+                )) {
+              return false;
+            }
+          }
+
+          // 日期过滤
+          if (startDate.value != null && endDate.value != null) {
+            if (task.startAt.isBefore(startDate.value!) ||
+                task.endAt.isAfter(endDate.value!)) {
+              return false;
+            }
+          }
+
+          // 状态过滤
+          bool isFinished = task.cond.every((cond) => cond.finish);
+          bool isOverdue = task.endAt.isBefore(DateTime.now()) && !isFinished;
+          bool isRunning = !isFinished && !isOverdue;
+
+          if (filterFinish.value && !isFinished) return false;
+          if (filterTimeout.value && !isOverdue) return false;
+          if (filterRunning.value && !isRunning) return false;
+
+          return true;
+        }).toList();
+  }
+
+  void setSearchQuery(String query) {
+    searchQuery.value = query;
+    applyFilters();
+  }
+
+  void clearFilters() {
+    searchQuery.value = '';
+    startDate.value = null;
+    endDate.value = null;
+    filterFinish.value = false;
+    filterTimeout.value = false;
+    filterRunning.value = false;
+    applyFilters();
+  }
+
+  void closeFilter() {
+    showMask.value = false;
+  }
+
+  void setDateRange(DateTime? start, DateTime? end) {
+    startDate.value = start;
+    endDate.value = end;
+    applyFilters();
+  }
+
+  void toggleFilterFinish(bool value) {
+    filterFinish.value = value;
+    applyFilters();
+  }
+
+  void toggleFilterTimeout(bool value) {
+    filterTimeout.value = value;
+    applyFilters();
+  }
+
+  void toggleFilterRunning(bool value) {
+    filterRunning.value = value;
+    applyFilters();
+  }
+
   @override
   void onInit() {
     getData = doOnce(_getData)();
@@ -59,11 +156,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
     super.dispose();
   }
 
-  Future loadTask() {
-    // page++;
-    pagination.inc();
-    return _fetch();
-  }
+  void loadTask() {}
 
   Future refreshTask() {
     pagination.setIndex(1);
@@ -72,7 +165,7 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
   }
 
   Future _fetch() async {
-    return topicGetRequest(
+    return taskGetRequest(
       page: pagination.index(),
       limit: pagination.getLimit(),
     ).then((v) {
@@ -97,9 +190,13 @@ class TaskController extends GetxController with GetTickerProviderStateMixin {
             e['name'] as String,
             e['description'] as String,
             conds,
+            DateTime.parse(e["start_at"]),
+            DateTime.parse(e["end_at"]),
           ),
         );
       }
+      // 初始化时，将原始数据复制到过滤列表中
+      filteredTasks.value = List.from(tasks);
     });
   }
 

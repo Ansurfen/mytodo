@@ -115,7 +115,7 @@ class _TopicPageState extends State<TopicPage> {
                         color: darkMode ? Colors.white : Colors.black,
                       ),
                       title: Text(
-                        mode.text,
+                        mode.text.tr,
                         style: TextStyle(
                           color: darkMode ? Colors.white : Colors.black,
                         ),
@@ -137,14 +137,20 @@ class _TopicPageState extends State<TopicPage> {
                     value: mode,
                     child: ListTile(
                       onTap: () {
-                        if (mode == ToolBoxView.exit) {
-                          topicExitRequest(topicId: controller.id).then((_) {
+                        switch (mode) {
+                          case ToolBoxView.add:
+
+                            break;
+                          case ToolBoxView.exit:
+                            topicExitRequest(topicId: controller.id).then((_) {
                             Get.back();
                             Get.snackbar(
                               "success".tr,
                               "exit_topic_success".tr,
                             );
-                          });
+                            });
+                          default:
+                            break;
                         }
                       },
                       leading: Icon(
@@ -152,7 +158,7 @@ class _TopicPageState extends State<TopicPage> {
                         color: darkMode ? Colors.white : Colors.black,
                       ),
                       title: Text(
-                        mode.text,
+                        mode.text.tr,
                         style: TextStyle(
                           color: darkMode ? Colors.white : Colors.black,
                         ),

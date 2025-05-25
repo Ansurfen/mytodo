@@ -71,8 +71,25 @@ class _EditPageState extends State<EditPage> {
                       },
                       value: Text(controller.nameController.text),
                     ),
-                    // TODO
-                    SettingsTile.navigation(title: Text("about".tr)),
+                    SettingsTile.navigation(
+                      title: Text("about".tr),
+                      onPressed: (context) {
+                        showTextDialog(
+                          context,
+                          title: "about".tr,
+                          content: TextField(
+                            controller: controller.aboutController,
+                          ),
+                          onConfirm: () {
+                            setState(() {
+                              Get.back();
+                            });
+                          },
+                          onCancel: () => Get.back(),
+                        );
+                      },
+                      value: Text(controller.aboutController.text),
+                    ),
                     SettingsTile.navigation(
                       title: Text("phone_number".tr),
                       onPressed: (context) {
@@ -228,13 +245,13 @@ class _EditPageState extends State<EditPage> {
                                     child: Column(
                                       children: [
                                         PasswordTextField(
-                                          controller: _passwordController,
+                                          controller: controller.passwordController,
                                           labelText: "edit_new_password".tr,
                                         ),
                                         SizedBox(height: 15),
                                         PasswordTextField(
                                           controller:
-                                              _confirmPasswordController,
+                                              controller.confirmPasswordController,
                                           labelText: "edit_confirm_password".tr,
                                         ),
                                         if (_errorText != null) // 显示错误信息
@@ -271,22 +288,25 @@ class _EditPageState extends State<EditPage> {
     );
   }
 
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+
   String? _errorText;
 
   void _submit() {
-    Get.back();
+    _validatePasswords();
+    if (_errorText != null) {
+      return;
+    }
+     controller.editPassword(context);
   }
 
   void _validatePasswords() {
     setState(() {
-      if (_passwordController.text.isEmpty ||
-          _confirmPasswordController.text.isEmpty) {
-        _errorText = "密码不能为空";
-      } else if (_passwordController.text != _confirmPasswordController.text) {
-        _errorText = "两次输入的密码不一致";
+      if (controller.passwordController.text.isEmpty ||
+          controller.confirmPasswordController.text.isEmpty) {
+        _errorText = "password_required".tr;
+      } else if (controller.passwordController.text !=
+          controller.confirmPasswordController.text) {
+        _errorText = "password_not_match".tr;
       } else {
         _errorText = null; // 校验通过
       }

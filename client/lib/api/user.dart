@@ -196,6 +196,7 @@ Future userEditRequest({required User u, TFile? profile}) async {
       "email": u.email,
       "telephone": u.telephone ?? "",
       "is_male": u.isMale ? "1" : "0",
+      "about": u.about ?? "",
     }.entries,
   );
   if (profile != null) {
@@ -215,4 +216,12 @@ Image userProfile(int id) {
 Future<User> userInfo(int id) async {
   var data = (await HTTP.get('/user/info/$id')).data;
   return User(id, data["data"]["name"], "");
+}
+
+Future userEditPasswordRequest({required String password}) async {
+  return await HTTP.post(
+    "/user/edit_password",
+    data: {"password": password},
+    options: Options(headers: {"Authorization": Guard.jwt}),
+  );
 }

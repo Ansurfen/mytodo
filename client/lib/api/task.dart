@@ -73,7 +73,7 @@ Future<Map<String, dynamic>> taskFileUploadRequest({
   )).data["data"];
 }
 
-Future<List> topicGetRequest({required int page, required int limit}) async {
+Future<List> taskGetRequest({required int page, required int limit}) async {
   return (await HTTP.get(
         '/task/get',
         options: Options(headers: {"Authorization": Guard.jwt}),

@@ -13,4 +13,6 @@ TaskCardModel _$TaskCardModelFromJson(Map<String, dynamic> json) =>
       json['name'] as String,
       json['description'] as String,
       parseCondition(json['conds'] as List<Map<dynamic, dynamic>>),
+      DateTime.parse(json['start_at'] as String),
+      DateTime.parse(json['end_at'] as String),
     );
