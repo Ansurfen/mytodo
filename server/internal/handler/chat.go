@@ -135,6 +135,30 @@ func ChatTopicNew(ctx *gin.Context) {
 	for _, member := range members {
 		db.WS().Send(fmt.Sprintf("user_%d", member.UserId), wsMsg)
 	}
+
+	// 更新发送者的未读记录到最新消息
+	var unread model.MessageTopicUnread
+	err = db.SQL().Table("message_topic_unread").Where("topic_id = ? AND user_id = ?", req.TopicId, user.ID).First(&unread).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 创建新的未读记录，并设置为已读
+			unread = model.MessageTopicUnread{
+				TopicId:           uint(req.TopicId),
+				UserId:            user.ID,
+				LastReadMessageId: msg.ID,
+			}
+			err = db.SQL().Table("message_topic_unread").Create(&unread).Error
+		} else {
+			log.WithError(err).Error("fail to check unread record")
+		}
+	} else {
+		// 更新现有记录到最新消息
+		unread.LastReadMessageId = msg.ID
+		err = db.SQL().Table("message_topic_unread").Save(&unread).Error
+	}
+	if err != nil {
+		log.WithError(err).Error("fail to update unread record")
+	}
 }
 
 // ChatFriendNew godoc
@@ -244,6 +268,30 @@ func ChatFriendNew(ctx *gin.Context) {
 	db.WS().Send(fmt.Sprintf("user_%d", req.FriendId), wsMsg)
 	// 发送消息给发送者（用于同步）
 	db.WS().Send(fmt.Sprintf("user_%d", user.ID), wsMsg)
+
+	// 更新发送者的未读记录到最新消息
+	var unread model.MessageFriendUnread
+	err = db.SQL().Table("message_friend_unread").Where("friend_id = ? AND user_id = ?", req.FriendId, user.ID).First(&unread).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 创建新的未读记录，并设置为已读
+			unread = model.MessageFriendUnread{
+				FriendId:          req.FriendId,
+				UserId:            user.ID,
+				LastReadMessageId: msg.ID,
+			}
+			err = db.SQL().Table("message_friend_unread").Create(&unread).Error
+		} else {
+			log.WithError(err).Error("fail to check unread record")
+		}
+	} else {
+		// 更新现有记录到最新消息
+		unread.LastReadMessageId = msg.ID
+		err = db.SQL().Table("message_friend_unread").Save(&unread).Error
+	}
+	if err != nil {
+		log.WithError(err).Error("fail to update unread record")
+	}
 }
 
 func convertMessageType(t string) model.MessageType {
@@ -459,11 +507,11 @@ ORDER BY
 	}
 	var messageFriend []messageSnap
 	err = db.SQL().Rawf(`SELECT
-	u.name AS name,
+	f.name AS name,
     ur.friend_id AS Id,
     lm.id AS last_message_id,
     lm.message AS last_message,
-    u.name AS last_sender_name,
+    s.name AS last_sender_name,
     lm.created_at,
     COUNT(m.id) AS unread_count
 FROM 
@@ -479,14 +527,15 @@ JOIN (
     GROUP BY friend_id
 ) last_msg_ids ON ur.friend_id = last_msg_ids.friend_id
 JOIN message_friend lm ON lm.id = last_msg_ids.last_message_id
-JOIN user u ON lm.sent_by = u.id
+JOIN user s ON lm.sent_by = s.id
+JOIN user f ON ur.friend_id = f.id
 LEFT JOIN message_friend m
     ON m.friend_id = ur.friend_id
    AND m.id > COALESCE(mfu.last_read_message_id, 0)
 WHERE 
     ur.user_id = %d
 GROUP BY 
-    ur.friend_id, lm.id, lm.message, u.name, lm.created_at
+    ur.friend_id, lm.id, lm.message, s.name, lm.created_at, f.name
 ORDER BY 
     lm.created_at DESC;`, u.ID).Find(&messageFriend).Error
 	if err != nil {
@@ -766,6 +815,30 @@ func ChatTopicUpload(ctx *gin.Context) {
 		db.WS().Send(fmt.Sprintf("user_%d", member.UserId), wsMsg)
 	}
 
+	// 更新发送者的未读记录到最新消息
+	var unread model.MessageTopicUnread
+	err = db.SQL().Table("message_topic_unread").Where("topic_id = ? AND user_id = ?", req.TopicId, u.ID).First(&unread).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 创建新的未读记录，并设置为已读
+			unread = model.MessageTopicUnread{
+				TopicId:           uint(topicId),
+				UserId:            u.ID,
+				LastReadMessageId: msg.ID,
+			}
+			err = db.SQL().Table("message_topic_unread").Create(&unread).Error
+		} else {
+			log.WithError(err).Error("fail to check unread record")
+		}
+	} else {
+		// 更新现有记录到最新消息
+		unread.LastReadMessageId = msg.ID
+		err = db.SQL().Table("message_topic_unread").Save(&unread).Error
+	}
+	if err != nil {
+		log.WithError(err).Error("fail to update unread record")
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
@@ -883,6 +956,30 @@ func ChatFriendUpload(ctx *gin.Context) {
 	// 发送消息给发送者（用于同步）
 	db.WS().Send(fmt.Sprintf("user_%d", u.ID), wsMsg)
 
+	// 更新发送者的未读记录到最新消息
+	var unread model.MessageFriendUnread
+	err = db.SQL().Table("message_friend_unread").Where("friend_id = ? AND user_id = ?", req.FriendId, u.ID).First(&unread).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 创建新的未读记录，并设置为已读
+			unread = model.MessageFriendUnread{
+				FriendId:          uint(friendId),
+				UserId:            u.ID,
+				LastReadMessageId: msg.ID,
+			}
+			err = db.SQL().Table("message_friend_unread").Create(&unread).Error
+		} else {
+			log.WithError(err).Error("fail to check unread record")
+		}
+	} else {
+		// 更新现有记录到最新消息
+		unread.LastReadMessageId = msg.ID
+		err = db.SQL().Table("message_friend_unread").Save(&unread).Error
+	}
+	if err != nil {
+		log.WithError(err).Error("fail to update unread record")
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
@@ -969,7 +1066,7 @@ func ChatTopicRead(ctx *gin.Context) {
 		}
 	} else {
 		readed = model.MessageTopicUnread{
-			TopicId:           req.TopicId,
+			TopicId:           uint(req.TopicId),
 			UserId:            u.ID,
 			LastReadMessageId: req.LastMessageId,
 		}
@@ -980,6 +1077,40 @@ func ChatTopicRead(ctx *gin.Context) {
 			return
 		}
 	}
+}
+
+func ChatTopicOnlineCount(ctx *gin.Context) {
+	var req api.ChatTopicOnlineCountRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+
+	// 获取群组所有成员
+	var members []model.TopicJoin
+	err = db.SQL().Table("topic_join").Where("topic_id = ?", req.TopicId).Find(&members).Error
+	if err != nil {
+		log.WithError(err).Error("fail to get topic members")
+		ctx.Abort()
+		return
+	}
+
+	// 统计在线人数
+	onlineCount := 0
+	for _, member := range members {
+		// 检查Redis中是否存在该用户的在线记录
+		_, _, err = db.Rdb().Scan(context.TODO(), 100, fmt.Sprintf("*user_%d*", member.UserId), 1).Result()
+		if err == nil {
+			onlineCount++
+		}
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"count": onlineCount,
+		"total": len(members),
+	})
 }
 
 func ChatFriendRead(ctx *gin.Context) {
@@ -1015,7 +1146,7 @@ func ChatFriendRead(ctx *gin.Context) {
 		}
 	} else {
 		readed = model.MessageFriendUnread{
-			FriendId:          req.FriendId,
+			FriendId:          uint(req.FriendId),
 			UserId:            u.ID,
 			LastReadMessageId: req.LastMessageId,
 		}

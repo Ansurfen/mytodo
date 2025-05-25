@@ -532,6 +532,7 @@ func UserEdit(ctx *gin.Context) {
 		Valid:  true,
 		String: req.Telephone,
 	}
+	u.About = req.About
 	if req.Profile != nil {
 		data, err := req.Profile.Open()
 		if err != nil {
@@ -560,6 +561,27 @@ func UserEdit(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit user"})
+}
+
+func UserEditPassword(ctx *gin.Context) {
+	var req api.UserEditPasswordRequest
+	err := ctx.BindJSON(&req)
+	if err != nil {
+		log.WithError(err).Error("fail to parse json")
+		ctx.Abort()
+		return
+	}
+	u, ok := getUser(ctx)
+	if !ok {
+		return
+	}
+	u.Password = MD5(req.Password)
+	err = db.SQL().Table("user").Save(&u).Error
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit password"})
 }
 
 func UserContacts(ctx *gin.Context) {

@@ -54,6 +54,10 @@ type UserEditRequest struct {
 	IsMale    string                `form:"is_male"`
 }
 
+type UserEditPasswordRequest struct {
+	Password string `json:"password"`
+}
+
 type FriendNewRequest struct {
 	FriendId uint `json:"friend_id"`
 }

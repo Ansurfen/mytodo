@@ -70,3 +70,7 @@ type ChatFriendReadRequest struct {
 	FriendId      uint `json:"friend_id"`
 	LastMessageId uint `json:"last_message_id"`
 }
+
+type ChatTopicOnlineCountRequest struct {
+	TopicId uint `json:"topic_id"`
+}

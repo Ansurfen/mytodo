@@ -21,6 +21,7 @@ func InstallChatRoute(e *gin.Engine) {
 			topicRouter.GET("/file/:filename", handler.ChatTopicFile)
 			topicRouter.GET("/audio/:filename")
 			topicRouter.POST("/read", middleware.Auth, handler.ChatTopicRead)
+			topicRouter.POST("/online_count", middleware.Auth, handler.ChatTopicOnlineCount)
 		}
 		friendRouter := chatRouter.Group("/friend")
 		{
