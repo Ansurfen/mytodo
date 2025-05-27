@@ -18,6 +18,20 @@ definitions:
       voice_duration:
         type: integer
     type: object
+  api.ChatFriendReadRequest:
+    properties:
+      friend_id:
+        type: integer
+      last_message_id:
+        type: integer
+    type: object
+  api.ChatReactionRequest:
+    properties:
+      emoji:
+        type: string
+      message_id:
+        type: integer
+    type: object
   api.ChatTopicNewRequest:
     properties:
       message:
@@ -37,9 +51,37 @@ definitions:
       voice_duration:
         type: integer
     type: object
+  api.ChatTopicOnlineCountRequest:
+    properties:
+      topic_id:
+        type: integer
+    type: object
+  api.ChatTopicReadRequest:
+    properties:
+      last_message_id:
+        type: integer
+      topic_id:
+        type: integer
+    type: object
+  api.FriendCommitRequest:
+    properties:
+      notification_id:
+        type: integer
+      pass:
+        type: boolean
+    type: object
   api.FriendNewRequest:
     properties:
       friend_id:
+        type: integer
+    type: object
+  api.FriendPostGetRequest:
+    properties:
+      friendId:
+        type: integer
+      limit:
+        type: integer
+      page:
         type: integer
     type: object
   api.NotificationDelRequest:
@@ -72,6 +114,68 @@ definitions:
           type: integer
         type: array
     type: object
+  api.PostCommentDelRequest:
+    properties:
+      comment_id:
+        type: integer
+      delete_replies:
+        type: boolean
+    type: object
+  api.PostCommentEditRequest:
+    properties:
+      post_id:
+        type: integer
+      text:
+        type: string
+    type: object
+  api.PostCommentGetRequest:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      post_id:
+        type: integer
+    type: object
+  api.PostCommentLikeRequest:
+    properties:
+      comment_id:
+        type: integer
+      post_id:
+        type: integer
+    type: object
+  api.PostCommentNewRequest:
+    properties:
+      post_id:
+        type: integer
+      reply_id:
+        type: integer
+      text:
+        type: string
+    type: object
+  api.PostCommentReplyGetRequest:
+    properties:
+      comment_id:
+        type: integer
+      page:
+        type: integer
+      page_size:
+        type: integer
+      post_id:
+        type: integer
+    type: object
+  api.PostDelRequest:
+    properties:
+      post_id:
+        type: integer
+    type: object
+  api.PostEditRequest:
+    type: object
+  api.PostLikeRequest:
+    properties:
+      post_id:
+        type: integer
+    type: object
   api.TaskCommitRequest:
     type: object
   api.TaskDelRequest:
@@ -83,7 +187,40 @@ definitions:
     type: object
   api.TaskNewRequest:
     type: object
+  api.TopicApplyCommitRequest:
+    properties:
+      notification_id:
+        type: integer
+      pass:
+        type: boolean
+    type: object
   api.TopicApplyNewRequest:
+    properties:
+      topic_id:
+        type: integer
+    type: object
+  api.TopicCalendarRequest:
+    properties:
+      topic_id:
+        type: integer
+    type: object
+  api.TopicDelRequest:
+    properties:
+      topic_id:
+        type: integer
+    type: object
+  api.TopicEditRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      profile:
+        type: string
+      topic_id:
+        type: integer
+    type: object
+  api.TopicExitRequest:
     properties:
       topic_id:
         type: integer
@@ -100,6 +237,29 @@ definitions:
       invite_code:
         type: string
     type: object
+  api.TopicMemberCommitRequest:
+    properties:
+      notification_id:
+        type: integer
+      pass:
+        type: boolean
+    type: object
+  api.TopicMemberDelRequest:
+    properties:
+      topic_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  api.TopicMemberInviteRequest:
+    properties:
+      topic_id:
+        type: integer
+      users_id:
+        items:
+          type: integer
+        type: array
+    type: object
   api.TopicNewRequest:
     properties:
       description:
@@ -115,6 +275,16 @@ definitions:
           type: string
         type: array
     type: object
+  api.TopicSubscribeRequest:
+    properties:
+      invite_code:
+        type: string
+    type: object
+  api.UserEditPasswordRequest:
+    properties:
+      password:
+        type: string
+    type: object
   api.UserEditRequest:
     type: object
   api.UserLoginRequest:
@@ -124,9 +294,13 @@ definitions:
       pwd:
         type: string
     type: object
-  api.UserSignResponse:
+  api.UserRecoverRequest:
     properties:
-      jwt:
+      email:
+        type: string
+      otp:
+        type: string
+      pwd:
         type: string
     type: object
   api.UserSignUpRequest:
@@ -144,6 +318,11 @@ definitions:
       username:
         type: string
     type: object
+  api.UserVerifyOTPRequest:
+    properties:
+      email:
+        type: string
+    type: object
   model.SwaggerNotification:
     properties:
       createdAt:
@@ -159,29 +338,6 @@ definitions:
       name:
         type: string
       type:
-        type: integer
-      updatedAt:
-        type: string
-    type: object
-  model.SwaggerUser:
-    properties:
-      avatar:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      lastSeen:
-        type: string
-      name:
-        type: string
-      role:
-        type: integer
-      status:
         type: integer
       updatedAt:
         type: string
@@ -252,6 +408,47 @@ paths:
       summary: Get friend messages
       tags:
       - chat
+  /chat/friend/file/{filename}:
+    get:
+      consumes:
+      - application/json
+      description: Get a file (image, audio) from friend chat
+      parameters:
+      - description: File name
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get friend chat file
+      tags:
+      - chat
   /chat/friend/new:
     post:
       consumes:
@@ -295,6 +492,95 @@ paths:
       security:
       - Bearer: []
       summary: Send new message to friend
+      tags:
+      - chat
+  /chat/friend/reaction:
+    post:
+      consumes:
+      - application/json
+      description: Add or update a reaction (emoji) to a friend message
+      parameters:
+      - description: Reaction details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChatReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: React to friend message
+      tags:
+      - chat
+  /chat/friend/read:
+    post:
+      consumes:
+      - application/json
+      description: Mark messages in a friend chat as read up to a specific message
+        ID
+      parameters:
+      - description: Read status details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChatFriendReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Mark friend messages as read
       tags:
       - chat
   /chat/friend/upload:
@@ -343,6 +629,37 @@ paths:
       security:
       - Bearer: []
       summary: Upload file to friend
+      tags:
+      - chat
+  /chat/snap:
+    get:
+      consumes:
+      - application/json
+      description: Get snapshots of all topic and friend chats with their latest messages
+        and unread counts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get chat snapshots
       tags:
       - chat
   /chat/topic/{topic_id}:
@@ -397,6 +714,47 @@ paths:
       summary: Get topic messages
       tags:
       - chat
+  /chat/topic/file/{filename}:
+    get:
+      consumes:
+      - application/json
+      description: Get a file (image, audio) from topic chat
+      parameters:
+      - description: File name
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get topic chat file
+      tags:
+      - chat
   /chat/topic/new:
     post:
       consumes:
@@ -440,6 +798,138 @@ paths:
       security:
       - Bearer: []
       summary: Send new message to topic
+      tags:
+      - chat
+  /chat/topic/online/count:
+    post:
+      consumes:
+      - application/json
+      description: Get the number of online users in a topic chat
+      parameters:
+      - description: Topic details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChatTopicOnlineCountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns count and total members
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get topic online count
+      tags:
+      - chat
+  /chat/topic/reaction:
+    post:
+      consumes:
+      - application/json
+      description: Add or update a reaction (emoji) to a topic message
+      parameters:
+      - description: Reaction details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChatReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: React to topic message
+      tags:
+      - chat
+  /chat/topic/read:
+    post:
+      consumes:
+      - application/json
+      description: Mark messages in a topic chat as read up to a specific message
+        ID
+      parameters:
+      - description: Read status details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChatTopicReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Mark topic messages as read
       tags:
       - chat
   /chat/topic/upload:
@@ -490,6 +980,181 @@ paths:
       summary: Upload file to topic
       tags:
       - chat
+  /chat/ws:
+    get:
+      consumes:
+      - application/json
+      description: Establishes a WebSocket connection for real-time chat functionality.
+        The connection can be authenticated either through a token in the query parameters
+        or through the standard Bearer token.
+      parameters:
+      - description: Authentication token (alternative to Bearer token)
+        in: query
+        name: token
+        type: string
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: WebSocket chat connection
+      tags:
+      - chat
+  /friend/{friend_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a friend
+      parameters:
+      - description: Friend ID
+        in: path
+        name: friend_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get friend details
+      tags:
+      - friends
+  /friend/commit:
+    post:
+      consumes:
+      - application/json
+      description: Accept or reject a friend request
+      parameters:
+      - description: Friend request response
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.FriendCommitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Process friend request
+      tags:
+      - friends
+  /friend/del:
+    post:
+      consumes:
+      - application/json
+      description: Remove a friend from contacts
+      parameters:
+      - description: Friend removal details
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete friend
+      tags:
+      - friends
   /friend/new:
     post:
       consumes:
@@ -532,6 +1197,83 @@ paths:
       security:
       - Bearer: []
       summary: Add new friend
+      tags:
+      - friends
+  /friend/post/get:
+    post:
+      consumes:
+      - application/json
+      description: Get posts from a friend with pagination
+      parameters:
+      - description: Post request details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.FriendPostGetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get friend's posts
+      tags:
+      - friends
+  /friend/snapshot:
+    get:
+      consumes:
+      - application/json
+      description: Get list of friends with their online status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get friends snapshot
       tags:
       - friends
   /notification/del:
@@ -752,6 +1494,36 @@ paths:
       summary: Publish notification
       tags:
       - notifications
+  /notification/unread/count:
+    get:
+      consumes:
+      - application/json
+      description: Get the count of unread notifications for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns unread count
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get unread notifications count
+      tags:
+      - notifications
   /post/{id}:
     get:
       consumes:
@@ -799,6 +1571,598 @@ paths:
       security:
       - Bearer: []
       summary: Get a post by ID
+      tags:
+      - posts
+  /post/comment/del:
+    post:
+      consumes:
+      - application/json
+      description: Delete a comment and optionally its replies
+      parameters:
+      - description: Comment delete details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete comment
+      tags:
+      - posts
+  /post/comment/edit:
+    post:
+      consumes:
+      - application/json
+      description: Edit an existing comment
+      parameters:
+      - description: Comment edit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentEditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Edit comment
+      tags:
+      - posts
+  /post/comment/get:
+    post:
+      consumes:
+      - application/json
+      description: Get comments for a post with pagination
+      parameters:
+      - description: Comment request details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentGetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get post comments
+      tags:
+      - posts
+  /post/comment/like:
+    post:
+      consumes:
+      - application/json
+      description: Toggle like status for a comment
+      parameters:
+      - description: Comment like details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Like/Unlike comment
+      tags:
+      - posts
+  /post/comment/new:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment on a post or reply to an existing comment
+      parameters:
+      - description: Comment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentNewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Create new comment
+      tags:
+      - posts
+  /post/comment/reply/get:
+    post:
+      consumes:
+      - application/json
+      description: Get replies to a specific comment with pagination
+      parameters:
+      - description: Reply request details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostCommentReplyGetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get comment replies
+      tags:
+      - posts
+  /post/del:
+    post:
+      consumes:
+      - application/json
+      description: Delete a post by ID
+      parameters:
+      - description: Post ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete a post
+      tags:
+      - posts
+  /post/detail/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific post including author
+        info and statistics
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get post details
+      tags:
+      - posts
+  /post/edit:
+    post:
+      consumes:
+      - application/json
+      description: Edit an existing post's title and/or text
+      parameters:
+      - description: Post edit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostEditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Edit a post
+      tags:
+      - posts
+  /post/friend:
+    get:
+      consumes:
+      - application/json
+      description: Get posts from friends with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Posts per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get friends' posts
+      tags:
+      - posts
+  /post/history:
+    get:
+      consumes:
+      - application/json
+      description: Get history of posts visited by the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get visit history
+      tags:
+      - posts
+  /post/like:
+    post:
+      consumes:
+      - application/json
+      description: Toggle like status for a post
+      parameters:
+      - description: Post like details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.PostLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Like/Unlike a post
+      tags:
+      - posts
+  /post/me:
+    get:
+      consumes:
+      - application/json
+      description: Get all posts created by the current user with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Posts per page
+        in: query
+        name: limit
+        type: integer
+      - default: "2000-01-01T00:00:00Z"
+        description: Filter by creation date
+        in: query
+        name: created_at
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get user's posts
       tags:
       - posts
   /post/new:
@@ -864,6 +2228,154 @@ paths:
       security:
       - Bearer: []
       summary: Create a new post
+      tags:
+      - posts
+  /post/search:
+    get:
+      consumes:
+      - application/json
+      description: Search posts by keywords
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Search posts
+      tags:
+      - posts
+  /post/snapshot:
+    get:
+      consumes:
+      - application/json
+      description: Get a snapshot of posts from friends with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Posts per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get posts snapshot
+      tags:
+      - posts
+  /post/source/{file}:
+    get:
+      consumes:
+      - application/json
+      description: Get a file (image, video) from a post
+      parameters:
+      - description: File name
+        in: path
+        name: file
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get post file
+      tags:
+      - posts
+  /post/visitors:
+    get:
+      consumes:
+      - application/json
+      description: Get list of users who visited the current user's posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get post visitors
       tags:
       - posts
   /task/{task_id}:
@@ -953,6 +2465,36 @@ paths:
       summary: Commit task completion
       tags:
       - tasks
+  /task/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get task statistics and progress overview
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get task dashboard
+      tags:
+      - tasks
   /task/del:
     post:
       consumes:
@@ -1001,6 +2543,54 @@ paths:
       security:
       - Bearer: []
       summary: Delete task
+      tags:
+      - tasks
+  /task/detail/{taskId}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific task including conditions
+      parameters:
+      - description: Task ID
+        in: path
+        name: taskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get task details
       tags:
       - tasks
   /task/edit:
@@ -1053,6 +2643,90 @@ paths:
       summary: Edit task
       tags:
       - tasks
+  /task/file/delete/{filename}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a file associated with a task
+      parameters:
+      - description: File name
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete task file
+      tags:
+      - tasks
+  /task/file/download/{filename}:
+    get:
+      consumes:
+      - application/json
+      description: Download a file associated with a task
+      parameters:
+      - description: File name
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Download task file
+      tags:
+      - tasks
   /task/file/upload:
     post:
       consumes:
@@ -1101,6 +2775,77 @@ paths:
       summary: Upload task file
       tags:
       - tasks
+  /task/heatmap:
+    get:
+      consumes:
+      - application/json
+      description: Get task completion heatmap data for the last year
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get task heatmap
+      tags:
+      - tasks
+  /task/locate/{filename}:
+    get:
+      consumes:
+      - application/json
+      description: Get the location image for a task
+      parameters:
+      - description: Image filename
+        in: path
+        name: filename
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get location image
+      tags:
+      - tasks
   /task/new:
     post:
       consumes:
@@ -1145,6 +2890,151 @@ paths:
       summary: Create new task
       tags:
       - tasks
+  /task/permission/{taskId}:
+    get:
+      consumes:
+      - application/json
+      description: Get the current user's permissions for a specific task
+      parameters:
+      - description: Task ID
+        in: path
+        name: taskId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get task permissions
+      tags:
+      - tasks
+  /task/qr/{taskId}:
+    get:
+      consumes:
+      - application/json
+      description: Generate a QR code token for task verification
+      parameters:
+      - description: Task ID
+        in: path
+        name: taskId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Generate task QR code
+      tags:
+      - tasks
+  /task/stats/{taskId}:
+    get:
+      consumes:
+      - application/json
+      description: Get statistics about task completion for all members
+      parameters:
+      - description: Task ID
+        in: path
+        name: taskId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get task statistics
+      tags:
+      - tasks
   /topic/{topic_id}/members:
     get:
       consumes:
@@ -1185,6 +3075,98 @@ paths:
       security:
       - Bearer: []
       summary: Get topic members
+      tags:
+      - topics
+  /topic/{topicId}/permission:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's permissions for a topic
+      parameters:
+      - description: Topic ID
+        in: path
+        name: topicId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get topic permissions
+      tags:
+      - topics
+  /topic/apply/commit:
+    post:
+      consumes:
+      - application/json
+      description: Handle topic join application approval or rejection
+      parameters:
+      - description: Application response
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicApplyCommitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Process topic application
       tags:
       - topics
   /topic/apply/new:
@@ -1229,6 +3211,243 @@ paths:
       security:
       - Bearer: []
       summary: Apply to join topic
+      tags:
+      - topics
+  /topic/calendar:
+    post:
+      consumes:
+      - application/json
+      description: Get calendar data for tasks in the topic
+      parameters:
+      - description: Calendar request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get topic calendar
+      tags:
+      - topics
+  /topic/del:
+    post:
+      consumes:
+      - application/json
+      description: Delete a topic (only owner can delete)
+      parameters:
+      - description: Topic ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete topic
+      tags:
+      - topics
+  /topic/disband:
+    post:
+      consumes:
+      - application/json
+      description: Disband a topic (only owner can disband)
+      parameters:
+      - description: Topic ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Disband topic
+      tags:
+      - topics
+  /topic/edit:
+    post:
+      consumes:
+      - application/json
+      description: Update topic profile information
+      parameters:
+      - description: Topic update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicEditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Edit topic
+      tags:
+      - topics
+  /topic/exit:
+    post:
+      consumes:
+      - application/json
+      description: Leave a topic or disband it if owner
+      parameters:
+      - description: Exit details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicExitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Exit topic
       tags:
       - topics
   /topic/find:
@@ -1304,6 +3523,62 @@ paths:
       summary: Get user's topics
       tags:
       - topics
+  /topic/grant-admin:
+    post:
+      consumes:
+      - application/json
+      description: Grant admin role to a topic member
+      parameters:
+      - description: Admin grant details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Grant admin role
+      tags:
+      - topics
   /topic/join:
     post:
       consumes:
@@ -1346,6 +3621,150 @@ paths:
       security:
       - Bearer: []
       summary: Join topic
+      tags:
+      - topics
+  /topic/member/commit:
+    post:
+      consumes:
+      - application/json
+      description: Accept or reject topic membership invitation
+      parameters:
+      - description: Invitation response
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberCommitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Process member invitation
+      tags:
+      - topics
+  /topic/member/del:
+    post:
+      consumes:
+      - application/json
+      description: Remove a member from the topic
+      parameters:
+      - description: Member removal details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Delete topic member
+      tags:
+      - topics
+  /topic/member/invite:
+    post:
+      consumes:
+      - application/json
+      description: Send invitations to users to join the topic
+      parameters:
+      - description: Invitation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Invite topic members
       tags:
       - topics
   /topic/new:
@@ -1392,6 +3811,306 @@ paths:
       summary: Create new topic
       tags:
       - topics
+  /topic/remove-member:
+    post:
+      consumes:
+      - application/json
+      description: Remove a member from the topic (admin or owner only)
+      parameters:
+      - description: Member removal details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Remove topic member
+      tags:
+      - topics
+  /topic/revoke-admin:
+    post:
+      consumes:
+      - application/json
+      description: Revoke admin role from a topic member
+      parameters:
+      - description: Admin revocation details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicMemberDelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Revoke admin role
+      tags:
+      - topics
+  /topic/selectable:
+    get:
+      consumes:
+      - application/json
+      description: Get list of topics where user has admin or higher permissions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get selectable topics
+      tags:
+      - topics
+  /topic/subscribe:
+    post:
+      consumes:
+      - application/json
+      description: Join a topic using invite code
+      parameters:
+      - description: Subscription details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.TopicSubscribeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Subscribe to topic
+      tags:
+      - topics
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user information by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by ID
+      tags:
+      - users
+  /user/{id}/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get user's profile image by user ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user profile image
+      tags:
+      - users
+  /user/contacts:
+    get:
+      consumes:
+      - application/json
+      description: Get list of user's contacts/friends
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Get user contacts
+      tags:
+      - users
   /user/detail:
     get:
       consumes:
@@ -1403,7 +4122,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.SwaggerUser'
+            type: object
         "401":
           description: Unauthorized
           schema:
@@ -1439,7 +4158,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.SwaggerUser'
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -1463,6 +4182,50 @@ paths:
       summary: Edit user profile
       tags:
       - users
+  /user/edit-password:
+    post:
+      consumes:
+      - application/json
+      description: Update user's password
+      parameters:
+      - description: Password update details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserEditPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Edit user password
+      tags:
+      - users
   /user/login:
     post:
       consumes:
@@ -1481,7 +4244,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.UserSignResponse'
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -1509,6 +4272,75 @@ paths:
       summary: Login user
       tags:
       - users
+  /user/online:
+    get:
+      consumes:
+      - application/json
+      description: Get list of currently online users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get online users
+      tags:
+      - users
+  /user/recover:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using OTP verification
+      parameters:
+      - description: Password recovery details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserRecoverRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Recover user password
+      tags:
+      - users
   /user/sign:
     post:
       consumes:
@@ -1528,7 +4360,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.UserSignResponse'
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -1562,7 +4394,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.UserSignResponse'
+            type: object
         "400":
           description: Bad Request
           schema:
@@ -1582,6 +4414,40 @@ paths:
               type: string
             type: object
       summary: Register new user
+      tags:
+      - users
+  /user/verify-otp:
+    post:
+      consumes:
+      - application/json
+      description: Generate or verify OTP for user operations
+      parameters:
+      - description: OTP verification details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UserVerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify OTP
       tags:
       - users
 securityDefinitions:

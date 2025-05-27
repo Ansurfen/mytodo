@@ -460,6 +460,17 @@ func ChatFriendGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "", "data": messages})
 }
 
+// ChatSnap godoc
+// @Summary      Get chat snapshots
+// @Description  Get snapshots of all topic and friend chats with their latest messages and unread counts
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/snap [get]
 func ChatSnap(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -574,6 +585,19 @@ type messageSnap struct {
 	UnreadCount    uint      `json:"unreaded"`
 }
 
+// ChatTopicReaction godoc
+// @Summary      React to topic message
+// @Description  Add or update a reaction (emoji) to a topic message
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatReactionRequest true "Reaction details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/reaction [post]
 func ChatTopicReaction(ctx *gin.Context) {
 	var req api.ChatReactionRequest
 	err := ctx.BindJSON(&req)
@@ -623,6 +647,19 @@ func ChatTopicReaction(ctx *gin.Context) {
 	}
 }
 
+// ChatFriendReaction godoc
+// @Summary      React to friend message
+// @Description  Add or update a reaction (emoji) to a friend message
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatReactionRequest true "Reaction details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/reaction [post]
 func ChatFriendReaction(ctx *gin.Context) {
 	var req api.ChatReactionRequest
 	err := ctx.BindJSON(&req)
@@ -983,6 +1020,19 @@ func ChatFriendUpload(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": ""})
 }
 
+// ChatTopicFile godoc
+// @Summary      Get topic chat file
+// @Description  Get a file (image, audio) from topic chat
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        filename path string true "File name"
+// @Success      200  {file}  binary
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/file/{filename} [get]
 func ChatTopicFile(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
@@ -1008,6 +1058,19 @@ func ChatTopicFile(ctx *gin.Context) {
 	}
 }
 
+// ChatFriendFile godoc
+// @Summary      Get friend chat file
+// @Description  Get a file (image, audio) from friend chat
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        filename path string true "File name"
+// @Success      200  {file}  binary
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/file/{filename} [get]
 func ChatFriendFile(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
@@ -1033,6 +1096,19 @@ func ChatFriendFile(ctx *gin.Context) {
 	}
 }
 
+// ChatTopicRead godoc
+// @Summary      Mark topic messages as read
+// @Description  Mark messages in a topic chat as read up to a specific message ID
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatTopicReadRequest true "Read status details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/read [post]
 func ChatTopicRead(ctx *gin.Context) {
 	var req api.ChatTopicReadRequest
 	err := ctx.BindJSON(&req)
@@ -1079,6 +1155,19 @@ func ChatTopicRead(ctx *gin.Context) {
 	}
 }
 
+// ChatTopicOnlineCount godoc
+// @Summary      Get topic online count
+// @Description  Get the number of online users in a topic chat
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatTopicOnlineCountRequest true "Topic details"
+// @Success      200  {object}  map[string]interface{} "Returns count and total members"
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/topic/online/count [post]
 func ChatTopicOnlineCount(ctx *gin.Context) {
 	var req api.ChatTopicOnlineCountRequest
 	err := ctx.BindJSON(&req)
@@ -1113,6 +1202,19 @@ func ChatTopicOnlineCount(ctx *gin.Context) {
 	})
 }
 
+// ChatFriendRead godoc
+// @Summary      Mark friend messages as read
+// @Description  Mark messages in a friend chat as read up to a specific message ID
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.ChatFriendReadRequest true "Read status details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/friend/read [post]
 func ChatFriendRead(ctx *gin.Context) {
 	var req api.ChatFriendReadRequest
 	err := ctx.BindJSON(&req)

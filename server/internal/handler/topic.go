@@ -323,6 +323,19 @@ func TopicApplyNew(ctx *gin.Context) {
 	})
 }
 
+// TopicApplyCommit godoc
+// @Summary      Process topic application
+// @Description  Handle topic join application approval or rejection
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicApplyCommitRequest true "Application response"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/apply/commit [post]
 func TopicApplyCommit(ctx *gin.Context) {
 	var req api.TopicApplyCommitRequest
 	err := ctx.BindJSON(&req)
@@ -437,6 +450,17 @@ type topicFind struct {
 	MemberCount uint `json:"member_count"`
 }
 
+// TopicGetSelectable godoc
+// @Summary      Get selectable topics
+// @Description  Get list of topics where user has admin or higher permissions
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/selectable [get]
 func TopicGetSelectable(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -475,10 +499,38 @@ func TopicGetSelectable(ctx *gin.Context) {
 	})
 }
 
+// TopicEdit godoc
+// @Summary      Edit topic
+// @Description  Update topic profile information
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicEditRequest true "Topic update details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/edit [post]
 func TopicEdit(ctx *gin.Context) {
 	// profile
 }
 
+// TopicDel godoc
+// @Summary      Delete topic
+// @Description  Delete a topic (only owner can delete)
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicDelRequest true "Topic ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/del [post]
 func TopicDel(ctx *gin.Context) {
 	var req api.TopicDelRequest
 	err := ctx.BindJSON(&req)
@@ -655,6 +707,20 @@ type topicUser struct {
 	Role model.TopicRole `json:"role"`
 }
 
+// TopicMemberDel godoc
+// @Summary      Delete topic member
+// @Description  Remove a member from the topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberDelRequest true "Member removal details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/member/del [post]
 func TopicMemberDel(ctx *gin.Context) {
 	var req api.TopicMemberDelRequest
 	err := ctx.BindJSON(&req)
@@ -702,6 +768,20 @@ func TopicMemberDel(ctx *gin.Context) {
 	}
 }
 
+// TopicMemberInvite godoc
+// @Summary      Invite topic members
+// @Description  Send invitations to users to join the topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberInviteRequest true "Invitation details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/member/invite [post]
 func TopicMemberInvite(ctx *gin.Context) {
 	var req api.TopicMemberInviteRequest
 	err := ctx.BindJSON(&req)
@@ -816,6 +896,19 @@ func TopicMemberInvite(ctx *gin.Context) {
 	})
 }
 
+// TopicExit godoc
+// @Summary      Exit topic
+// @Description  Leave a topic or disband it if owner
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicExitRequest true "Exit details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/exit [post]
 func TopicExit(ctx *gin.Context) {
 	var req api.TopicExitRequest
 	err := ctx.BindJSON(&req)
@@ -889,6 +982,19 @@ func TopicExit(ctx *gin.Context) {
 	})
 }
 
+// TopicCalendar godoc
+// @Summary      Get topic calendar
+// @Description  Get calendar data for tasks in the topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicCalendarRequest true "Calendar request"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/calendar [post]
 func TopicCalendar(ctx *gin.Context) {
 	var req api.TopicCalendarRequest
 	err := ctx.Bind(&req)
@@ -923,6 +1029,19 @@ func loadTopicPolicy(tid, uid uint) (policy model.TopicPolicy, err error) {
 	return
 }
 
+// TopicMemberCommit godoc
+// @Summary      Process member invitation
+// @Description  Accept or reject topic membership invitation
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberCommitRequest true "Invitation response"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/member/commit [post]
 func TopicMemberCommit(ctx *gin.Context) {
 	var req api.TopicMemberCommitRequest
 	err := ctx.BindJSON(&req)
@@ -1058,7 +1177,20 @@ func TopicMemberCommit(ctx *gin.Context) {
 	})
 }
 
-// TopicDisband 解散频道
+// TopicDisband godoc
+// @Summary      Disband topic
+// @Description  Disband a topic (only owner can disband)
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicDelRequest true "Topic ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/disband [post]
 func TopicDisband(c *gin.Context) {
 	var req api.TopicDelRequest
 	if err := c.Bind(&req); err != nil {
@@ -1110,6 +1242,20 @@ func TopicDisband(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "topic disbanded successfully"})
 }
 
+// TopicPermission godoc
+// @Summary      Get topic permissions
+// @Description  Get current user's permissions for a topic
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        topicId path int true "Topic ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/{topicId}/permission [get]
 func TopicPermission(c *gin.Context) {
 	u, ok := getUser(c)
 	if !ok {
@@ -1131,6 +1277,20 @@ func TopicPermission(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "success", "data": policy.Role})
 }
 
+// TopicSubscribe godoc
+// @Summary      Subscribe to topic
+// @Description  Join a topic using invite code
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicSubscribeRequest true "Subscription details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/subscribe [post]
 func TopicSubscribe(c *gin.Context) {
 	var req api.TopicSubscribeRequest
 	if err := c.BindJSON(&req); err != nil {
@@ -1190,7 +1350,21 @@ func TopicSubscribe(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "success"})
 }
 
-// TopicGrantAdmin 授予管理员权限
+// TopicGrantAdmin godoc
+// @Summary      Grant admin role
+// @Description  Grant admin role to a topic member
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberDelRequest true "Admin grant details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/grant-admin [post]
 func TopicGrantAdmin(c *gin.Context) {
 	var req api.TopicMemberDelRequest
 	if err := c.Bind(&req); err != nil {
@@ -1227,7 +1401,21 @@ func TopicGrantAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "admin granted successfully"})
 }
 
-// TopicRevokeAdmin 撤销管理员权限
+// TopicRevokeAdmin godoc
+// @Summary      Revoke admin role
+// @Description  Revoke admin role from a topic member
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberDelRequest true "Admin revocation details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/revoke-admin [post]
 func TopicRevokeAdmin(c *gin.Context) {
 	var req api.TopicMemberDelRequest
 	if err := c.Bind(&req); err != nil {
@@ -1264,7 +1452,21 @@ func TopicRevokeAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "admin revoked successfully"})
 }
 
-// TopicRemoveMember 移除成员
+// TopicRemoveMember godoc
+// @Summary      Remove topic member
+// @Description  Remove a member from the topic (admin or owner only)
+// @Tags         topics
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.TopicMemberDelRequest true "Member removal details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /topic/remove-member [post]
 func TopicRemoveMember(c *gin.Context) {
 	var req api.TopicMemberDelRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

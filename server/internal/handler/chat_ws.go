@@ -19,6 +19,19 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// ChatWS godoc
+// @Summary      WebSocket chat connection
+// @Description  Establishes a WebSocket connection for real-time chat functionality. The connection can be authenticated either through a token in the query parameters or through the standard Bearer token.
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        token query string false "Authentication token (alternative to Bearer token)"
+// @Success      101  {string}  string "Switching Protocols"
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /chat/ws [get]
 func ChatWS(ctx *gin.Context) {
 	// 尝试从 query 参数获取 token
 	token := ctx.Query("token")

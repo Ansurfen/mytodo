@@ -230,13 +230,17 @@ class _TaskClickPage extends State<TaskClickPage> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
-                await taskCommitRequest(
+                taskCommitRequest(
                   taskId: controller.model.id,
                   condId: widget.cond.id,
                   argument: {
                     "create_at": DateTime.now().millisecondsSinceEpoch ~/ 1000,
                   },
-                );
+                ).then((value) {
+                  setState(() {
+                    widget.cond.finish = true;
+                  });
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,

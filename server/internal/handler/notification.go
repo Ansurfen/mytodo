@@ -291,6 +291,17 @@ type notificationSnapshot struct {
 	Uid       uint      `json:"uid"`
 }
 
+// NotificationUnreadCount godoc
+// @Summary      Get unread notifications count
+// @Description  Get the count of unread notifications for the current user
+// @Tags         notifications
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{} "Returns unread count"
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /notification/unread/count [get]
 func NotificationUnreadCount(c *gin.Context) {
 	u, ok := getUser(c)
 	if !ok {

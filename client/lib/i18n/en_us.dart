@@ -370,4 +370,7 @@ Map<String, String> get enUS => {
   "conditions": "Conditions",
 
   "close": "Close",
+
+  "file_upload": "File Upload",
+  "upload": "Upload",
 };

@@ -35,7 +35,6 @@ type SwaggerDetailedTask struct {
 	Conditions interface{} `json:"conditions"` // object
 }
 
-
 // TaskNew godoc
 // @Summary      Create new task
 // @Description  Create a new task with conditions and parameters
@@ -290,6 +289,20 @@ func TaskEdit(ctx *gin.Context) {
 	})
 }
 
+// TaskQR godoc
+// @Summary      Generate task QR code
+// @Description  Generate a QR code token for task verification
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        taskId path int true "Task ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/qr/{taskId} [get]
 func TaskQR(ctx *gin.Context) {
 	taskId, err := strconv.Atoi(ctx.Param("taskId"))
 	if err != nil {
@@ -608,6 +621,17 @@ func TaskGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": detailedTasks})
 }
 
+// TaskDashboard godoc
+// @Summary      Get task dashboard
+// @Description  Get task statistics and progress overview
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/dashboard [get]
 func TaskDashboard(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -775,6 +799,17 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	return R * c
 }
 
+// TaskHeatMap godoc
+// @Summary      Get task heatmap
+// @Description  Get task completion heatmap data for the last year
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/heatmap [get]
 func TaskHeatMap(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -805,6 +840,19 @@ func TaskHeatMap(ctx *gin.Context) {
 	})
 }
 
+// TaskLocate godoc
+// @Summary      Get location image
+// @Description  Get the location image for a task
+// @Tags         tasks
+// @Accept       json
+// @Produce      image/png
+// @Security     Bearer
+// @Param        filename path string true "Image filename"
+// @Success      200  {file}  binary
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/locate/{filename} [get]
 func TaskLocate(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
@@ -950,6 +998,19 @@ func TaskFileUpload(ctx *gin.Context) {
 	})
 }
 
+// TaskFileDownload godoc
+// @Summary      Download task file
+// @Description  Download a file associated with a task
+// @Tags         tasks
+// @Accept       json
+// @Produce      application/octet-stream
+// @Security     Bearer
+// @Param        filename path string true "File name"
+// @Success      200  {file}  binary
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/file/download/{filename} [get]
 func TaskFileDownload(ctx *gin.Context) {
 	filename := ctx.Param("filename")
 
@@ -989,6 +1050,19 @@ func TaskFileDownload(ctx *gin.Context) {
 	}
 }
 
+// TaskFileDelete godoc
+// @Summary      Delete task file
+// @Description  Delete a file associated with a task
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        filename path string true "File name"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/file/delete/{filename} [delete]
 func TaskFileDelete(ctx *gin.Context) {
 	// 获取用户信息
 	u, ok := getUser(ctx)
@@ -1057,6 +1131,20 @@ func TaskFileDelete(ctx *gin.Context) {
 	})
 }
 
+// TaskDetail godoc
+// @Summary      Get task details
+// @Description  Get detailed information about a specific task including conditions
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        taskId path string true "Task ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/detail/{taskId} [get]
 func TaskDetail(ctx *gin.Context) {
 	// 获取用户信息
 	u, ok := getUser(ctx)
@@ -1110,7 +1198,20 @@ func TaskDetail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": response})
 }
 
-// TaskStats 获取任务提交统计信息
+// TaskStats godoc
+// @Summary      Get task statistics
+// @Description  Get statistics about task completion for all members
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        taskId path int true "Task ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/stats/{taskId} [get]
 func TaskStats(c *gin.Context) {
 	_, ok := getUser(c)
 	if !ok {
@@ -1196,6 +1297,20 @@ func TaskStats(c *gin.Context) {
 	})
 }
 
+// TaskPermission godoc
+// @Summary      Get task permissions
+// @Description  Get the current user's permissions for a specific task
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        taskId path string true "Task ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /task/permission/{taskId} [get]
 func TaskPermission(ctx *gin.Context) {
 	taskId := ctx.Param("taskId")
 	if taskId == "" {

@@ -24,6 +24,17 @@ import (
 	"gorm.io/gorm"
 )
 
+// PostSearch godoc
+// @Summary      Search posts
+// @Description  Search posts by keywords
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/search [get]
 func PostSearch(ctx *gin.Context) {}
 
 // PostNew godoc
@@ -122,6 +133,20 @@ func PostNew(ctx *gin.Context) {
 	})
 }
 
+// PostEdit godoc
+// @Summary      Edit a post
+// @Description  Edit an existing post's title and/or text
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostEditRequest true "Post edit details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/edit [post]
 func PostEdit(ctx *gin.Context) {
 	var req api.PostEditRequest
 	err := ctx.BindJSON(&req)
@@ -165,6 +190,20 @@ func PostEdit(ctx *gin.Context) {
 	}
 }
 
+// PostDel godoc
+// @Summary      Delete a post
+// @Description  Delete a post by ID
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostDelRequest true "Post ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/del [post]
 func PostDel(ctx *gin.Context) {
 	var req api.PostDelRequest
 	err := ctx.BindJSON(&req)
@@ -247,6 +286,21 @@ func PostGet(ctx *gin.Context) {
 	}
 }
 
+// PostMe godoc
+// @Summary      Get user's posts
+// @Description  Get all posts created by the current user with pagination
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Posts per page" default(10)
+// @Param        created_at query string false "Filter by creation date" default(2000-01-01T00:00:00Z)
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/me [get]
 func PostMe(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -317,6 +371,20 @@ type postFriendSnapshot struct {
 	IsMale       bool           `json:"is_male"`
 }
 
+// PostFriend godoc
+// @Summary      Get friends' posts
+// @Description  Get posts from friends with pagination
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Posts per page" default(10)
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/friend [get]
 func PostFriend(ctx *gin.Context) {
 	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	if err != nil {
@@ -417,6 +485,20 @@ type postDetail struct {
 	IsFavorite bool      `json:"is_favorite"`
 }
 
+// PostDetail godoc
+// @Summary      Get post details
+// @Description  Get detailed information about a specific post including author info and statistics
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id path int true "Post ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/detail/{id} [get]
 func PostDetail(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -477,6 +559,19 @@ func PostDetail(ctx *gin.Context) {
 	}
 }
 
+// PostSource godoc
+// @Summary      Get post file
+// @Description  Get a file (image, video) from a post
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        file path string true "File name"
+// @Success      200  {file}  binary
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/source/{file} [get]
 func PostSource(ctx *gin.Context) {
 	file := ctx.Param("file")
 
@@ -501,6 +596,20 @@ func PostSource(ctx *gin.Context) {
 	}
 }
 
+// PostSnapshot godoc
+// @Summary      Get posts snapshot
+// @Description  Get a snapshot of posts from friends with pagination
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        page query int false "Page number" default(1)
+// @Param        limit query int false "Posts per page" default(10)
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/snapshot [get]
 func PostSnapshot(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -592,6 +701,19 @@ func hasPermissionToReadPost(ctx *gin.Context, postId uint) (post model.Post, ok
 	return post, relationCount > 0
 }
 
+// PostLike godoc
+// @Summary      Like/Unlike a post
+// @Description  Toggle like status for a post
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostLikeRequest true "Post like details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/like [post]
 func PostLike(ctx *gin.Context) {
 	var req api.PostLikeRequest
 	err := ctx.BindJSON(&req)
@@ -657,6 +779,19 @@ type postComment struct {
 	IsFavorite bool      `json:"is_favorite"`
 }
 
+// PostCommentGet godoc
+// @Summary      Get post comments
+// @Description  Get comments for a post with pagination
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentGetRequest true "Comment request details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/get [post]
 func PostCommentGet(ctx *gin.Context) {
 	var req api.PostCommentGetRequest
 	err := ctx.BindJSON(&req)
@@ -737,6 +872,19 @@ LIMIT ? OFFSET ?; `, u.ID, req.PostId, limit, offset).Scan(&comments).Error
 	}
 }
 
+// PostCommentReplyGet godoc
+// @Summary      Get comment replies
+// @Description  Get replies to a specific comment with pagination
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentReplyGetRequest true "Reply request details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/reply/get [post]
 func PostCommentReplyGet(ctx *gin.Context) {
 	var req api.PostCommentReplyGetRequest
 	err := ctx.BindJSON(&req)
@@ -857,6 +1005,19 @@ LIMIT ? OFFSET ?;
 	}
 }
 
+// PostCommentNew godoc
+// @Summary      Create new comment
+// @Description  Create a new comment on a post or reply to an existing comment
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentNewRequest true "Comment details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/new [post]
 func PostCommentNew(ctx *gin.Context) {
 	var req api.PostCommentNewRequest
 	err := ctx.BindJSON(&req)
@@ -931,6 +1092,20 @@ func PostCommentNew(ctx *gin.Context) {
 	}
 }
 
+// PostCommentEdit godoc
+// @Summary      Edit comment
+// @Description  Edit an existing comment
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentEditRequest true "Comment edit details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/edit [post]
 func PostCommentEdit(ctx *gin.Context) {
 	var req api.PostCommentEditRequest
 	err := ctx.BindJSON(&req)
@@ -966,6 +1141,20 @@ func PostCommentEdit(ctx *gin.Context) {
 	}
 }
 
+// PostCommentDel godoc
+// @Summary      Delete comment
+// @Description  Delete a comment and optionally its replies
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentDelRequest true "Comment delete details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/del [post]
 func PostCommentDel(ctx *gin.Context) {
 	var req api.PostCommentDelRequest
 	err := ctx.BindJSON(&req)
@@ -1051,6 +1240,19 @@ func PostCommentDel(ctx *gin.Context) {
 	})
 }
 
+// PostCommentLike godoc
+// @Summary      Like/Unlike comment
+// @Description  Toggle like status for a comment
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.PostCommentLikeRequest true "Comment like details"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/comment/like [post]
 func PostCommentLike(ctx *gin.Context) {
 	var req api.PostCommentLikeRequest
 	err := ctx.BindJSON(&req)
@@ -1119,6 +1321,17 @@ type historyInfo struct {
 	VisitTime time.Time `json:"visit_time"`
 }
 
+// PostVisitors godoc
+// @Summary      Get post visitors
+// @Description  Get list of users who visited the current user's posts
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/visitors [get]
 func PostVisitors(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -1171,6 +1384,17 @@ func PostVisitors(ctx *gin.Context) {
 	})
 }
 
+// PostHistory godoc
+// @Summary      Get visit history
+// @Description  Get history of posts visited by the current user
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /post/history [get]
 func PostHistory(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {

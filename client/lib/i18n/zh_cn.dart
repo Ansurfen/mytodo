@@ -363,4 +363,7 @@ Map<String, String> get zhCN => {
   "conditions": "条件",
 
   "close": "关闭",
+
+  "file_upload": "文件上传",
+  "upload": "上传",
 };

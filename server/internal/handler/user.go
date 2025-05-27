@@ -32,7 +32,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        request body api.UserLoginRequest true "Login credentials"
-// @Success      200  {object}  api.UserSignResponse
+// @Success      200  {object}  object
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/sign [post]
@@ -145,7 +145,7 @@ func UserSign(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request body api.UserLoginRequest true "Login credentials"
-// @Success      200  {object}  api.UserSignResponse
+// @Success      200  {object}  object
 // @Failure      400  {object}  map[string]string
 // @Failure      401  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
@@ -221,7 +221,7 @@ var errorCodeMap = map[error]int{
 // @Accept       json
 // @Produce      json
 // @Param        request body api.UserSignUpRequest true "Registration details"
-// @Success      200  {object}  api.UserSignResponse
+// @Success      200  {object}  object
 // @Failure      400  {object}  map[string]string
 // @Failure      409  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -340,6 +340,19 @@ func UserSignUp(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UserRecover godoc
+// @Summary      Recover user password
+// @Description  Reset user password using OTP verification
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body api.UserRecoverRequest true "Password recovery details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/recover [post]
 func UserRecover(ctx *gin.Context) {
 	var req api.UserRecoverRequest
 	err := ctx.BindJSON(&req)
@@ -387,6 +400,17 @@ func generateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
+// UserVerifyOTP godoc
+// @Summary      Verify OTP
+// @Description  Generate or verify OTP for user operations
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body api.UserVerifyOTPRequest true "OTP verification details"
+// @Success      200  {object}  object
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/verify-otp [post]
 func UserVerifyOTP(ctx *gin.Context) {
 	var req api.UserVerifyOTPRequest
 	err := ctx.BindJSON(&req)
@@ -425,7 +449,7 @@ func UserVerifyOTP(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Success      200  {object}  model.SwaggerUser
+// @Success      200  {object}  object
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /user/detail [get]
@@ -444,6 +468,18 @@ func UserDetail(ctx *gin.Context) {
 	}})
 }
 
+// UserGet godoc
+// @Summary      Get user by ID
+// @Description  Get user information by user ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "User ID"
+// @Success      200  {object}  object
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/{id} [get]
 func UserGet(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -462,6 +498,18 @@ func UserGet(ctx *gin.Context) {
 	ctx.JSON(200, api.UserGetResponse{User: user})
 }
 
+// UserProfile godoc
+// @Summary      Get user profile image
+// @Description  Get user's profile image by user ID
+// @Tags         users
+// @Accept       json
+// @Produce      image/png
+// @Param        id path int true "User ID"
+// @Success      200  {file}    binary
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/{id}/profile [get]
 func UserProfile(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -486,6 +534,15 @@ func UserProfile(ctx *gin.Context) {
 	}
 }
 
+// UserOnline godoc
+// @Summary      Get online users
+// @Description  Get list of currently online users
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  object
+// @Failure      500  {object}  map[string]string
+// @Router       /user/online [get]
 func UserOnline(ctx *gin.Context) {
 	keys, _, err := db.Rdb().Scan(context.TODO(), 100, "*user_*", 100).Result()
 	if err != nil {
@@ -504,7 +561,7 @@ func UserOnline(ctx *gin.Context) {
 // @Produce      json
 // @Security     Bearer
 // @Param        request body api.UserEditRequest true "User profile update"
-// @Success      200  {object}  model.SwaggerUser
+// @Success      200  {object}  object
 // @Failure      400  {object}  map[string]string
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -563,6 +620,19 @@ func UserEdit(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit user"})
 }
 
+// UserEditPassword godoc
+// @Summary      Edit user password
+// @Description  Update user's password
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.UserEditPasswordRequest true "Password update details"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/edit-password [post]
 func UserEditPassword(ctx *gin.Context) {
 	var req api.UserEditPasswordRequest
 	err := ctx.BindJSON(&req)
@@ -584,6 +654,17 @@ func UserEditPassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "successfully edit password"})
 }
 
+// UserContacts godoc
+// @Summary      Get user contacts
+// @Description  Get list of user's contacts/friends
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /user/contacts [get]
 func UserContacts(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -704,6 +785,19 @@ func FriendNew(ctx *gin.Context) {
 	})
 }
 
+// FriendCommit godoc
+// @Summary      Process friend request
+// @Description  Accept or reject a friend request
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.FriendCommitRequest true "Friend request response"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/commit [post]
 func FriendCommit(ctx *gin.Context) {
 	var req api.FriendCommitRequest
 	err := ctx.BindJSON(&req)
@@ -776,6 +870,20 @@ func FriendCommit(ctx *gin.Context) {
 	tx.Commit()
 }
 
+// FriendGet godoc
+// @Summary      Get friend details
+// @Description  Get detailed information about a friend
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        friend_id path int true "Friend ID"
+// @Success      200  {object}  object
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/{friend_id} [get]
 func FriendGet(ctx *gin.Context) {
 	friendId, _ := strconv.Atoi(ctx.Param("friend_id"))
 	u, ok := getUser(ctx)
@@ -873,6 +981,20 @@ func FriendGet(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"data": data})
 }
 
+// FriendPostGet godoc
+// @Summary      Get friend's posts
+// @Description  Get posts from a friend with pagination
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body api.FriendPostGetRequest true "Post request details"
+// @Success      200  {object}  object
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      403  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/post/get [post]
 func FriendPostGet(ctx *gin.Context) {
 	var req api.FriendPostGetRequest
 	err := ctx.BindJSON(&req)
@@ -927,6 +1049,17 @@ func isFriend(ctx *gin.Context, uid, fid uint) (rel model.UserRelation, ok bool)
 	return
 }
 
+// FriendSnapshot godoc
+// @Summary      Get friends snapshot
+// @Description  Get list of friends with their online status
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Success      200  {object}  object
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/snapshot [get]
 func FriendSnapshot(ctx *gin.Context) {
 	u, ok := getUser(ctx)
 	if !ok {
@@ -997,6 +1130,19 @@ type friend struct {
 	Online bool `json:"online"`
 }
 
+// FriendDel godoc
+// @Summary      Delete friend
+// @Description  Remove a friend from contacts
+// @Tags         friends
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        request body object true "Friend removal details"
+// @Success      200  {object}  object
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /friend/del [post]
 func FriendDel(ctx *gin.Context) {}
 
 func MD5(str string) string {
