@@ -143,13 +143,10 @@ class _TaskPageState extends State<TaskPage>
       body: FutureBuilder<bool>(
         future: controller.getData,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            Future.delayed(const Duration(milliseconds: 50), () {
-              controller.animationController.forward();
-            });
-            return _taskList(context);
-          } 
-          return const TaskSkeletonPage();
+          Future.delayed(const Duration(milliseconds: 50), () {
+            controller.animationController.forward();
+          });
+          return _taskList(context);
         },
       ),
     );
@@ -219,7 +216,7 @@ class _TaskPageState extends State<TaskPage>
                       alignment: Alignment.topCenter,
                       padding: EdgeInsets.only(top: size.height * 0.2),
                       onTap: () {
-                        showTipDialog(context, content: "what_is_task".tr);
+                        showTipDialog(context, content: "what_is_task_desc".tr);
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -318,36 +315,59 @@ class _TaskPageState extends State<TaskPage>
                           onTap: () async {
                             DateTime? dateTime = await todoSelectDate(
                               context,
-                              initialDate: DateFormat('MM/dd/yyyy').parse(startDateController.text),
+                              initialDate: DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(startDateController.text),
                             );
                             if (dateTime != null) {
-                              DateTime? endDate = DateFormat('MM/dd/yyyy').parse(endDateController.text);
-                              if (dateTime.isAtSameMomentAs(endDate) || dateTime.isBefore(endDate)) {
-                                startDateController.text = DateFormat('MM/dd/yyyy').format(dateTime);
+                              DateTime? endDate = DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(endDateController.text);
+                              if (dateTime.isAtSameMomentAs(endDate) ||
+                                  dateTime.isBefore(endDate)) {
+                                startDateController.text = DateFormat(
+                                  'MM/dd/yyyy',
+                                ).format(dateTime);
                                 controller.setDateRange(dateTime, endDate);
                               } else {
-                                showToast("Start Date cannot be later than End Date.");
+                                showToast(
+                                  "Start Date cannot be later than End Date.",
+                                );
                               }
                             }
                           },
                           decoration: InputDecoration(
-                            labelStyle: TextStyle(color: Theme.of(context).primaryColor),
+                            labelStyle: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                            ),
                             floatingLabelStyle: TextStyle(color: Colors.grey),
                             labelText: "start_date".tr,
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 2),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
                             ),
-                            contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ),
                           ),
                           style: TextStyle(fontSize: 16),
                         ),
@@ -362,15 +382,24 @@ class _TaskPageState extends State<TaskPage>
                           onTap: () async {
                             DateTime? dateTime = await todoSelectDate(
                               context,
-                              initialDate: DateFormat('MM/dd/yyyy').parse(endDateController.text),
+                              initialDate: DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(endDateController.text),
                             );
                             if (dateTime != null) {
-                              DateTime? startDate = DateFormat('MM/dd/yyyy').parse(startDateController.text);
-                              if (dateTime.isAtSameMomentAs(startDate) || dateTime.isAfter(startDate)) {
-                                endDateController.text = DateFormat('MM/dd/yyyy').format(dateTime);
+                              DateTime? startDate = DateFormat(
+                                'MM/dd/yyyy',
+                              ).parse(startDateController.text);
+                              if (dateTime.isAtSameMomentAs(startDate) ||
+                                  dateTime.isAfter(startDate)) {
+                                endDateController.text = DateFormat(
+                                  'MM/dd/yyyy',
+                                ).format(dateTime);
                                 controller.setDateRange(startDate, dateTime);
                               } else {
-                                showToast("End Date cannot be earlier than Start Date.");
+                                showToast(
+                                  "End Date cannot be earlier than Start Date.",
+                                );
                               }
                             }
                           },
@@ -381,17 +410,29 @@ class _TaskPageState extends State<TaskPage>
                             floatingLabelBehavior: FloatingLabelBehavior.auto,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey, width: 2),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 2,
+                              ),
                             ),
-                            contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 12.0,
+                            ),
                           ),
                           style: TextStyle(fontSize: 16),
                         ),
@@ -414,13 +455,21 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          controller.toggleFilterRunning(!controller.filterRunning.value);
+                          controller.toggleFilterRunning(
+                            !controller.filterRunning.value,
+                          );
                         },
                         child: Row(
                           children: [
                             controller.filterRunning.value
-                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
-                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
                             Text(
                               "filter_running".tr,
                               style: TextStyle(color: Colors.grey),
@@ -432,13 +481,21 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          controller.toggleFilterFinish(!controller.filterFinish.value);
+                          controller.toggleFilterFinish(
+                            !controller.filterFinish.value,
+                          );
                         },
                         child: Row(
                           children: [
                             controller.filterFinish.value
-                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
-                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
                             Text(
                               "filter_finish".tr,
                               style: TextStyle(color: Colors.grey),
@@ -450,13 +507,21 @@ class _TaskPageState extends State<TaskPage>
                     Obx(
                       () => InkWell(
                         onTap: () {
-                          controller.toggleFilterTimeout(!controller.filterTimeout.value);
+                          controller.toggleFilterTimeout(
+                            !controller.filterTimeout.value,
+                          );
                         },
                         child: Row(
                           children: [
                             controller.filterTimeout.value
-                                ? Icon(Icons.check_box, color: Theme.of(context).primaryColor)
-                                : Icon(Icons.check_box_outline_blank, color: Colors.grey),
+                                ? Icon(
+                                  Icons.check_box,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                                : Icon(
+                                  Icons.check_box_outline_blank,
+                                  color: Colors.grey,
+                                ),
                             Text(
                               "filter_timeout".tr,
                               style: TextStyle(color: Colors.grey),
@@ -556,11 +621,8 @@ Future<TimeOfDay?> todoSelectTime(
 
 class SearchTextField extends StatefulWidget {
   final Function(String) onChanged;
-  
-  const SearchTextField({
-    super.key,
-    required this.onChanged,
-  });
+
+  const SearchTextField({super.key, required this.onChanged});
 
   @override
   _SearchTextFieldState createState() => _SearchTextFieldState();

@@ -373,4 +373,27 @@ Map<String, String> get enUS => {
 
   "file_upload": "File Upload",
   "upload": "Upload",
+
+  "no_task": "No task",
+  "what_is_task": "What is task?",
+  "tip": "Tip",
+  "what_is_task_desc": "Task is a task that you can create and manage.",
+
+  "no_post": "No post",
+  "what_is_post": "What is post?",
+  "what_is_post_desc": "Post is a post that you can create and manage.",
+
+  "no_topic": "No topic",
+  "what_is_topic": "What is topic?",
+  "what_is_topic_desc": "Topic is a topic that you can create and manage.",
+
+  "feedback_title": "Your FeedBack",
+  "feedback_title_desc": "Give your best time for this moment.",
+  "feedback_hint": "Leave your valuable feedback...",
+  "feedback_desc": "Give your best time for this moment.",
+  "send": "Send",
+
+  "scan_me": "Scan Me",
+
+  "topic_not_found": "Topic not found",
 };

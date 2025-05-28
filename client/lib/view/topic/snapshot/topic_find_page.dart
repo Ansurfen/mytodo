@@ -45,7 +45,7 @@ class _TopicFindPageState extends State<TopicFindPage> {
                   top: MediaQuery.sizeOf(context).height * 0.35,
                 ),
                 onTap: () {
-                  showTipDialog(context, content: "what_is_topic".tr);
+                  showTipDialog(context, content: "what_is_topic_desc".tr);
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

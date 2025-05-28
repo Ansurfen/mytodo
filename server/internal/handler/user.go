@@ -10,11 +10,15 @@ import (
 	"io"
 	"math/rand"
 	"mytodo/internal/api"
+	"mytodo/internal/conf"
 	"mytodo/internal/db"
 	"mytodo/internal/middleware"
 	"mytodo/internal/model"
 	"net/http"
+	"net/smtp"
 	"strconv"
+	"strings"
+	"text/template"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -243,16 +247,6 @@ func UserSignUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": err.Error()})
 		return
 	}
-	err = db.SQL().Table("user_relation").Create(&model.UserRelation{
-		UserId:   user.ID,
-		FriendId: user.ID,
-	}).Error
-	if err != nil {
-		log.WithError(err).Error("creating user relation")
-		ctx.Abort()
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "服务器内部错误"})
-		return
-	}
 	if user.ID != 0 {
 		ctx.Abort()
 		ctx.JSON(http.StatusConflict, gin.H{"msg": "user already exists"})
@@ -334,6 +328,17 @@ func UserSignUp(ctx *gin.Context) {
 	if err != nil {
 		log.WithError(err).Error("setting cache")
 		ctx.Abort()
+		return
+	}
+
+	err = db.SQL().Table("user_relation").Create(&model.UserRelation{
+		UserId:   user.ID,
+		FriendId: user.ID,
+	}).Error
+	if err != nil {
+		log.WithError(err).Error("creating user relation")
+		ctx.Abort()
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "服务器内部错误"})
 		return
 	}
 
@@ -429,6 +434,7 @@ func UserVerifyOTP(ctx *gin.Context) {
 		return
 	}
 	newOTP := generateOTP()
+	sendEmail(newOTP, req.Email)
 	err = db.Rdb().Set(context.TODO(), key, newOTP, otpTTL).Err()
 	if err != nil {
 		ctx.JSON(200, api.UserVerifyOTPResponse{
@@ -440,6 +446,123 @@ func UserVerifyOTP(ctx *gin.Context) {
 	ctx.JSON(200, api.UserVerifyOTPResponse{
 		OTP: newOTP,
 	})
+}
+
+func sendEmail(code string, toEmail string) error {
+	smtpHost := "smtp.qq.com" // QQ 邮箱的 SMTP 服务器
+	smtpPort := "587"         // 使用 587 端口
+	cfg := conf.Config()
+	senderEmail := cfg.Email.SenderEmail       // 发件人邮箱
+	senderPassword := cfg.Email.SenderPassword // 在 QQ 邮箱设置的应用专用密码
+	receiverEmail := toEmail                   // 收件人邮箱
+
+	// 定义 HTML 邮件模板
+	emailTemplate := `<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .content {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        .code {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: #ffffff;
+            font-size: 30px;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            验证码邮件
+        </div>
+        <div class="content">
+            <p>Ansurfen, 你好！</p>
+            <p>你的验证码是：</p>
+            <div class="code">{{.Code}}</div>
+        </div>
+        <div class="footer">
+            <p>如果你没有请求此验证码，请忽略此邮件。</p>
+        </div>
+    </div>
+</body>
+
+</html>`
+
+	// 创建邮件内容，使用模板渲染验证码
+	tmpl, err := template.New("email").Parse(emailTemplate)
+	if err != nil {
+		log.WithError(err).Error("Error parsing template")
+		return err
+	}
+
+	// 渲染模板
+	var body strings.Builder
+	err = tmpl.Execute(&body, map[string]interface{}{
+		"Code": code,
+	})
+	if err != nil {
+		log.WithError(err).Error("Error executing template")
+		return err
+	}
+
+	subject := "Subject: MyTodo 验证邮件\n" +
+		"Content-Type: text/html; charset=UTF-8\n" +
+		"From: " + senderEmail + "\n" +
+		"To: " + receiverEmail + "\n" +
+		"\n"
+	message := []byte(subject + body.String())
+
+	// 认证信息
+	auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpHost)
+
+	// 发送邮件
+	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, senderEmail, []string{receiverEmail}, message)
+	if err != nil {
+		log.WithError(err).Error("Error sending email")
+		return err
+	}
+
+	log.Info("Email sent successfully!")
+	return nil
 }
 
 // UserDetail godoc

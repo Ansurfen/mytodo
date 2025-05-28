@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:my_todo/component/button/shadow_button.dart';
 import 'package:my_todo/component/scaffold.dart';
+import 'package:my_todo/utils/guard.dart';
 import 'package:my_todo/utils/share.dart';
 import 'package:my_todo/view/home/nav/component/app_bar.dart';
 import 'package:my_todo/theme/color.dart';
@@ -54,7 +55,7 @@ class _MePageState extends State<MePage> {
                 borderRadius: const BorderRadius.all(Radius.circular(20)),
               ),
               child: QrImageView(
-                data: 'This QR code has an embedded image as well',
+                data: Guard.jwt,
                 version: QrVersions.auto,
                 size: 250,
                 dataModuleStyle: QrDataModuleStyle(
@@ -101,7 +102,7 @@ class _MePageState extends State<MePage> {
                     ),
                     child: ShadowButton(
                       onTap: () {
-                        TodoShare.share("uid");
+                        TodoShare.share(Guard.jwt);
                       },
                       icon: const Icon(
                         Icons.share,

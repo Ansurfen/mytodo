@@ -54,15 +54,15 @@ class _PostFriendPageState extends State<PostFriendPage> {
             child: Obx(
               () => EmptyContainer(
                 icon: Icons.rss_feed,
-                desc: "not post, clicks + button to create on bottom bar",
-                what: "what is post?",
+                desc: "no_post".tr,
+                what: "what_is_post".tr,
                 render: controller.postFriendData.value.isNotEmpty,
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(
                   top: MediaQuery.sizeOf(context).height * 0.35,
                 ),
                 onTap: () {
-                  showTipDialog(context, content: "what_is_post".tr);
+                  showTipDialog(context, content: "what_is_post_desc".tr);
                 },
                 child: Padding(
                   padding: EdgeInsets.only(top: 10),

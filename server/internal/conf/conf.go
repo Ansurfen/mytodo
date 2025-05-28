@@ -17,11 +17,18 @@ type TodoConf struct {
 	Email  Email         `yaml:"email"`
 }
 
+var cfg TodoConf
+
 func New() (ret TodoConf) {
 	ReadYAML("boot.yaml", &ret)
+	cfg = ret
 	// viper.BindEnv("email.senderEmail", "ABC")
 	// fmt.Println(viper.GetString("email.senderEmail"))
 	return
+}
+
+func Config() TodoConf {
+	return cfg
 }
 
 type SQL struct {

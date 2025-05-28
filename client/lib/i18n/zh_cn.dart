@@ -366,4 +366,27 @@ Map<String, String> get zhCN => {
 
   "file_upload": "文件上传",
   "upload": "上传",
+
+  "no_task": "没有任务",
+  "what_is_task": "什么是任务？",
+  "tip": "提示",
+  "what_is_task_desc": "任务是您可以创建和管理的任务。",
+
+  "no_post": "没有帖子",
+  "what_is_post": "什么是帖子？",
+  "what_is_post_desc": "帖子是您可以创建和管理的帖子。",
+
+  "no_topic": "没有频道",
+  "what_is_topic": "什么是频道？",
+  "what_is_topic_desc": "频道是您可以创建和管理的频道。",
+
+  "feedback_title": "你的反馈", 
+  "feedback_title_desc": "给这个时刻最好的时间。",
+  "feedback_hint": "留下你的宝贵意见...",
+  "feedback_desc": "给这个时刻最好的时间。",
+  "send": "发送",
+
+  "scan_me": "扫描我",
+
+  "topic_not_found": "频道未找到",
 };

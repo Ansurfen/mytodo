@@ -147,21 +147,7 @@ class _TopicCardState extends State<TopicCard>
           color: Theme.of(context).colorScheme.onPrimary,
         ),
       ),
-      subtitle: Column(
-        children: [
-          Text(
-            widget.model.description,
-            maxLines: 3,
-            style: TextStyle(
-              color: isLight ? Colors.black26 : Colors.grey,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-          Container(height: 5),
-          tags(context, widget.model.tags ?? [], limit: 22),
-        ],
-      ),
+      subtitle: tags(context, widget.model.tags ?? [], limit: 22),
       children: [
         const Divider(thickness: 1.0, height: 1.0),
         Align(
@@ -172,7 +158,7 @@ class _TopicCardState extends State<TopicCard>
               vertical: 8.0,
             ),
             child: Text(
-              Mock.text(),
+              widget.model.description,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium!.copyWith(fontSize: 16),

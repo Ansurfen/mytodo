@@ -358,6 +358,50 @@ class _ChatPageState extends State<ChatPage>
           ),
         ),
         ListTile(
+          onTap: () {
+            showCupertinoDialog(
+              context: context,
+              builder: (BuildContext context) {
+                String email = '';
+                return CupertinoAlertDialog(
+                  title: Text('add_friend'.tr, style: TextStyle(color: Theme.of(context).colorScheme.onSecondary)),
+                  content: Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: CupertinoTextField(
+                      placeholder: 'email'.tr,
+                      onChanged: (value) {
+                        email = value;
+                      },
+                      keyboardType: TextInputType.emailAddress,
+                      autofocus: true,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    ),
+                  ),
+                  actions: [
+                    CupertinoDialogAction(
+                      child: Text('cancel'.tr, style: TextStyle(color: Colors.redAccent)),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    CupertinoDialogAction(
+                      child: Text('confirm'.tr, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                      onPressed: () {
+                        if (email.isNotEmpty) {
+                          // TODO: 调用发送好友请求的API
+                          Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
           leading: Text("new_friend".tr, style: TextStyle(fontSize: 18)),
           trailing: Icon(Icons.arrow_forward_ios_sharp),
         ),

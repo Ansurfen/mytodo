@@ -41,7 +41,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   Container(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      'Your FeedBack',
+                      'feedback'.tr,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -55,7 +55,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   Container(
                     padding: const EdgeInsets.only(top: 16),
                     child: Text(
-                      'Give your best time for this moment.',
+                      'feedback_desc'.tr,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,
@@ -66,9 +66,9 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       ),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 16, left: 32, right: 32),
-                    child: TextArea(hintText: "留下你的宝贵意见..."),
+                    child: TextArea(hintText: "feedback_hint".tr),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
